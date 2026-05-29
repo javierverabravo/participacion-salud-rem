@@ -1,0 +1,36 @@
+# ============================================================
+# .gitignore — Proyecto Participación en Salud (REM MINSAL)
+# Qué archivos NO debe rastrear ni subir Git a GitHub.
+# ============================================================
+
+# --- Datos crudos REM (pesan ~1 GB, se descargan desde el DEIS) ---
+# No se versionan: se regeneran con el script de descarga.
+Serie*.csv
+*.CSV
+datos/
+data/
+
+# --- Salidas y resultados generados por los scripts ---
+# (gráficos, tablas, objetos .rds) se reproducen al correr el código.
+salidas/
+resultados/
+output/
+*.rds
+
+# --- Archivos temporales y de sistema ---
+.Rhistory
+.RData
+.Rproj.user/
+.Renviron
+*.Rproj
+.DS_Store
+Thumbs.db
+
+# --- Quarto / dashboard (se regenera al renderizar) ---
+/.quarto/
+/_site/
+/_freeze/
+
+# --- Credenciales (NUNCA subir tokens ni claves) ---
+*.env
+secrets*
