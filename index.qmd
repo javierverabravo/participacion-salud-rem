@@ -1,5 +1,5 @@
 ---
-title: "Participación Ciudadana en Salud · REM Chile"
+title: "Participación Ciudadana en Salud · REM Chile 2025"
 author: "Javier · @Arleq89"
 format:
   dashboard:
@@ -7,37 +7,65 @@ format:
     nav-buttons:
       - icon: github
         href: https://github.com/Arleq89/participacion-salud-rem
+execute:
+  echo: false
+  warning: false
+  message: false
 ---
 
 ```{r}
 #| label: setup
 #| include: false
-# Cargamos paquetes y los insumos pequeños generados por 06_preparar_dashboard.R.
-# El dashboard NO procesa datos pesados: solo lee estas tablas resumidas.
+# El dashboard solo lee tablas resumidas (carpeta productos/), generadas por
+# los scripts de análisis. No procesa datos pesados: renderiza al instante.
 library(data.table)
 library(ggplot2)
 
+interactivo <- function(g) {
+  if (requireNamespace("plotly", quietly = TRUE))
+    plotly::ggplotly(g, tooltip = "text")
+  else g
+}
+
 kpi    <- fread("productos/kpis_generales.csv", sep = ";")
 cobreg <- fread("productos/cobertura_region.csv", sep = ";")
-cobcom <- fread("productos/cobertura_comuna.csv", sep = ";")
 serie  <- fread("productos/serie_mensual.csv", sep = ";")
-temas  <- fread("productos/temas.csv", sep = ";")
 mreg   <- fread("productos/modelo_region.csv", sep = ";")
 mmes   <- fread("productos/modelo_estacionalidad.csv", sep = ";")
 micc   <- fread("productos/modelo_icc.csv", sep = ";")
+eqreg  <- fread("productos/equidad_region.csv", sep = ";")
+eqkpi  <- fread("productos/equidad_kpis.csv", sep = ";")
+inst   <- fread("productos/instancias.csv", sep = ";")
+gen    <- fread("productos/genero.csv", sep = ";")
+recl   <- fread("productos/reclamos_region.csv", sep = ";")
+cobtipo<- fread("productos/cobertura_tipo.csv", sep = ";")
+cobdep <- fread("productos/cobertura_dependencia.csv", sep = ";")
+icctipo<- fread("productos/modelo_icc_tipo.csv", sep = ";")
 
-# Atajos para leer un KPI por su nombre.
-getk  <- function(n) kpi[indicador == n, valor]
-geti  <- function(n) micc[indicador == n, valor]
+getk <- function(n) kpi[indicador == n, valor]
+geti <- function(n) micc[indicador == n, valor]
+gete <- function(n) eqkpi[indicador == n, valor]
+getit<- function(n) icctipo[indicador == n, valor]
 
-# Tema visual común para los gráficos.
-tema_g <- theme_minimal(base_size = 13) +
-  theme(plot.title = element_text(face = "bold"))
+reg_nom <- data.table(
+  IdRegion = c(15,1,2,3,4,5,13,6,7,16,8,9,14,10,11,12),
+  region   = c("Arica y Parinacota","Tarapacá","Antofagasta","Atacama",
+               "Coquimbo","Valparaíso","Metropolitana","O'Higgins","Maule",
+               "Ñuble","Biobío","La Araucanía","Los Ríos","Los Lagos",
+               "Aysén","Magallanes"))
+pr <- function(dt) merge(dt, reg_nom, by = "IdRegion", all.x = TRUE)
+cobreg <- pr(cobreg); eqreg <- pr(eqreg); recl <- pr(recl); mreg <- pr(mreg)
+
+gen[, etiqueta := fifelse(grepl("binarie", etiqueta, ignore.case = TRUE),
+                          "No binarie", etiqueta)]
+gen <- gen[, .(personas = sum(personas)), by = etiqueta][order(-personas)]
+
+tg <- theme_minimal(base_size = 12) + theme(plot.title = element_blank())
 ```
 
 # Resumen
 
-## Row {height="22%"}
+## Row {height="20%"}
 
 ```{r}
 #| content: valuebox
@@ -71,75 +99,285 @@ list(value = getk("prestaciones_monitoreadas"))
 list(value = paste0(getk("pct_subregistro_estab_mes"), "%"))
 ```
 
-## Row {height="78%"}
+## Row {height="80%"}
 
-### Column
+### Column {width="55%"}
 
 ```{r}
-#| title: "Cobertura por región (% de establecimientos que participan)"
-ggplot(cobreg, aes(x = reorder(factor(IdRegion), pct), y = pct)) +
-  geom_col(fill = "#2c7fb8") +
-  geom_text(aes(label = paste0(pct, "%")), hjust = -0.1, size = 3.5) +
-  coord_flip() +
-  labs(x = "Región", y = "% establecimientos") +
-  ylim(0, 100) + tema_g
+#| title: "Cobertura por región"
+g <- ggplot(cobreg, aes(x = reorder(region, pct), y = pct,
+                        text = paste0(region, ": ", pct, "%"))) +
+  geom_col(fill = "#2c7fb8") + coord_flip() +
+  labs(x = NULL, y = "% establecimientos que participan") + ylim(0,100) + tg
+interactivo(g)
 ```
 
-### Column
+### Column {width="45%"}
 
 ```{r}
-#| title: "Mapa de cobertura por región"
-# El mapa usa el paquete chilemapas. Si no está instalado, mostramos un aviso
-# en lugar de romper el render (instálalo con install.packages('chilemapas')).
+#| title: "Mapa de cobertura"
 res <- tryCatch({
   library(chilemapas); library(sf)
   reg <- sf::st_as_sf(chilemapas::generar_regiones())
-  cob <- copy(cobreg)
-  cob[, codigo_region := sprintf("%02d", IdRegion)]
+  cob <- copy(cobreg); cob[, codigo_region := sprintf("%02d", IdRegion)]
   mapa <- merge(reg, cob, by = "codigo_region", all.x = TRUE)
-  ggplot(mapa) +
-    geom_sf(aes(fill = pct), color = "white", linewidth = 0.1) +
-    scale_fill_viridis_c(name = "% cobertura", option = "D") +
-    labs(x = NULL, y = NULL) +
-    theme_void(base_size = 12)
-}, error = function(e) {
-  ggplot() + annotate("text", x = 0, y = 0,
-    label = "Mapa no disponible:\ninstala el paquete 'chilemapas'") +
-    theme_void()
-})
+  ggplot(mapa) + geom_sf(aes(fill = pct), color = "white", linewidth = 0.1) +
+    scale_fill_viridis_c(name = "% cobertura") + theme_void(base_size = 11)
+}, error = function(e) ggplot() +
+   annotate("text", x=0, y=0, label="Instala 'chilemapas' para el mapa") +
+   theme_void())
 res
 ```
+
+::: {.card title="Cómo leer esta sección"}
+Cada barra y cada región del mapa indican **qué porcentaje de los establecimientos
+de salud de esa zona registró al menos una actividad de participación ciudadana
+durante 2025**. A nivel nacional, el 63% lo hizo y un 37% no apareció nunca en
+estos registros. Pero el indicador más revelador es el **53,8% de subregistro a
+nivel establecimiento-mes**: aun entre los que sí participan, en la mayoría de los
+meses no queda constancia. Esto sugiere que el problema central de estos datos no
+es la participación en sí, sino **cuán sistemáticamente se registra**. Como se ve
+en la pestaña siguiente, buena parte de las diferencias territoriales se explica
+por el tipo de establecimientos que predomina en cada región.
+:::
+
+# Tipo de establecimiento
+
+## Row {height="20%"}
+
+```{r}
+#| content: valuebox
+#| title: "Cobertura en CESFAM y Hospitales"
+#| icon: hospital-fill
+#| color: success
+list(value = "~100%")
+```
+
+```{r}
+#| content: valuebox
+#| title: "Variación institucional sin tipo"
+#| icon: box
+#| color: secondary
+list(value = paste0(getit("icc_sin_tipo"), "%"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "...y al considerar el tipo"
+#| icon: box-arrow-in-down
+#| color: info
+list(value = paste0(getit("icc_con_tipo"), "%"))
+```
+
+## Row {height="60%"}
+
+### Column
+
+```{r}
+#| title: "Cobertura de participación por tipo de establecimiento"
+g <- ggplot(cobtipo, aes(x = reorder(tipo_grp, pct), y = pct,
+                         text = paste0(tipo_grp, ": ", pct, "% (",
+                                       n_participa, "/", n_total, ")"))) +
+  geom_col(fill = "#3182bd") + coord_flip() +
+  labs(x = NULL, y = "% que participa") + ylim(0,100) + tg
+interactivo(g)
+```
+
+### Column
+
+```{r}
+#| title: "Cobertura por dependencia administrativa"
+g <- ggplot(cobdep, aes(x = reorder(DependenciaAdministrativa, pct), y = pct,
+                        text = paste0(DependenciaAdministrativa, ": ", pct, "%"))) +
+  geom_col(fill = "#31a354") + coord_flip() +
+  labs(x = NULL, y = "% que participa") + ylim(0,100) + tg
+interactivo(g)
+```
+
+## Row {height="20%"}
+
+::: {.card title="Cómo leer esta sección"}
+Aquí cruzamos el REM con la base maestra de establecimientos del DEIS para ver
+**qué tipo de establecimiento participa**. El resultado reordena toda la
+interpretación: los **CESFAM y hospitales participan casi universalmente (~100%)**,
+mientras que los **servicios de urgencia (SAPU 13%, SUR 2%) y las postas rurales
+(60%)** quedan muy por debajo. Esto indica que gran parte del "no registro" **no
+es negligencia, sino diseño**: en urgencias y postas pequeñas las estructuras de
+participación (consejos, cabildos) no forman parte de su modelo de atención. Al
+incorporar el tipo al modelo estadístico, la variación inexplicada entre
+establecimientos **baja de 84% a 67%**: el tipo explica una parte importante, pero
+el 67% restante muestra que, incluso entre establecimientos iguales, persisten
+diferencias reales en cómo se involucran con la comunidad.
+:::
+
+# Equidad e inclusión
+
+## Row {height="20%"}
+
+```{r}
+#| content: valuebox
+#| title: "Participación de pueblos originarios"
+#| icon: globe-americas
+#| color: success
+list(value = format(gete("total_pueblos_originarios"), big.mark = "."))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Participación de migrantes"
+#| icon: signpost-split
+#| color: info
+list(value = format(gete("total_migrantes"), big.mark = "."))
+```
+
+```{r}
+#| content: valuebox
+#| title: "% pueblos originarios del total"
+#| icon: percent
+#| color: secondary
+list(value = paste0(gete("pct_pueblos_originarios"), "%"))
+```
+
+## Row {height="60%"}
+
+### Column
+
+```{r}
+#| title: "Participación de pueblos originarios por región (%)"
+g <- ggplot(eqreg, aes(x = reorder(region, pct_pueblos_originarios),
+                       y = pct_pueblos_originarios,
+                       text = paste0(region, ": ", pct_pueblos_originarios, "%"))) +
+  geom_col(fill = "#238b45") + coord_flip() +
+  labs(x = NULL, y = "% de participantes de pueblos originarios") + tg
+interactivo(g)
+```
+
+### Column
+
+```{r}
+#| title: "Participación de migrantes por región (%)"
+g <- ggplot(eqreg, aes(x = reorder(region, pct_migrantes), y = pct_migrantes,
+                       text = paste0(region, ": ", pct_migrantes, "%"))) +
+  geom_col(fill = "#d95f0e") + coord_flip() +
+  labs(x = NULL, y = "% de participantes migrantes") + tg
+interactivo(g)
+```
+
+## Row {height="20%"}
+
+::: {.card title="Cómo leer esta sección"}
+Estas barras muestran **qué proporción de las personas que participan pertenece a
+pueblos originarios o es migrante**, en cada región. El patrón sigue de cerca la
+demografía real del país: la participación de **pueblos originarios** se concentra
+en **La Araucanía (22%), Los Lagos y Aysén** —territorios mapuche y huilliche—,
+mientras que la de **migrantes** se eleva en **Antofagasta (47%) y Tarapacá**, las
+regiones mineras del norte con mayor población migrante. Que los datos reproduzcan
+esta geografía sin que se lo indiquemos es una señal de que la medición es
+fidedigna. La otra cara: en varias regiones del centro estas cifras caen casi a
+cero, lo que marca **dónde estos grupos quedan invisibles en el registro de
+participación** y, por tanto, dónde conviene reforzar la inclusión.
+:::
+
+# Composición y género
+
+## Row {height="60%"}
+
+### Column
+
+```{r}
+#| title: "Instancias de participación social más registradas"
+g <- ggplot(head(inst, 10),
+            aes(x = reorder(etiqueta, actividades), y = actividades,
+                text = paste0(etiqueta, ": ", format(actividades, big.mark=".")))) +
+  geom_col(fill = "#2c7fb8") + coord_flip() +
+  labs(x = NULL, y = "Actividades registradas") + tg
+interactivo(g)
+```
+
+### Column
+
+```{r}
+#| title: "Registro de identidad de género"
+g <- ggplot(gen, aes(x = reorder(etiqueta, personas), y = personas,
+                     text = paste0(etiqueta, ": ", format(personas, big.mark=".")))) +
+  geom_col(fill = "#756bb1") + coord_flip() +
+  labs(x = NULL, y = "Personas registradas") + tg
+interactivo(g)
+```
+
+## Row {height="40%"}
+
+::: {.card title="Cómo leer esta sección"}
+A la izquierda, **a través de qué mecanismos participa la ciudadanía**. Llama la
+atención que las dos categorías mayores sean **"Otras instancias" (sin clasificar)**
+y **"Uso de TICs y redes sociales"**, por encima de los consejos formales como los
+Consejos de Desarrollo Local o los Consejos Consultivos. Esto sugiere dos cosas: la
+participación digital ya pesa de verdad, y el formulario no captura bien el *tipo*
+de instancia (mucho queda en el cajón de "otras"). A la derecha, **cómo se registra
+la identidad de género**: domina abrumadoramente "No revelado", es decir, el
+sistema casi no recoge esta dimensión. Aun así, la presencia de personas **Trans y
+No binarie** —aunque pequeña (~1.600 registros)— es un avance de visibilidad
+estadística poco habitual en datos públicos chilenos.
+:::
+
+# Calidad de reclamos
+
+## Row {height="72%"}
+
+```{r}
+#| title: "Reclamos respondidos FUERA del plazo legal, por región (%)"
+g <- ggplot(recl, aes(x = reorder(region, pct_fuera_plazo), y = pct_fuera_plazo,
+                      text = paste0(region, ": ", pct_fuera_plazo, "%"))) +
+  geom_col(fill = "#de2d26") + coord_flip() +
+  labs(x = NULL, y = "% de reclamos respondidos fuera de plazo") + tg
+interactivo(g)
+```
+
+## Row {height="28%"}
+
+::: {.card title="Cómo leer esta sección"}
+Más allá de *cuántos* reclamos se reciben, esta sección mide **con qué calidad los
+responde el sistema**: el porcentaje que se contesta **fuera del plazo legal**
+(mientras más alto, peor). La diferencia entre territorios es enorme: en **Coquimbo
+(44%)** y **Valparaíso (33%)** una fracción muy alta de los reclamos se responde
+tarde, frente a **Magallanes (<1%)**, casi siempre en plazo. Es una desigualdad que
+no tiene que ver con el volumen de reclamos sino con la **capacidad de gestión** de
+cada red, y señala dónde el derecho ciudadano a una respuesta oportuna se está
+cumpliendo y dónde no.
+:::
 
 # Evolución temporal
 
 ## Row
 
 ```{r}
-#| title: "Actividades de participación registradas por mes y tema"
-serie[, Mes := factor(Mes, levels = 1:12)]
-ggplot(serie, aes(x = as.integer(as.character(Mes)), y = actividades,
-                  color = tema)) +
-  geom_line(linewidth = 1) + geom_point(size = 2) +
+#| title: "Actividades registradas por mes y tema"
+serie[, Mes := as.integer(Mes)]
+g <- ggplot(serie, aes(x = Mes, y = actividades, color = tema, group = tema,
+                       text = paste0(tema, " · mes ", Mes, ": ",
+                                     format(actividades, big.mark=".")))) +
+  geom_line(linewidth = 1) + geom_point(size = 1.5) +
   scale_x_continuous(breaks = 1:12) +
-  labs(x = "Mes", y = "Actividades registradas", color = "Tema") +
-  tema_g + theme(legend.position = "bottom")
+  labs(x = "Mes", y = "Actividades", color = "Tema") +
+  tg + theme(legend.position = "bottom")
+interactivo(g)
 ```
 
 ## Row
 
-```{r}
-#| title: "Establecimientos que reportan por mes y tema"
-ggplot(serie, aes(x = as.integer(as.character(Mes)), y = estab_que_reportan,
-                  color = tema)) +
-  geom_line(linewidth = 1) + geom_point(size = 2) +
-  scale_x_continuous(breaks = 1:12) +
-  labs(x = "Mes", y = "Nº establecimientos", color = "Tema") +
-  tema_g + theme(legend.position = "bottom")
-```
+::: {.card title="Cómo leer esta sección"}
+Cada línea sigue, mes a mes, el volumen de actividades registradas en uno de los
+tres grandes temas. El rasgo dominante es la **estacionalidad**: el registro cae en
+**enero-febrero** (el verano austral, con menor actividad administrativa) y se
+sostiene de marzo en adelante, reflejando el ciclo de gestión del sistema de salud
+más que un cambio real en la participación de la gente. También se aprecia la
+escala: el volumen está dominado por **OIRS y reclamos**, mientras que la
+participación social y la satisfacción usuaria operan en magnitudes mucho menores.
+:::
 
 # Hallazgos del modelo
 
-## Row {height="22%"}
+## Row {height="20%"}
 
 ```{r}
 #| content: valuebox
@@ -162,40 +400,50 @@ list(value = paste0(geti("icc_intensidad_pct"), "%"))
 #| title: "Mejora del modelo (AIC)"
 #| icon: graph-down
 #| color: success
-list(value = paste0(format(geti("aic_barrera_simple"), big.mark = "."),
-                    " → ", format(geti("aic_barrera_mixto"), big.mark = ".")))
+list(value = paste0(format(geti("aic_barrera_simple"), big.mark="."),
+                    " → ", format(geti("aic_barrera_mixto"), big.mark=".")))
 ```
 
-## Row
+## Row {height="52%"}
 
 ### Column
 
 ```{r}
-#| title: "Probabilidad de registrar participación social, por región (modelo)"
-ggplot(mreg, aes(x = reorder(factor(IdRegion), prob_registra), y = prob_registra)) +
+#| title: "Probabilidad de registrar participación social, por región"
+g <- ggplot(mreg, aes(x = reorder(region, prob_registra), y = prob_registra,
+                      text = paste0(region, ": ", round(100*prob_registra,1), "%"))) +
   geom_col(fill = "#238b45") + coord_flip() +
-  labs(x = "Región", y = "P(registra > 0)") + tema_g
+  labs(x = NULL, y = "P(registra > 0)") + tg
+interactivo(g)
 ```
 
 ### Column
 
 ```{r}
-#| title: "Estacionalidad: probabilidad de registrar por mes (modelo)"
-mmes[, Mes := factor(Mes, levels = 1:12)]
-ggplot(mmes, aes(x = as.integer(as.character(Mes)), y = prob_registra)) +
-  geom_line(color = "#2c7fb8", linewidth = 1) +
-  geom_point(color = "#2c7fb8", size = 2) +
+#| title: "Estacionalidad estimada por el modelo"
+mmes[, Mes := as.integer(Mes)]
+g <- ggplot(mmes, aes(x = Mes, y = prob_registra, group = 1,
+                      text = paste0("Mes ", Mes, ": ",
+                                    round(100*prob_registra,1), "%"))) +
+  geom_line(color = "#2c7fb8", linewidth = 1) + geom_point(size = 2) +
   scale_x_continuous(breaks = 1:12) +
-  labs(x = "Mes", y = "P(registra > 0)") + tema_g
+  labs(x = "Mes", y = "P(registra > 0)") + tg
+interactivo(g)
 ```
 
-## Row {height="20%"}
+## Row {height="28%"}
 
-::: {.card title="Interpretación"}
-El **84%** de la variación en *si* un establecimiento registra participación está
-*entre* establecimientos: registrar es un rasgo institucional estable, no azar
-mensual. La región y el mes importan (fuerte estacionalidad: el registro se
-multiplica de marzo en adelante), pero *cuánto* se registra depende sobre todo
-de cada establecimiento. Implicación: para reducir el subregistro hay que actuar
-sobre los establecimientos que estructuralmente no participan.
+::: {.card title="Qué dice el modelo (hurdle con efectos aleatorios)"}
+Para separar dos preguntas distintas —**¿un establecimiento registra participación?**
+y **¿cuánta?**— usamos un modelo de barrera (*hurdle*) con efectos aleatorios por
+establecimiento. Su resultado más fuerte: el **84% de la variación en *si* se
+registra está entre establecimientos**, no dentro de ellos a lo largo del año. En
+otras palabras, **registrar participación es un rasgo estable de cada
+establecimiento**, no algo que fluctúe al azar. Una parte de ese rasgo es el **tipo**
+de establecimiento (al incluirlo, la variación inexplicada baja a 67%), y otra parte
+es la **estacionalidad** (la probabilidad de registrar se multiplica de marzo en
+adelante). La implicación para la política pública es clara: para reducir el
+subregistro conviene actuar sobre **establecimientos concretos que estructuralmente
+no participan** —y sobre los tipos donde esto es más frecuente—, más que sobre
+regiones tratadas como un todo.
 :::

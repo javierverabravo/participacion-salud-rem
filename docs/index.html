@@ -8,7 +8,7 @@
 
 <meta name="author" content="Javier · @Arleq89">
 
-<title>Participación Ciudadana en Salud · REM Chile</title>
+<title>Participación Ciudadana en Salud · REM Chile 2025</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -50,6 +50,24 @@ ul.task-list li input[type="checkbox"] {
 <script src="index_files/libs/quarto-dashboard/web-components.js" type="module"></script>
 <script src="index_files/libs/quarto-dashboard/components.js"></script>
 
+<link href="index_files/libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+
+<script src="index_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+
+<script src="index_files/libs/plotly-binding-4.12.0/plotly.js"></script>
+
+<script src="index_files/libs/typedarray-0.1/typedarray.min.js"></script>
+
+<script src="index_files/libs/jquery-3.5.1/jquery.min.js"></script>
+
+<link href="index_files/libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+
+<script src="index_files/libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+
+<link href="index_files/libs/plotly-htmlwidgets-css-2.25.2/plotly-htmlwidgets.css" rel="stylesheet">
+
+<script src="index_files/libs/plotly-main-2.25.2/plotly-latest.min.js"></script>
+
 
 
 </head>
@@ -68,19 +86,19 @@ ul.task-list li input[type="checkbox"] {
 
 
       <div class="navbar-title">
-        <div class="navbar-title-text"><a href="#">Participación Ciudadana en Salud · REM Chile</a></div>
+        <div class="navbar-title-text"><a href="#">Participación Ciudadana en Salud · REM Chile 2025</a></div>
         
         <div class="navbar-author">Javier · <span class="citation" data-cites="Arleq89">@Arleq89</span></div>
       </div>
     </div>
-<div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-resumen" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#resumen" data-scrolling="false" href="#resumen" aria-controls="resumen" aria-selected="true"><span class="nav-link-text">Resumen</span></a></li><li class="nav-item" role="presentation"><a id="tab-evolución-temporal" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#evolución-temporal" data-scrolling="false" href="#evolución-temporal" aria-controls="evolución-temporal" aria-selected="false"><span class="nav-link-text">Evolución temporal</span></a></li><li class="nav-item" role="presentation"><a id="tab-hallazgos-del-modelo" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#hallazgos-del-modelo" data-scrolling="false" href="#hallazgos-del-modelo" aria-controls="hallazgos-del-modelo" aria-selected="false"><span class="nav-link-text">Hallazgos del modelo</span></a></li></ul><div class="quarto-dashboard-links"><a class="quarto-dashboard-link" href="https://github.com/Arleq89/participacion-salud-rem"><i class="bi bi-github"></i></a></div></div></div>
+<div id="dashboard-collapse" class="navbar-collapse collapse"><ul class="navbar-nav navbar-nav-scroll me-auto" role="tablist"><li class="nav-item" role="presentation"><a id="tab-resumen" class="nav-link active" data-bs-toggle="tab" role="tab" data-bs-target="#resumen" data-scrolling="false" href="#resumen" aria-controls="resumen" aria-selected="true"><span class="nav-link-text">Resumen</span></a></li><li class="nav-item" role="presentation"><a id="tab-tipo-de-establecimiento" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#tipo-de-establecimiento" data-scrolling="false" href="#tipo-de-establecimiento" aria-controls="tipo-de-establecimiento" aria-selected="false"><span class="nav-link-text">Tipo de establecimiento</span></a></li><li class="nav-item" role="presentation"><a id="tab-equidad-e-inclusión" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#equidad-e-inclusión" data-scrolling="false" href="#equidad-e-inclusión" aria-controls="equidad-e-inclusión" aria-selected="false"><span class="nav-link-text">Equidad e inclusión</span></a></li><li class="nav-item" role="presentation"><a id="tab-composición-y-género" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#composición-y-género" data-scrolling="false" href="#composición-y-género" aria-controls="composición-y-género" aria-selected="false"><span class="nav-link-text">Composición y género</span></a></li><li class="nav-item" role="presentation"><a id="tab-calidad-de-reclamos" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#calidad-de-reclamos" data-scrolling="false" href="#calidad-de-reclamos" aria-controls="calidad-de-reclamos" aria-selected="false"><span class="nav-link-text">Calidad de reclamos</span></a></li><li class="nav-item" role="presentation"><a id="tab-evolución-temporal" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#evolución-temporal" data-scrolling="false" href="#evolución-temporal" aria-controls="evolución-temporal" aria-selected="false"><span class="nav-link-text">Evolución temporal</span></a></li><li class="nav-item" role="presentation"><a id="tab-hallazgos-del-modelo" class="nav-link" data-bs-toggle="tab" role="tab" data-bs-target="#hallazgos-del-modelo" data-scrolling="false" href="#hallazgos-del-modelo" aria-controls="hallazgos-del-modelo" aria-selected="false"><span class="nav-link-text">Hallazgos del modelo</span></a></li></ul><div class="quarto-dashboard-links"><a class="quarto-dashboard-link" href="https://github.com/Arleq89/participacion-salud-rem"><i class="bi bi-github"></i></a></div></div></div>
 </nav>
 </header>
 <div class="page-layout-custom quarto-dashboard-content bslib-gap-spacing html-fill-container bslib-page-fill quarto-dashboard-pages">  
 
 <div class="bslib-grid-item html-fill-item tab-content bslib-grid" data-layout="fill" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
 <div id="resumen" class="dashboard-page tab-pane show active html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-resumen">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 22fr) minmax(3em, 78fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 20fr) minmax(3em, 80fr); grid-auto-columns: minmax(0, 1fr);">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-primary showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
@@ -149,16 +167,17 @@ Subregistro (establecimiento-mes)
 </div>
 <script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
 </div>
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 55fr) minmax(3em, 45fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Cobertura por región (% de establecimientos que participan)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Cobertura por región" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Cobertura por región (% de establecimientos que participan)
+Cobertura por región
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
-<img src="index_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid quarto-dashboard-img-contain">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-ea81ad68a0ed8bfb1f99" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-ea81ad68a0ed8bfb1f99">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.90000000000000036,0.90000000000000013,0.89999999999999858,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.90000000000000036,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.89999999999999947,0.89999999999999858,0.89999999999999991,0.89999999999999858,0.90000000000000036],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[61.700000000000003,59,54.200000000000003,66.299999999999997,59.700000000000003,64.900000000000006,60.100000000000001,58.200000000000003,58.399999999999999,66.700000000000003,80.400000000000006,60,72,53.700000000000003,81.799999999999997,55.200000000000003],"y":[10,6,2,12,7,11,9,4,5,13,15,8,14,1,16,3],"text":["Tarapacá: 61.7%","Antofagasta: 59%","Atacama: 54.2%","Coquimbo: 66.3%","Valparaíso: 59.7%","O'Higgins: 64.9%","Maule: 60.1%","Biobío: 58.2%","La Araucanía: 58.4%","Los Lagos: 66.7%","Aysén: 80.4%","Magallanes: 60%","Metropolitana: 72%","Los Ríos: 53.7%","Arica y Parinacota: 81.8%","Ñuble: 55.2%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(44,127,184,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":126.72478206724789},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5,105],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,24.999999999999996,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% establecimientos que participan","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["Los Ríos","Atacama","Ñuble","Biobío","La Araucanía","Antofagasta","Valparaíso","Magallanes","Maule","Tarapacá","O'Higgins","Coquimbo","Los Lagos","Metropolitana","Aysén","Arica y Parinacota"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["Los Ríos","Atacama","Ñuble","Biobío","La Araucanía","Antofagasta","Valparaíso","Magallanes","Maule","Tarapacá","O'Higgins","Coquimbo","Los Lagos","Metropolitana","Aysén","Arica y Parinacota"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603ccfd3261":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603ccfd3261","visdat":{"603ccfd3261":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
@@ -167,10 +186,10 @@ Cobertura por región (% de establecimientos que participan)
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
-</div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Mapa de cobertura por región" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+</div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr) minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Mapa de cobertura" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Mapa de cobertura por región
+Mapa de cobertura
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
@@ -183,21 +202,313 @@ Mapa de cobertura por región
         <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
-</div>
-</div>
-</div>
-</div>
-<div id="evolución-temporal" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-evolución-temporal">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr) minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
-grid-auto-rows: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Actividades de participación registradas por mes y tema" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Actividades de participación registradas por mes y tema
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>Cada barra y cada región del mapa indican <strong>qué porcentaje de los establecimientos de salud de esa zona registró al menos una actividad de participación ciudadana durante 2025</strong>. A nivel nacional, el 63% lo hizo y un 37% no apareció nunca en estos registros. Pero el indicador más revelador es el <strong>53,8% de subregistro a nivel establecimiento-mes</strong>: aun entre los que sí participan, en la mayoría de los meses no queda constancia. Esto sugiere que el problema central de estos datos no es la participación en sí, sino <strong>cuán sistemáticamente se registra</strong>. Como se ve en la pestaña siguiente, buena parte de las diferencias territoriales se explica por el tipo de establecimientos que predomina en cada región.</p>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+</div>
+<div id="tipo-de-establecimiento" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-tipo-de-establecimiento">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 20fr) minmax(3em, 60fr) minmax(3em, 20fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-success showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-hospital-fill"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Cobertura en CESFAM y Hospitales
+</p>
+<p class="value-box-value">
+~100%
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-secondary showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-box"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Variación institucional sin tipo
+</p>
+<p class="value-box-value">
+84.4%
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-info showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-box-arrow-in-down"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+...y al considerar el tipo
+</p>
+<p class="value-box-value">
+66.7%
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Cobertura de participación por tipo de establecimiento" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cobertura de participación por tipo de establecimiento
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
-<img src="index_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid quarto-dashboard-img-contain">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-264742f402c557bdc3b1" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-264742f402c557bdc3b1">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.89999999999999947,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000013,0.89999999999999991],"base":[0,0,0,0,0,0,0,0,0],"x":[100,99.799999999999997,82.900000000000006,60,45.100000000000001,36.700000000000003,32.200000000000003,13.1,1.8],"y":[9,8,7,6,5,4,3,2,1],"text":["Hospital: 100% (195/195)","CESFAM: 99.8% (602/603)","CECOSF: 82.9% (242/292)","Posta Rural (PSR): 60% (669/1115)","COSAM: 45.1% (46/102)","SAR: 36.7% (36/98)","Otro: 32.2% (59/183)","SAPU: 13.1% (30/229)","SUR: 1.8% (3/165)"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(49,130,189,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":120.34869240348698},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5,105],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,24.999999999999996,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% que participa","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,9.5999999999999996],"tickmode":"array","ticktext":["SUR","SAPU","Otro","SAR","COSAM","Posta Rural (PSR)","CECOSF","CESFAM","Hospital"],"tickvals":[1,2,3,4,5,6,6.9999999999999991,8,9],"categoryorder":"array","categoryarray":["SUR","SAPU","Otro","SAR","COSAM","Posta Rural (PSR)","CECOSF","CESFAM","Hospital"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c412e2f82":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c412e2f82","visdat":{"603c412e2f82":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Cobertura por dependencia administrativa" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cobertura por dependencia administrativa
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-d70c1b1b622eb0b20415" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-d70c1b1b622eb0b20415">{"x":{"data":[{"orientation":"h","width":[0.90000000000000036,0.90000000000000036,0.90000000000000013,0.89999999999999991],"base":[0,0,0,0],"x":[100,66.700000000000003,66.700000000000003,62.299999999999997],"y":[4,3,2,1],"text":["Delegado: 100%","Servicio de Salud: 66.7%","Otra Institución: 66.7%","Municipal: 62.3%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(49,163,84,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":120.34869240348698},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-5,105],"tickmode":"array","ticktext":["0","25","50","75","100"],"tickvals":[0,24.999999999999996,50,75,100],"categoryorder":"array","categoryarray":["0","25","50","75","100"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% que participa","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,4.5999999999999996],"tickmode":"array","ticktext":["Municipal","Otra Institución","Servicio de Salud","Delegado"],"tickvals":[1,2,3,4],"categoryorder":"array","categoryarray":["Municipal","Otra Institución","Servicio de Salud","Delegado"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c645f5f4":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c645f5f4","visdat":{"603c645f5f4":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>Aquí cruzamos el REM con la base maestra de establecimientos del DEIS para ver <strong>qué tipo de establecimiento participa</strong>. El resultado reordena toda la interpretación: los <strong>CESFAM y hospitales participan casi universalmente (~100%)</strong>, mientras que los <strong>servicios de urgencia (SAPU 13%, SUR 2%) y las postas rurales (60%)</strong> quedan muy por debajo. Esto indica que gran parte del “no registro” <strong>no es negligencia, sino diseño</strong>: en urgencias y postas pequeñas las estructuras de participación (consejos, cabildos) no forman parte de su modelo de atención. Al incorporar el tipo al modelo estadístico, la variación inexplicada entre establecimientos <strong>baja de 84% a 67%</strong>: el tipo explica una parte importante, pero el 67% restante muestra que, incluso entre establecimientos iguales, persisten diferencias reales en cómo se involucran con la comunidad.</p>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<div id="equidad-e-inclusión" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-equidad-e-inclusión">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 20fr) minmax(3em, 60fr) minmax(3em, 20fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-success showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-globe-americas"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Participación de pueblos originarios
+</p>
+<p class="value-box-value">
+97.287
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-info showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-signpost-split"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+Participación de migrantes
+</p>
+<p class="value-box-value">
+92.787
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div><div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-secondary showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
+<div class="card-body html-fill-item html-fill-container">
+<div class="html-fill-item html-fill-container value-box-grid">
+<div class="value-box-showcase html-fill-item html-fill-container">
+
+<i class="bi bi-percent"></i></div>
+<div class="value-box-area">
+<p class="value-box-title">
+% pueblos originarios del total
+</p>
+<p class="value-box-value">
+2.9%
+</p>
+</div>
+</div>
+</div>
+<script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Participación de pueblos originarios por región (%)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Participación de pueblos originarios por región (%)
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-b240fff7f048333e22b2" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-b240fff7f048333e22b2">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.89999999999999858,0.90000000000000036,0.90000000000000036,0.89999999999999947,0.89999999999999991,0.90000000000000036,0.90000000000000013,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.90000000000000036],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[15.9,15.4,1,1.7,2.6000000000000001,0.10000000000000001,2.3999999999999999,0.90000000000000002,22.399999999999999,21.5,19.199999999999999,8,0.90000000000000002,13.699999999999999,13.800000000000001,1],"y":[13,12,4,6,8,1,7,2,16,15,14,9,3,10,11,5],"text":["Tarapacá: 15.9%","Antofagasta: 15.4%","Atacama: 1%","Coquimbo: 1.7%","Valparaíso: 2.6%","O'Higgins: 0.1%","Maule: 2.4%","Biobío: 0.9%","La Araucanía: 22.4%","Los Lagos: 21.5%","Aysén: 19.2%","Magallanes: 8%","Metropolitana: 0.9%","Los Ríos: 13.7%","Arica y Parinacota: 13.8%","Ñuble: 1%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(35,139,69,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":126.72478206724789},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1.1199999999999999,23.52],"tickmode":"array","ticktext":["0","5","10","15","20"],"tickvals":[0,5,10,15.000000000000002,20],"categoryorder":"array","categoryarray":["0","5","10","15","20"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% de participantes de pueblos originarios","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["O'Higgins","Biobío","Metropolitana","Atacama","Ñuble","Coquimbo","Maule","Valparaíso","Magallanes","Los Ríos","Arica y Parinacota","Antofagasta","Tarapacá","Aysén","Los Lagos","La Araucanía"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["O'Higgins","Biobío","Metropolitana","Atacama","Ñuble","Coquimbo","Maule","Valparaíso","Magallanes","Los Ríos","Arica y Parinacota","Antofagasta","Tarapacá","Aysén","Los Lagos","La Araucanía"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c1a8f4fee":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c1a8f4fee","visdat":{"603c1a8f4fee":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Participación de migrantes por región (%)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Participación de migrantes por región (%)
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-5430b618da14de61b927" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-5430b618da14de61b927">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999947,0.89999999999999991,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.89999999999999858,0.90000000000000036,0.89999999999999858,0.90000000000000013],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[21.699999999999999,47.100000000000001,3,4.0999999999999996,3.2999999999999998,3.5,1.3,0.10000000000000001,0.59999999999999998,0.80000000000000004,1,1,3.1000000000000001,0.5,3.3999999999999999,0.29999999999999999],"y":[15,16,9,14,11,13,8,1,4,5,6,7,10,3,12,2],"text":["Tarapacá: 21.7%","Antofagasta: 47.1%","Atacama: 3%","Coquimbo: 4.1%","Valparaíso: 3.3%","O'Higgins: 3.5%","Maule: 1.3%","Biobío: 0.1%","La Araucanía: 0.6%","Los Lagos: 0.8%","Aysén: 1%","Magallanes: 1%","Metropolitana: 3.1%","Los Ríos: 0.5%","Arica y Parinacota: 3.4%","Ñuble: 0.3%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(217,95,14,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":126.72478206724789},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-2.355,49.454999999999998],"tickmode":"array","ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,29.999999999999996,40],"categoryorder":"array","categoryarray":["0","10","20","30","40"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% de participantes migrantes","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["Biobío","Ñuble","Los Ríos","La Araucanía","Los Lagos","Aysén","Magallanes","Maule","Atacama","Metropolitana","Valparaíso","Arica y Parinacota","O'Higgins","Coquimbo","Tarapacá","Antofagasta"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["Biobío","Ñuble","Los Ríos","La Araucanía","Los Lagos","Aysén","Magallanes","Maule","Atacama","Metropolitana","Valparaíso","Arica y Parinacota","O'Higgins","Coquimbo","Tarapacá","Antofagasta"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c500c27ff":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c500c27ff","visdat":{"603c500c27ff":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>Estas barras muestran <strong>qué proporción de las personas que participan pertenece a pueblos originarios o es migrante</strong>, en cada región. El patrón sigue de cerca la demografía real del país: la participación de <strong>pueblos originarios</strong> se concentra en <strong>La Araucanía (22%), Los Lagos y Aysén</strong> —territorios mapuche y huilliche—, mientras que la de <strong>migrantes</strong> se eleva en <strong>Antofagasta (47%) y Tarapacá</strong>, las regiones mineras del norte con mayor población migrante. Que los datos reproduzcan esta geografía sin que se lo indiquemos es una señal de que la medición es fidedigna. La otra cara: en varias regiones del centro estas cifras caen casi a cero, lo que marca <strong>dónde estos grupos quedan invisibles en el registro de participación</strong> y, por tanto, dónde conviene reforzar la inclusión.</p>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<div id="composición-y-género" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-composición-y-género">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 60fr) minmax(3em, 40fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Instancias de participación social más registradas" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Instancias de participación social más registradas
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-a536ec21f6b76f210328" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-a536ec21f6b76f210328">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.89999999999999858,0.89999999999999947,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000036,0.90000000000000013,0.89999999999999991],"base":[0,0,0,0,0,0,0,0,0,0],"x":[145843,79830,25762,17817,10325,9931,7907,3665,2239,812],"y":[10,9,8,7,6,5,4,3,2,1],"text":["Otras Instancias de participación: 145.843","Uso de TICS y/o Redes Sociales:  79.830","Consejo de Desarrollo Local:  25.762","Comités o Mesas de Trabajo:  17.817","Consejos Consultivos de Usuarios:  10.325","Instancias de Participación Indígena en Salud:   9.931","Instancias de participación de Adolescentes y Jóvenes:   7.907","Consejos de la Sociedad Civil (COSOC):   3.665","Cabildos Ciudadanos Territoriales y Sectoriales:   2.239","Consejo de Integración de la Red Asistencial (CIRA):     812"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(44,127,184,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":349.88792029887935},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-7292.1500000000005,153135.14999999999],"tickmode":"array","ticktext":["0","50000","100000","150000"],"tickvals":[0,50000,100000,150000],"categoryorder":"array","categoryarray":["0","50000","100000","150000"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"Actividades registradas","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,10.6],"tickmode":"array","ticktext":["Consejo de Integración de la Red Asistencial (CIRA)","Cabildos Ciudadanos Territoriales y Sectoriales","Consejos de la Sociedad Civil (COSOC)","Instancias de participación de Adolescentes y Jóvenes","Instancias de Participación Indígena en Salud","Consejos Consultivos de Usuarios","Comités o Mesas de Trabajo","Consejo de Desarrollo Local","Uso de TICS y/o Redes Sociales","Otras Instancias de participación"],"tickvals":[1,2,3,4,5,6.0000000000000009,7,8,9,10],"categoryorder":"array","categoryarray":["Consejo de Integración de la Red Asistencial (CIRA)","Cabildos Ciudadanos Territoriales y Sectoriales","Consejos de la Sociedad Civil (COSOC)","Instancias de participación de Adolescentes y Jóvenes","Instancias de Participación Indígena en Salud","Consejos Consultivos de Usuarios","Comités o Mesas de Trabajo","Consejo de Desarrollo Local","Uso de TICS y/o Redes Sociales","Otras Instancias de participación"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c2fa570f2":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c2fa570f2","visdat":{"603c2fa570f2":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Registro de identidad de género" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Registro de identidad de género
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-57d436ef44d4bffdaadf" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-57d436ef44d4bffdaadf">{"x":{"data":[{"orientation":"h","width":[0.90000000000000036,0.90000000000000036,0.90000000000000013,0.89999999999999991],"base":[0,0,0,0],"x":[32373,620,614,393],"y":[4,3,2,1],"text":["No revelado: 32.373","Trans Masculino:    620","No binarie:    614","Trans Femenina:    393"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(117,107,177,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":107.59651307596519},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-1618.6500000000001,33991.650000000001],"tickmode":"array","ticktext":["0","10000","20000","30000"],"tickvals":[0,10000,20000,30000],"categoryorder":"array","categoryarray":["0","10000","20000","30000"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"Personas registradas","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,4.5999999999999996],"tickmode":"array","ticktext":["Trans Femenina","No binarie","Trans Masculino","No revelado"],"tickvals":[1,2,3,4],"categoryorder":"array","categoryarray":["Trans Femenina","No binarie","Trans Masculino","No revelado"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c425757f":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c425757f","visdat":{"603c425757f":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>A la izquierda, <strong>a través de qué mecanismos participa la ciudadanía</strong>. Llama la atención que las dos categorías mayores sean <strong>“Otras instancias” (sin clasificar)</strong> y <strong>“Uso de TICs y redes sociales”</strong>, por encima de los consejos formales como los Consejos de Desarrollo Local o los Consejos Consultivos. Esto sugiere dos cosas: la participación digital ya pesa de verdad, y el formulario no captura bien el <em>tipo</em> de instancia (mucho queda en el cajón de “otras”). A la derecha, <strong>cómo se registra la identidad de género</strong>: domina abrumadoramente “No revelado”, es decir, el sistema casi no recoge esta dimensión. Aun así, la presencia de personas <strong>Trans y No binarie</strong> —aunque pequeña (~1.600 registros)— es un avance de visibilidad estadística poco habitual en datos públicos chilenos.</p>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<div id="calidad-de-reclamos" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-calidad-de-reclamos">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 72fr) minmax(3em, 28fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Reclamos respondidos FUERA del plazo legal, por región (%)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Reclamos respondidos FUERA del plazo legal, por región (%)
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<div class="cell-output-display html-fill-item html-fill-container">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-e3bd1f6ed10c9de20383" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-e3bd1f6ed10c9de20383">{"x":{"data":[{"orientation":"h","width":[0.90000000000000036,0.89999999999999858,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.90000000000000013,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999858,0.89999999999999991,0.89999999999999858,0.90000000000000036,0.89999999999999947,0.90000000000000036],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[3.5,10.199999999999999,2.7000000000000002,44.299999999999997,32.700000000000003,1.8,2.7000000000000002,18.899999999999999,13.5,12.800000000000001,10,0.80000000000000004,12.1,8.9000000000000004,9.0999999999999996,7.7999999999999998],"y":[5,10,3,16,15,2,4,14,13,12,9,1,11,7,8,6],"text":["Tarapacá: 3.5%","Antofagasta: 10.2%","Atacama: 2.7%","Coquimbo: 44.3%","Valparaíso: 32.7%","O'Higgins: 1.8%","Maule: 2.7%","Biobío: 18.9%","La Araucanía: 13.5%","Los Lagos: 12.8%","Aysén: 10%","Magallanes: 0.8%","Metropolitana: 12.1%","Los Ríos: 8.9%","Arica y Parinacota: 9.1%","Ñuble: 7.8%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(222,45,38,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":126.72478206724789},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-2.2149999999999999,46.515000000000001],"tickmode":"array","ticktext":["0","10","20","30","40"],"tickvals":[0,10,20,30.000000000000004,40],"categoryorder":"array","categoryarray":["0","10","20","30","40"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"% de reclamos respondidos fuera de plazo","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["Magallanes","O'Higgins","Atacama","Maule","Tarapacá","Ñuble","Los Ríos","Arica y Parinacota","Aysén","Antofagasta","Metropolitana","Los Lagos","La Araucanía","Biobío","Valparaíso","Coquimbo"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["Magallanes","O'Higgins","Atacama","Maule","Tarapacá","Ñuble","Los Ríos","Arica y Parinacota","Aysén","Antofagasta","Metropolitana","Los Lagos","La Araucanía","Biobío","Valparaíso","Coquimbo"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c5c54297c":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c5c54297c","visdat":{"603c5c54297c":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
@@ -209,14 +520,51 @@ Actividades de participación registradas por mes y tema
 </div>
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Establecimientos que reportan por mes y tema" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Establecimientos que reportan por mes y tema
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>Más allá de <em>cuántos</em> reclamos se reciben, esta sección mide <strong>con qué calidad los responde el sistema</strong>: el porcentaje que se contesta <strong>fuera del plazo legal</strong> (mientras más alto, peor). La diferencia entre territorios es enorme: en <strong>Coquimbo (44%)</strong> y <strong>Valparaíso (33%)</strong> una fracción muy alta de los reclamos se responde tarde, frente a <strong>Magallanes (&lt;1%)</strong>, casi siempre en plazo. Es una desigualdad que no tiene que ver con el volumen de reclamos sino con la <strong>capacidad de gestión</strong> de cada red, y señala dónde el derecho ciudadano a una respuesta oportuna se está cumpliendo y dónde no.</p>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+</div>
+</div>
+<div id="evolución-temporal" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-evolución-temporal">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr) minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Actividades registradas por mes y tema" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Actividades registradas por mes y tema
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
-<img src="index_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid quarto-dashboard-img-contain">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-181b78c099810fff827f" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-181b78c099810fff827f">{"x":{"data":[{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[1336061,1325646,1431323,1413974,1450016,1433664,1522401,1456992,1442103,1511499,1443678,1644512],"text":["OIRS / Reclamos y solicitudes · mes 1: 1.336.061","OIRS / Reclamos y solicitudes · mes 2: 1.325.646","OIRS / Reclamos y solicitudes · mes 3: 1.431.323","OIRS / Reclamos y solicitudes · mes 4: 1.413.974","OIRS / Reclamos y solicitudes · mes 5: 1.450.016","OIRS / Reclamos y solicitudes · mes 6: 1.433.664","OIRS / Reclamos y solicitudes · mes 7: 1.522.401","OIRS / Reclamos y solicitudes · mes 8: 1.456.992","OIRS / Reclamos y solicitudes · mes 9: 1.442.103","OIRS / Reclamos y solicitudes · mes 10: 1.511.499","OIRS / Reclamos y solicitudes · mes 11: 1.443.678","OIRS / Reclamos y solicitudes · mes 12: 1.644.512"],"type":"scatter","mode":"lines+markers","line":{"width":3.7795275590551185,"color":"rgba(248,118,109,1)","dash":"solid"},"hoveron":"points","name":"OIRS / Reclamos y solicitudes","legendgroup":"OIRS / Reclamos y solicitudes","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(248,118,109,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(248,118,109,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[9289,9057,22593,17042,20942,26076,25746,24337,21811,23914,27691,21269],"text":["Participación social · mes 1:     9.289","Participación social · mes 2:     9.057","Participación social · mes 3:    22.593","Participación social · mes 4:    17.042","Participación social · mes 5:    20.942","Participación social · mes 6:    26.076","Participación social · mes 7:    25.746","Participación social · mes 8:    24.337","Participación social · mes 9:    21.811","Participación social · mes 10:    23.914","Participación social · mes 11:    27.691","Participación social · mes 12:    21.269"],"type":"scatter","mode":"lines+markers","line":{"width":3.7795275590551185,"color":"rgba(0,186,56,1)","dash":"solid"},"hoveron":"points","name":"Participación social","legendgroup":"Participación social","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,186,56,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,186,56,1)"}},"frame":null},{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[10562,7456,6212,4403,5628,9008,11534,15384,12970,12495,11657,12631],"text":["Satisfacción usuaria y humanización · mes 1:    10.562","Satisfacción usuaria y humanización · mes 2:     7.456","Satisfacción usuaria y humanización · mes 3:     6.212","Satisfacción usuaria y humanización · mes 4:     4.403","Satisfacción usuaria y humanización · mes 5:     5.628","Satisfacción usuaria y humanización · mes 6:     9.008","Satisfacción usuaria y humanización · mes 7:    11.534","Satisfacción usuaria y humanización · mes 8:    15.384","Satisfacción usuaria y humanización · mes 9:    12.970","Satisfacción usuaria y humanización · mes 10:    12.495","Satisfacción usuaria y humanización · mes 11:    11.657","Satisfacción usuaria y humanización · mes 12:    12.631"],"type":"scatter","mode":"lines+markers","line":{"width":3.7795275590551185,"color":"rgba(97,156,255,1)","dash":"solid"},"hoveron":"points","name":"Satisfacción usuaria y humanización","legendgroup":"Satisfacción usuaria y humanización","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(97,156,255,1)","opacity":1,"size":5.6692913385826778,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(97,156,255,1)"}},"frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":72.528019925280233},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.44999999999999996,12.550000000000001],"tickmode":"array","ticktext":["1","2","3","4","5","6","7","8","9","10","11","12"],"tickvals":[1,2,3,4,5,6,7.0000000000000009,8,9,10,11,12],"categoryorder":"array","categoryarray":["1","2","3","4","5","6","7","8","9","10","11","12"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"Mes","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-77602.450000000012,1726517.45],"tickmode":"array","ticktext":["0","500000","1000000","1500000"],"tickvals":[0,499999.99999999994,1000000,1500000],"categoryorder":"array","categoryarray":["0","500000","1000000","1500000"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"Actividades","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":true,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218},"orientation":"h","x":0.5,"y":-0.14999999999999999,"xanchor":"center","yanchor":"top","title":{"text":"Tema","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c41d034e7":{"x":{},"y":{},"colour":{},"text":{},"type":"scatter"},"603c41da5046":{"x":{},"y":{},"colour":{},"text":{}}},"cur_data":"603c41d034e7","visdat":{"603c41d034e7":["function (y) ","x"],"603c41da5046":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
+</div>
+<bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
+    <template>Expand</template>
+    <span class="bslib-full-screen-enter badge rounded-pill">
+        <svg xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" style="height:1em;width:1em;" aria-hidden="true" role="img"><path d="M20 5C20 4.4 19.6 4 19 4H13C12.4 4 12 3.6 12 3C12 2.4 12.4 2 13 2H21C21.6 2 22 2.4 22 3V11C22 11.6 21.6 12 21 12C20.4 12 20 11.6 20 11V5ZM4 19C4 19.6 4.4 20 5 20H11C11.6 20 12 20.4 12 21C12 21.6 11.6 22 11 22H3C2.4 22 2 21.6 2 21V13C2 12.4 2.4 12 3 12C3.6 12 4 12.4 4 13V19Z"></path></svg>
+    </span>
+</bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
+</div>
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
+grid-auto-rows: minmax(0, 1fr);">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Cómo leer esta sección" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card-header"><div class="card-title"><span style="display: inline">
+Cómo leer esta sección
+</span></div></div>
+<div class="card-body html-fill-item html-fill-container">
+<p>Cada línea sigue, mes a mes, el volumen de actividades registradas en uno de los tres grandes temas. El rasgo dominante es la <strong>estacionalidad</strong>: el registro cae en <strong>enero-febrero</strong> (el verano austral, con menor actividad administrativa) y se sostiene de marzo en adelante, reflejando el ciclo de gestión del sistema de salud más que un cambio real en la participación de la gente. También se aprecia la escala: el volumen está dominado por <strong>OIRS y reclamos</strong>, mientras que la participación social y la satisfacción usuaria operan en magnitudes mucho menores.</p>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
     <template>Expand</template>
@@ -228,7 +576,7 @@ Establecimientos que reportan por mes y tema
 </div>
 </div>
 <div id="hallazgos-del-modelo" class="dashboard-page tab-pane grid-skip html-fill-item html-fill-container" data-orientation="rows" aria-labelledby="tab-hallazgos-del-modelo">
-<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 22fr) minmax(3em, 58fr) minmax(3em, 20fr); grid-auto-columns: minmax(0, 1fr);">
+<div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 20fr) minmax(3em, 52fr) minmax(3em, 28fr); grid-auto-columns: minmax(0, 1fr);">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="card valuebox cell html-fill-item html-fill-container bslib-card bslib-value-box bg-primary showcase-left-center" data-bslib-card-init="" data-require-bs-caller="card()">
@@ -284,13 +632,14 @@ Mejora del modelo (AIC)
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr) minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Probabilidad de registrar participación social, por región (modelo)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Probabilidad de registrar participación social, por región" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Probabilidad de registrar participación social, por región (modelo)
+Probabilidad de registrar participación social, por región
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
-<img src="index_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid quarto-dashboard-img-contain">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-81f0acd2fe0c7a1566e5" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-81f0acd2fe0c7a1566e5">{"x":{"data":[{"orientation":"h","width":[0.89999999999999858,0.89999999999999858,0.89999999999999858,0.90000000000000036,0.89999999999999858,0.89999999999999858,0.89999999999999991,0.89999999999999858,0.90000000000000036,0.90000000000000036,0.90000000000000013,0.89999999999999858,0.89999999999999858,0.90000000000000036,0.89999999999999947,0.90000000000000036],"base":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"x":[0.28999999999999998,0.33200000000000002,0.29199999999999998,0.249,0.34200000000000003,0.28599999999999998,0.17799999999999999,0.29399999999999998,0.25600000000000001,0.252,0.183,0.34999999999999998,0.38700000000000001,0.193,0.27400000000000002,0.221],"y":[10,13,11,5,14,9,1,12,7,6,2,15,16,3,8,4],"text":["Tarapacá: 29%","Antofagasta: 33.2%","Atacama: 29.2%","Coquimbo: 24.9%","Valparaíso: 34.2%","O'Higgins: 28.6%","Maule: 17.8%","Biobío: 29.4%","La Araucanía: 25.6%","Los Lagos: 25.2%","Aysén: 18.3%","Magallanes: 35%","Metropolitana: 38.7%","Los Ríos: 19.3%","Arica y Parinacota: 27.4%","Ñuble: 22.1%"],"type":"bar","textposition":"none","marker":{"autocolorscale":false,"color":"rgba(35,139,69,1)","line":{"width":1.8897637795275593,"color":"transparent"}},"showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":126.72478206724789},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-0.019350000000000003,0.40634999999999999],"tickmode":"array","ticktext":["0.0","0.1","0.2","0.3","0.4"],"tickvals":[0,0.10000000000000001,0.20000000000000001,0.30000000000000004,0.40000000000000002],"categoryorder":"array","categoryarray":["0.0","0.1","0.2","0.3","0.4"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"P(registra > 0)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.40000000000000002,16.600000000000001],"tickmode":"array","ticktext":["Maule","Aysén","Los Ríos","Ñuble","Coquimbo","Los Lagos","La Araucanía","Arica y Parinacota","O'Higgins","Tarapacá","Atacama","Biobío","Antofagasta","Valparaíso","Magallanes","Metropolitana"],"tickvals":[1,2,3.0000000000000004,4,5,6,7,8,9,10,11,12,13,14,15,16],"categoryorder":"array","categoryarray":["Maule","Aysén","Los Ríos","Ñuble","Coquimbo","Los Lagos","La Araucanía","Arica y Parinacota","O'Higgins","Tarapacá","Atacama","Biobío","Antofagasta","Valparaíso","Magallanes","Metropolitana"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c14b62faa":{"x":{},"y":{},"text":{},"type":"bar"}},"cur_data":"603c14b62faa","visdat":{"603c14b62faa":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
@@ -300,13 +649,14 @@ Probabilidad de registrar participación social, por región (modelo)
     </span>
 </bslib-tooltip><script data-bslib-card-init="">bslib.Card.initializeAllCards();</script></div>
 </div><div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-rows: minmax(3em, 1fr); grid-auto-columns: minmax(0, 1fr);">
-<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Estacionalidad: probabilidad de registrar por mes (modelo)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card cell html-fill-item html-fill-container bslib-card" data-title="Estacionalidad estimada por el modelo" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Estacionalidad: probabilidad de registrar por mes (modelo)
+Estacionalidad estimada por el modelo
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
 <div class="cell-output-display html-fill-item html-fill-container">
-<img src="index_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid quarto-dashboard-img-contain">
+<div class="plotly html-widget html-fill-item html-fill-container" id="htmlwidget-c5b96b46b209e9f6ebe8" style="width:100%;height:406px;"></div>
+<script type="application/json" data-for="htmlwidget-c5b96b46b209e9f6ebe8">{"x":{"data":[{"x":[1,2,3,4,5,6,7,8,9,10,11,12],"y":[0.16,0.153,0.26600000000000001,0.28100000000000003,0.29499999999999998,0.29199999999999998,0.30399999999999999,0.317,0.29899999999999999,0.32500000000000001,0.312,0.27900000000000003],"text":["Mes 1: 16%","Mes 2: 15.3%","Mes 3: 26.6%","Mes 4: 28.1%","Mes 5: 29.5%","Mes 6: 29.2%","Mes 7: 30.4%","Mes 8: 31.7%","Mes 9: 29.9%","Mes 10: 32.5%","Mes 11: 31.2%","Mes 12: 27.9%"],"type":"scatter","mode":"lines+markers","line":{"width":3.7795275590551185,"color":"rgba(44,127,184,1)","dash":"solid"},"hoveron":"points","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","marker":{"autocolorscale":false,"color":"rgba(0,0,0,1)","opacity":1,"size":7.559055118110237,"symbol":"circle","line":{"width":1.8897637795275593,"color":"rgba(0,0,0,1)"}},"frame":null}],"layout":{"margin":{"t":23.970112079701121,"r":7.9701120797011216,"b":40.647571606475722,"l":53.399750933997524},"paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.44999999999999996,12.550000000000001],"tickmode":"array","ticktext":["1","2","3","4","5","6","7","8","9","10","11","12"],"tickvals":[1,2,3,4,5,6,7.0000000000000009,8,9,10,11,12],"categoryorder":"array","categoryarray":["1","2","3","4","5","6","7","8","9","10","11","12"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"y","title":{"text":"Mes","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[0.1444,0.33360000000000001],"tickmode":"array","ticktext":["0.15","0.20","0.25","0.30"],"tickvals":[0.15000000000000002,0.20000000000000001,0.25,0.30000000000000004],"categoryorder":"array","categoryarray":["0.15","0.20","0.25","0.30"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":3.9850560398505608,"tickwidth":0,"showticklabels":true,"tickfont":{"color":"rgba(77,77,77,1)","family":"","size":12.7521793275218},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.72455564360919278,"zeroline":false,"anchor":"x","title":{"text":"P(registra > 0)","font":{"color":"rgba(0,0,0,1)","family":"","size":15.940224159402243}},"hoverformat":".2f"},"shapes":[],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":12.7521793275218}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"603c63162cfc":{"x":{},"y":{},"text":{},"type":"scatter"},"603c412a29eb":{"x":{},"y":{},"text":{}}},"cur_data":"603c63162cfc","visdat":{"603c63162cfc":["function (y) ","x"],"603c412a29eb":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
@@ -319,12 +669,12 @@ Estacionalidad: probabilidad de registrar por mes (modelo)
 </div>
 <div class="html-fill-item html-fill-container bslib-grid" style="display: grid; grid-template-columns: minmax(3em, 1fr);
 grid-auto-rows: minmax(0, 1fr);">
-<div class="card html-fill-item html-fill-container bslib-card" data-title="Interpretación" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
+<div class="card html-fill-item html-fill-container bslib-card" data-title="Qué dice el modelo (hurdle con efectos aleatorios)" data-bslib-card-init="" data-require-bs-caller="card()" data-full-screen="false">
 <div class="card-header"><div class="card-title"><span style="display: inline">
-Interpretación
+Qué dice el modelo (hurdle con efectos aleatorios)
 </span></div></div>
 <div class="card-body html-fill-item html-fill-container">
-<p>El <strong>84%</strong> de la variación en <em>si</em> un establecimiento registra participación está <em>entre</em> establecimientos: registrar es un rasgo institucional estable, no azar mensual. La región y el mes importan (fuerte estacionalidad: el registro se multiplica de marzo en adelante), pero <em>cuánto</em> se registra depende sobre todo de cada establecimiento. Implicación: para reducir el subregistro hay que actuar sobre los establecimientos que estructuralmente no participan.</p>
+<p>Para separar dos preguntas distintas —<strong>¿un establecimiento registra participación?</strong> y <strong>¿cuánta?</strong>— usamos un modelo de barrera (<em>hurdle</em>) con efectos aleatorios por establecimiento. Su resultado más fuerte: el <strong>84% de la variación en <em>si</em> se registra está entre establecimientos</strong>, no dentro de ellos a lo largo del año. En otras palabras, <strong>registrar participación es un rasgo estable de cada establecimiento</strong>, no algo que fluctúe al azar. Una parte de ese rasgo es el <strong>tipo</strong> de establecimiento (al incluirlo, la variación inexplicada baja a 67%), y otra parte es la <strong>estacionalidad</strong> (la probabilidad de registrar se multiplica de marzo en adelante). La implicación para la política pública es clara: para reducir el subregistro conviene actuar sobre <strong>establecimientos concretos que estructuralmente no participan</strong> —y sobre los tipos donde esto es más frecuente—, más que sobre regiones tratadas como un todo.</p>
 </div>
 <bslib-tooltip placement="auto" bsoptions="[]" data-require-bs-version="5" data-require-bs-caller="tooltip()">
     <template>Expand</template>
