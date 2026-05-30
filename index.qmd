@@ -39,6 +39,14 @@ recl   <- fread("productos/reclamos_region.csv", sep = ";")
 cobtipo<- fread("productos/cobertura_tipo.csv", sep = ";")
 cobdep <- fread("productos/cobertura_dependencia.csv", sep = ";")
 mtipo  <- fread("productos/modelo_tipo.csv", sep = ";")
+mvar   <- fread("productos/modelo_multinivel_var.csv", sep = ";")
+det    <- fread("productos/modelo_determinantes.csv", sep = ";")
+covsp  <- fread("productos/cobertura_vs_pobreza.csv", sep = ";")
+moran  <- fread("productos/moran_global.csv", sep = ";")
+lisa   <- fread("productos/lisa_comuna.csv", sep = ";")
+tperf  <- fread("productos/tipologias_perfil.csv", sep = ";")
+getd <- function(n) det[indicador == n, valor]
+gm   <- function(n) moran[indicador == n, valor]
 
 getk <- function(n) kpi[indicador == n, valor]
 geti <- function(n) micc[indicador == n, valor]
@@ -386,24 +394,68 @@ gestión** de cada red, no en el volumen de reclamos. Señala dónde el derecho 
 respuesta oportuna se cumple y dónde no.
 :::
 
-# Hallazgos del modelo
+# Tipologías de participación
+
+## Row {height="65%"}
+
+```{r}
+#| title: "Perfiles de participación (composición de la actividad por tema)"
+tl <- melt(tperf, id.vars = c("perfil","etiqueta","n_establecimientos"),
+           measure.vars = c("pct_oirs","pct_social","pct_satisf"),
+           variable.name = "tema", value.name = "pct")
+tl[, tema := fcase(tema=="pct_oirs","OIRS / Reclamos",
+                   tema=="pct_social","Participación social",
+                   default="Satisfacción usuaria")]
+tl[, lab := paste0(etiqueta, "\n(n=", n_establecimientos, ")")]
+g <- ggplot(tl, aes(x = lab, y = pct, fill = tema,
+                    text = paste0(tema, ": ", round(pct), "%"))) +
+  geom_col() + coord_flip() +
+  labs(x = NULL, y = "% de la actividad del perfil", fill = NULL) +
+  tg + theme(legend.position = "bottom")
+interactivo(g)
+```
+
+## Row {height="35%"}
+
+::: {.card title="Cómo leer esta sección"}
+Agrupando los establecimientos por la **composición** de su participación (no por su
+volumen) emergen cuatro **perfiles** que muestran que *participar* significa cosas
+distintas según el establecimiento. El grupo más numeroso (~1.090, sobre todo CESFAM
+urbanos) se concentra casi por completo en **reclamos (OIRS)**: para ellos participar
+es gestionar quejas. Un segundo grupo grande (~465, dominado por **postas rurales**)
+participa casi exclusivamente vía **participación social comunitaria** —consejos,
+cabildos—, una forma cualitativamente más cercana al sentido original de la
+participación. Hay además un perfil mixto y uno pequeño orientado a **satisfacción
+usuaria**. La lección: medir solo "cuánta" participación oculta que su *naturaleza*
+cambia entre el centro urbano y la posta rural.
+:::
+
+# Determinantes y modelo
 
 ## Row {height="22%"}
 
 ```{r}
 #| content: valuebox
-#| title: "ICC barrera (¿registra o no?)"
+#| title: "Variación a nivel de establecimiento"
 #| icon: building
 #| color: primary
-list(value = paste0(geti("icc_barrera_pct"), "%"))
+list(value = paste0(mvar[nivel=="Establecimiento", pct_varianza], "%"))
 ```
 
 ```{r}
 #| content: valuebox
-#| title: "ICC intensidad (¿cuánto?)"
-#| icon: bar-chart
+#| title: "Variación a nivel de comuna"
+#| icon: geo-alt
 #| color: info
-list(value = paste0(geti("icc_intensidad_pct"), "%"))
+list(value = paste0(mvar[nivel=="Comuna", pct_varianza], "%"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Variación a nivel de región"
+#| icon: map
+#| color: secondary
+list(value = paste0(mvar[nivel=="Región", pct_varianza], "%"))
 ```
 
 ## Row {height="50%"}
@@ -411,41 +463,90 @@ list(value = paste0(geti("icc_intensidad_pct"), "%"))
 ### Column
 
 ```{r}
-#| title: "Probabilidad de registrar, por región (ajustada por tipo y mes)"
-g <- ggplot(mreg, aes(x = reorder(region, prob_registra), y = prob_registra,
-                      text = paste0(region, ": ", round(100*prob_registra,1), "%"))) +
-  geom_col(fill = "#238b45") + coord_flip() +
-  labs(x = NULL, y = "P(registra > 0)") + tg
+#| title: "¿Dónde vive la variación? (modelo multinivel de 3 niveles)"
+g <- ggplot(mvar, aes(x = reorder(nivel, pct_varianza), y = pct_varianza,
+                      text = paste0(nivel, ": ", pct_varianza, "%"))) +
+  geom_col(fill = "#3182bd") + coord_flip() +
+  labs(x = NULL, y = "% de la varianza") + tg
 interactivo(g)
 ```
 
 ### Column
 
 ```{r}
-#| title: "Estacionalidad estimada por el modelo"
-mmes[, Mes := as.integer(Mes)]
-g <- ggplot(mmes, aes(x = Mes, y = prob_registra, group = 1,
-                      text = paste0("Mes ", Mes, ": ",
-                                    round(100*prob_registra,1), "%"))) +
-  geom_line(color = "#2c7fb8", linewidth = 1) + geom_point(size = 2) +
-  scale_x_continuous(breaks = 1:12) +
-  labs(x = "Mes", y = "P(registra > 0)") + tg
+#| title: "Cobertura vs. pobreza comunal (cada punto = una comuna)"
+g <- ggplot(covsp, aes(x = pct_pobreza, y = cobertura,
+                       text = paste0(comuna, " · pobreza ", pct_pobreza,
+                                     "% · cobertura ", cobertura, "%"))) +
+  geom_point(alpha = 0.5, color = "#2c7fb8") +
+  geom_smooth(method = "lm", se = TRUE, color = "#de2d26") +
+  labs(x = "Tasa de pobreza comunal (%)", y = "Cobertura de participación (%)") + tg
 interactivo(g)
 ```
 
 ## Row {height="28%"}
 
-::: {.card title="Qué dice el modelo (hurdle mixto: región + tipo + mes)"}
-Un único modelo de barrera (*hurdle*) con efectos aleatorios por establecimiento
-separa dos preguntas: **¿un establecimiento registra participación?** y **¿cuánta?**
-Incluye región, tipo de establecimiento y mes como factores. Su resultado central:
-la decisión de registrar es sobre todo un **rasgo estable de cada establecimiento**
-(ICC barrera del `r geti("icc_barrera_pct")`%), modulado fuertemente por el **tipo**
-(CESFAM y hospitales registran casi siempre; urgencias y postas casi nunca) y por la
-**estacionalidad** (el registro sube de marzo en adelante). La intensidad —cuánto se
-registra cuando se registra— también depende más del establecimiento que del
-territorio (ICC `r geti("icc_intensidad_pct")`%). Implicación de política: para
-reducir el subregistro conviene actuar sobre **establecimientos concretos**, y sobre
-los **tipos** donde la no participación es estructural, más que sobre regiones en
-abstracto.
+::: {.card title="Determinantes: ¿necesidad o capacidad? (modelo multinivel)"}
+Un modelo de barrera de **tres niveles** (establecimiento → comuna → región) reparte
+el origen de las diferencias: casi la mitad vive en el **establecimiento**
+(`r mvar[nivel=="Establecimiento", pct_varianza]`%), un porción relevante en la
+**comuna** (`r mvar[nivel=="Comuna", pct_varianza]`%), y prácticamente nada en la
+**región** (`r mvar[nivel=="Región", pct_varianza]`%) — es decir, los "efectos
+regionales" que sugieren los mapas son en realidad composición de comunas y tipos.
+Y un hallazgo de fondo: la **pobreza comunal NO predice la participación** (OR por
++10 puntos = `r getd("OR_pobreza_x10pp")`, p = `r getd("p_valor")`, no significativo;
+la línea del gráfico es casi plana). La participación en salud **no sigue a la
+necesidad ni al nivel socioeconómico**: el efecto comuna existe pero es independiente
+de la pobreza, apuntando a factores **institucionales y de gestión municipal** más
+que a la riqueza del territorio.
+:::
+
+# Análisis espacial
+
+## Row {height="20%"}
+
+```{r}
+#| content: valuebox
+#| title: "I de Moran (autocorrelación espacial)"
+#| icon: diagram-3
+#| color: primary
+list(value = gm("I_Moran"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Significancia (p-valor)"
+#| icon: question-circle
+#| color: secondary
+list(value = gm("p_valor"))
+```
+
+## Row {height="60%"}
+
+```{r}
+#| title: "Clusters locales de participación (LISA)"
+res <- tryCatch({
+  library(chilemapas); library(sf)
+  mapa <- sf::st_as_sf(chilemapas::mapa_comunas)
+  mapa <- merge(mapa, lisa, by = "codigo_comuna", all.x = TRUE)
+  ggplot(mapa) + geom_sf(aes(fill = lisa_cluster), color = "white", linewidth = 0.05) +
+    scale_fill_brewer(palette = "Set2", na.value = "grey90", name = "Cluster LISA") +
+    theme_void(base_size = 10)
+}, error = function(e) ggplot() +
+   annotate("text", x=0, y=0, label="Instala 'chilemapas' para el mapa") + theme_void())
+res
+```
+
+## Row {height="20%"}
+
+::: {.card title="Cómo leer esta sección"}
+El **I de Moran** mide si comunas vecinas tienen niveles de participación
+parecidos. Aquí es **`r gm("I_Moran")` con p = `r gm("p_valor")`**: cercano a cero y
+no significativo, es decir, **la participación NO forma clusters geográficos** —se
+distribuye en el espacio prácticamente al azar. El mapa LISA lo confirma: salvo unos
+pocos focos locales aislados, la enorme mayoría de las comunas no pertenece a ningún
+cluster significativo. Junto con el modelo multinivel (región ≈ 0% de la varianza),
+esto cierra una conclusión robusta: la participación en salud es un fenómeno
+**institucional, no territorial**. Dónde está un establecimiento —su región, sus
+vecinos— dice muy poco; lo que importa es el establecimiento y la gestión local.
 :::
