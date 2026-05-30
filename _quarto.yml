@@ -1,0 +1,8 @@
+# Configuración del proyecto Quarto.
+# output-dir: docs  -> la web renderizada se guarda en la carpeta docs/,
+# que es la que GitHub Pages publicará más adelante.
+project:
+  output-dir: docs
+
+# Título por defecto del sitio.
+lang: es

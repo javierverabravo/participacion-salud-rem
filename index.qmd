@@ -1,0 +1,201 @@
+---
+title: "Participación Ciudadana en Salud · REM Chile"
+author: "Javier · @Arleq89"
+format:
+  dashboard:
+    theme: cosmo
+    nav-buttons:
+      - icon: github
+        href: https://github.com/Arleq89/participacion-salud-rem
+---
+
+```{r}
+#| label: setup
+#| include: false
+# Cargamos paquetes y los insumos pequeños generados por 06_preparar_dashboard.R.
+# El dashboard NO procesa datos pesados: solo lee estas tablas resumidas.
+library(data.table)
+library(ggplot2)
+
+kpi    <- fread("productos/kpis_generales.csv", sep = ";")
+cobreg <- fread("productos/cobertura_region.csv", sep = ";")
+cobcom <- fread("productos/cobertura_comuna.csv", sep = ";")
+serie  <- fread("productos/serie_mensual.csv", sep = ";")
+temas  <- fread("productos/temas.csv", sep = ";")
+mreg   <- fread("productos/modelo_region.csv", sep = ";")
+mmes   <- fread("productos/modelo_estacionalidad.csv", sep = ";")
+micc   <- fread("productos/modelo_icc.csv", sep = ";")
+
+# Atajos para leer un KPI por su nombre.
+getk  <- function(n) kpi[indicador == n, valor]
+geti  <- function(n) micc[indicador == n, valor]
+
+# Tema visual común para los gráficos.
+tema_g <- theme_minimal(base_size = 13) +
+  theme(plot.title = element_text(face = "bold"))
+```
+
+# Resumen
+
+## Row {height="22%"}
+
+```{r}
+#| content: valuebox
+#| title: "Cobertura nacional"
+#| icon: people-fill
+#| color: primary
+list(value = paste0(getk("pct_cobertura"), "%"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Establecimientos que participan"
+#| icon: hospital
+#| color: info
+list(value = format(getk("establecimientos_participan"), big.mark = "."))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Prestaciones monitoreadas"
+#| icon: list-check
+#| color: secondary
+list(value = getk("prestaciones_monitoreadas"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Subregistro (establecimiento-mes)"
+#| icon: exclamation-triangle
+#| color: warning
+list(value = paste0(getk("pct_subregistro_estab_mes"), "%"))
+```
+
+## Row {height="78%"}
+
+### Column
+
+```{r}
+#| title: "Cobertura por región (% de establecimientos que participan)"
+ggplot(cobreg, aes(x = reorder(factor(IdRegion), pct), y = pct)) +
+  geom_col(fill = "#2c7fb8") +
+  geom_text(aes(label = paste0(pct, "%")), hjust = -0.1, size = 3.5) +
+  coord_flip() +
+  labs(x = "Región", y = "% establecimientos") +
+  ylim(0, 100) + tema_g
+```
+
+### Column
+
+```{r}
+#| title: "Mapa de cobertura por región"
+# El mapa usa el paquete chilemapas. Si no está instalado, mostramos un aviso
+# en lugar de romper el render (instálalo con install.packages('chilemapas')).
+res <- tryCatch({
+  library(chilemapas); library(sf)
+  reg <- sf::st_as_sf(chilemapas::generar_regiones())
+  cob <- copy(cobreg)
+  cob[, codigo_region := sprintf("%02d", IdRegion)]
+  mapa <- merge(reg, cob, by = "codigo_region", all.x = TRUE)
+  ggplot(mapa) +
+    geom_sf(aes(fill = pct), color = "white", linewidth = 0.1) +
+    scale_fill_viridis_c(name = "% cobertura", option = "D") +
+    labs(x = NULL, y = NULL) +
+    theme_void(base_size = 12)
+}, error = function(e) {
+  ggplot() + annotate("text", x = 0, y = 0,
+    label = "Mapa no disponible:\ninstala el paquete 'chilemapas'") +
+    theme_void()
+})
+res
+```
+
+# Evolución temporal
+
+## Row
+
+```{r}
+#| title: "Actividades de participación registradas por mes y tema"
+serie[, Mes := factor(Mes, levels = 1:12)]
+ggplot(serie, aes(x = as.integer(as.character(Mes)), y = actividades,
+                  color = tema)) +
+  geom_line(linewidth = 1) + geom_point(size = 2) +
+  scale_x_continuous(breaks = 1:12) +
+  labs(x = "Mes", y = "Actividades registradas", color = "Tema") +
+  tema_g + theme(legend.position = "bottom")
+```
+
+## Row
+
+```{r}
+#| title: "Establecimientos que reportan por mes y tema"
+ggplot(serie, aes(x = as.integer(as.character(Mes)), y = estab_que_reportan,
+                  color = tema)) +
+  geom_line(linewidth = 1) + geom_point(size = 2) +
+  scale_x_continuous(breaks = 1:12) +
+  labs(x = "Mes", y = "Nº establecimientos", color = "Tema") +
+  tema_g + theme(legend.position = "bottom")
+```
+
+# Hallazgos del modelo
+
+## Row {height="22%"}
+
+```{r}
+#| content: valuebox
+#| title: "ICC barrera (¿registra o no?)"
+#| icon: building
+#| color: primary
+list(value = paste0(geti("icc_barrera_pct"), "%"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "ICC intensidad (¿cuánto?)"
+#| icon: bar-chart
+#| color: info
+list(value = paste0(geti("icc_intensidad_pct"), "%"))
+```
+
+```{r}
+#| content: valuebox
+#| title: "Mejora del modelo (AIC)"
+#| icon: graph-down
+#| color: success
+list(value = paste0(format(geti("aic_barrera_simple"), big.mark = "."),
+                    " → ", format(geti("aic_barrera_mixto"), big.mark = ".")))
+```
+
+## Row
+
+### Column
+
+```{r}
+#| title: "Probabilidad de registrar participación social, por región (modelo)"
+ggplot(mreg, aes(x = reorder(factor(IdRegion), prob_registra), y = prob_registra)) +
+  geom_col(fill = "#238b45") + coord_flip() +
+  labs(x = "Región", y = "P(registra > 0)") + tema_g
+```
+
+### Column
+
+```{r}
+#| title: "Estacionalidad: probabilidad de registrar por mes (modelo)"
+mmes[, Mes := factor(Mes, levels = 1:12)]
+ggplot(mmes, aes(x = as.integer(as.character(Mes)), y = prob_registra)) +
+  geom_line(color = "#2c7fb8", linewidth = 1) +
+  geom_point(color = "#2c7fb8", size = 2) +
+  scale_x_continuous(breaks = 1:12) +
+  labs(x = "Mes", y = "P(registra > 0)") + tema_g
+```
+
+## Row {height="20%"}
+
+::: {.card title="Interpretación"}
+El **84%** de la variación en *si* un establecimiento registra participación está
+*entre* establecimientos: registrar es un rasgo institucional estable, no azar
+mensual. La región y el mes importan (fuerte estacionalidad: el registro se
+multiplica de marzo en adelante), pero *cuánto* se registra depende sobre todo
+de cada establecimiento. Implicación: para reducir el subregistro hay que actuar
+sobre los establecimientos que estructuralmente no participan.
+:::
