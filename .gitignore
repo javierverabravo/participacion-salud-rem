@@ -34,3 +34,5 @@ Thumbs.db
 # --- Credenciales (NUNCA subir tokens ni claves) ---
 *.env
 secrets*
+
+**/*.quarto_ipynb
