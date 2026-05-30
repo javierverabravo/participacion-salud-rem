@@ -16,8 +16,6 @@ execute:
 ```{r}
 #| label: setup
 #| include: false
-# El dashboard solo lee tablas resumidas (carpeta productos/), generadas por
-# los scripts de análisis. No procesa datos pesados: renderiza al instante.
 library(data.table)
 library(ggplot2)
 
@@ -40,12 +38,12 @@ gen    <- fread("productos/genero.csv", sep = ";")
 recl   <- fread("productos/reclamos_region.csv", sep = ";")
 cobtipo<- fread("productos/cobertura_tipo.csv", sep = ";")
 cobdep <- fread("productos/cobertura_dependencia.csv", sep = ";")
-icctipo<- fread("productos/modelo_icc_tipo.csv", sep = ";")
+mtipo  <- fread("productos/modelo_tipo.csv", sep = ";")
 
 getk <- function(n) kpi[indicador == n, valor]
 geti <- function(n) micc[indicador == n, valor]
 gete <- function(n) eqkpi[indicador == n, valor]
-getit<- function(n) icctipo[indicador == n, valor]
+getct<- function(t) cobtipo[tipo_grp == t, pct]
 
 reg_nom <- data.table(
   IdRegion = c(15,1,2,3,4,5,13,6,7,16,8,9,14,10,11,12),
@@ -60,12 +58,23 @@ gen[, etiqueta := fifelse(grepl("binarie", etiqueta, ignore.case = TRUE),
                           "No binarie", etiqueta)]
 gen <- gen[, .(personas = sum(personas)), by = etiqueta][order(-personas)]
 
+# Tabla consolidada por región (para la página Territorial).
+tab_reg <- Reduce(function(a,b) merge(a,b,by="IdRegion",all=TRUE),
+  list(cobreg[,.(IdRegion,region,cobertura=pct)],
+       eqreg[,.(IdRegion,pct_pueblos_originarios,pct_migrantes)],
+       recl[,.(IdRegion,pct_fuera_plazo)],
+       mreg[,.(IdRegion,prob_modelo=round(100*prob_registra,1))]))
+tab_reg <- tab_reg[order(-cobertura),
+  .(Región=region, `Cobertura %`=cobertura,
+    `% Pueblos Orig.`=pct_pueblos_originarios, `% Migrantes`=pct_migrantes,
+    `% Reclamos fuera plazo`=pct_fuera_plazo, `Prob. modelo %`=prob_modelo)]
+
 tg <- theme_minimal(base_size = 12) + theme(plot.title = element_blank())
 ```
 
 # Resumen
 
-## Row {height="20%"}
+## Row {height="22%"}
 
 ```{r}
 #| content: valuebox
@@ -99,23 +108,41 @@ list(value = getk("prestaciones_monitoreadas"))
 list(value = paste0(getk("pct_subregistro_estab_mes"), "%"))
 ```
 
-## Row {height="80%"}
-
-### Column {width="55%"}
+## Row {height="78%"}
 
 ```{r}
-#| title: "Cobertura por región"
-g <- ggplot(cobreg, aes(x = reorder(region, pct), y = pct,
-                        text = paste0(region, ": ", pct, "%"))) +
-  geom_col(fill = "#2c7fb8") + coord_flip() +
-  labs(x = NULL, y = "% establecimientos que participan") + ylim(0,100) + tg
+#| title: "Actividades de participación registradas por mes y tema"
+serie[, Mes := as.integer(Mes)]
+g <- ggplot(serie, aes(x = Mes, y = actividades, color = tema, group = tema,
+                       text = paste0(tema, " · mes ", Mes, ": ",
+                                     format(actividades, big.mark=".")))) +
+  geom_line(linewidth = 1) + geom_point(size = 1.5) +
+  scale_x_continuous(breaks = 1:12) +
+  labs(x = "Mes", y = "Actividades", color = "Tema") +
+  tg + theme(legend.position = "bottom")
 interactivo(g)
 ```
 
-### Column {width="45%"}
+::: {.card title="De qué trata este tablero"}
+Analiza las **actividades de participación ciudadana** registradas por la red
+pública de salud de Chile en el sistema REM 2025: mecanismos de reclamo (OIRS),
+instancias de participación social (consejos, cabildos) y gestión de la
+satisfacción usuaria. A nivel nacional, el **63% de los establecimientos**
+registró alguna actividad, pero existe un **53,8% de subregistro** a nivel
+establecimiento-mes: el desafío central es la *sistematicidad* del registro, no
+la participación en sí. Las pestañas siguientes desglosan el panorama por
+territorio, tipo de establecimiento, equidad, mecanismos y calidad de respuesta,
+y cierran con el modelo estadístico que explica las diferencias.
+:::
+
+# Territorial
+
+## Row {height="60%"}
+
+### Column {width="40%"}
 
 ```{r}
-#| title: "Mapa de cobertura"
+#| title: "Mapa de cobertura por región"
 res <- tryCatch({
   library(chilemapas); library(sf)
   reg <- sf::st_as_sf(chilemapas::generar_regiones())
@@ -129,16 +156,38 @@ res <- tryCatch({
 res
 ```
 
-::: {.card title="Cómo leer esta sección"}
-Cada barra y cada región del mapa indican **qué porcentaje de los establecimientos
-de salud de esa zona registró al menos una actividad de participación ciudadana
-durante 2025**. A nivel nacional, el 63% lo hizo y un 37% no apareció nunca en
-estos registros. Pero el indicador más revelador es el **53,8% de subregistro a
-nivel establecimiento-mes**: aun entre los que sí participan, en la mayoría de los
-meses no queda constancia. Esto sugiere que el problema central de estos datos no
-es la participación en sí, sino **cuán sistemáticamente se registra**. Como se ve
-en la pestaña siguiente, buena parte de las diferencias territoriales se explica
-por el tipo de establecimientos que predomina en cada región.
+### Column {width="60%"}
+
+```{r}
+#| title: "Cobertura por región"
+g <- ggplot(cobreg, aes(x = reorder(region, pct), y = pct,
+                        text = paste0(region, ": ", pct, "%"))) +
+  geom_col(fill = "#2c7fb8") + coord_flip() +
+  labs(x = NULL, y = "% establecimientos que participan") + ylim(0,100) + tg
+interactivo(g)
+```
+
+## Row {height="40%"}
+
+```{r}
+#| title: "Explora cada región (ordenable y buscable)"
+if (requireNamespace("DT", quietly = TRUE)) {
+  DT::datatable(tab_reg, rownames = FALSE,
+    options = list(pageLength = 16, dom = "ft"))
+} else {
+  knitr::kable(tab_reg)
+}
+```
+
+::: {.card title="Cómo leer esta sección" width="100%"}
+El **mapa** y las **barras** muestran la cobertura nacional por región; la
+**tabla** permite explorar cada región en detalle —ordénala o búscala— reuniendo
+sus cinco indicadores clave: cobertura general, inclusión de pueblos originarios y
+migrantes, calidad de respuesta a reclamos, y la probabilidad de registro estimada
+por el modelo. Conviene recordar que buena parte de las diferencias regionales se
+explica por la **composición de tipos de establecimiento** de cada zona (ver la
+pestaña siguiente): regiones con más postas rurales o servicios de urgencia tienden
+a mostrar coberturas menores por razones estructurales, no de gestión.
 :::
 
 # Tipo de establecimiento
@@ -147,7 +196,7 @@ por el tipo de establecimientos que predomina en cada región.
 
 ```{r}
 #| content: valuebox
-#| title: "Cobertura en CESFAM y Hospitales"
+#| title: "CESFAM y Hospitales"
 #| icon: hospital-fill
 #| color: success
 list(value = "~100%")
@@ -155,18 +204,18 @@ list(value = "~100%")
 
 ```{r}
 #| content: valuebox
-#| title: "Variación institucional sin tipo"
-#| icon: box
-#| color: secondary
-list(value = paste0(getit("icc_sin_tipo"), "%"))
+#| title: "Postas de Salud Rural"
+#| icon: house
+#| color: info
+list(value = paste0(getct("Posta Rural (PSR)"), "%"))
 ```
 
 ```{r}
 #| content: valuebox
-#| title: "...y al considerar el tipo"
-#| icon: box-arrow-in-down
-#| color: info
-list(value = paste0(getit("icc_con_tipo"), "%"))
+#| title: "Servicios de urgencia (SAPU)"
+#| icon: dash-circle
+#| color: warning
+list(value = paste0(getct("SAPU"), "%"))
 ```
 
 ## Row {height="60%"}
@@ -197,17 +246,14 @@ interactivo(g)
 ## Row {height="20%"}
 
 ::: {.card title="Cómo leer esta sección"}
-Aquí cruzamos el REM con la base maestra de establecimientos del DEIS para ver
-**qué tipo de establecimiento participa**. El resultado reordena toda la
-interpretación: los **CESFAM y hospitales participan casi universalmente (~100%)**,
-mientras que los **servicios de urgencia (SAPU 13%, SUR 2%) y las postas rurales
-(60%)** quedan muy por debajo. Esto indica que gran parte del "no registro" **no
-es negligencia, sino diseño**: en urgencias y postas pequeñas las estructuras de
-participación (consejos, cabildos) no forman parte de su modelo de atención. Al
-incorporar el tipo al modelo estadístico, la variación inexplicada entre
-establecimientos **baja de 84% a 67%**: el tipo explica una parte importante, pero
-el 67% restante muestra que, incluso entre establecimientos iguales, persisten
-diferencias reales en cómo se involucran con la comunidad.
+Cruzando el REM con la base maestra de establecimientos del DEIS se ve **qué tipo
+de establecimiento participa**, y el patrón reordena toda la interpretación: los
+**CESFAM y hospitales participan casi universalmente (~100%)**, mientras que los
+**servicios de urgencia (SAPU 13%, SUR 2%)** y las **postas rurales (60%)** quedan
+muy por debajo. Esto indica que gran parte del "no registro" **no es negligencia,
+sino diseño**: en urgencias y postas pequeñas las estructuras de participación no
+forman parte de su modelo de atención. Por eso el tipo de establecimiento es la
+variable más importante del modelo final.
 :::
 
 # Equidad e inclusión
@@ -266,16 +312,14 @@ interactivo(g)
 ## Row {height="20%"}
 
 ::: {.card title="Cómo leer esta sección"}
-Estas barras muestran **qué proporción de las personas que participan pertenece a
-pueblos originarios o es migrante**, en cada región. El patrón sigue de cerca la
-demografía real del país: la participación de **pueblos originarios** se concentra
-en **La Araucanía (22%), Los Lagos y Aysén** —territorios mapuche y huilliche—,
-mientras que la de **migrantes** se eleva en **Antofagasta (47%) y Tarapacá**, las
-regiones mineras del norte con mayor población migrante. Que los datos reproduzcan
-esta geografía sin que se lo indiquemos es una señal de que la medición es
-fidedigna. La otra cara: en varias regiones del centro estas cifras caen casi a
-cero, lo que marca **dónde estos grupos quedan invisibles en el registro de
-participación** y, por tanto, dónde conviene reforzar la inclusión.
+Estas barras muestran **qué proporción de quienes participan pertenece a pueblos
+originarios o es migrante**, por región. El patrón sigue la demografía real: la
+participación de **pueblos originarios** se concentra en **La Araucanía (22%), Los
+Lagos y Aysén** (territorios mapuche-huilliche), y la de **migrantes** en
+**Antofagasta (47%) y Tarapacá** (el norte minero). Que los datos reproduzcan esta
+geografía valida la medición; a la vez, las regiones del centro con cifras cercanas
+a cero señalan **dónde estos grupos quedan invisibles** y dónde reforzar la
+inclusión.
 :::
 
 # Composición y género
@@ -308,16 +352,14 @@ interactivo(g)
 ## Row {height="40%"}
 
 ::: {.card title="Cómo leer esta sección"}
-A la izquierda, **a través de qué mecanismos participa la ciudadanía**. Llama la
-atención que las dos categorías mayores sean **"Otras instancias" (sin clasificar)**
-y **"Uso de TICs y redes sociales"**, por encima de los consejos formales como los
-Consejos de Desarrollo Local o los Consejos Consultivos. Esto sugiere dos cosas: la
-participación digital ya pesa de verdad, y el formulario no captura bien el *tipo*
-de instancia (mucho queda en el cajón de "otras"). A la derecha, **cómo se registra
-la identidad de género**: domina abrumadoramente "No revelado", es decir, el
-sistema casi no recoge esta dimensión. Aun así, la presencia de personas **Trans y
-No binarie** —aunque pequeña (~1.600 registros)— es un avance de visibilidad
-estadística poco habitual en datos públicos chilenos.
+A la izquierda, **a través de qué mecanismos participa la ciudadanía**: llama la
+atención que las dos categorías mayores sean **"Otras instancias"** (sin
+clasificar) y **"Uso de TICs y redes sociales"**, por encima de los consejos
+formales. Esto sugiere que la participación digital ya pesa y que el formulario no
+captura bien el *tipo* de instancia. A la derecha, **cómo se registra la identidad
+de género**: domina "No revelado" —el sistema casi no recoge esta dimensión—,
+aunque la presencia de personas **Trans y No binarie** (~1.600 registros) marca un
+avance de visibilidad poco habitual en datos públicos chilenos.
 :::
 
 # Calidad de reclamos
@@ -336,48 +378,17 @@ interactivo(g)
 ## Row {height="28%"}
 
 ::: {.card title="Cómo leer esta sección"}
-Más allá de *cuántos* reclamos se reciben, esta sección mide **con qué calidad los
-responde el sistema**: el porcentaje que se contesta **fuera del plazo legal**
-(mientras más alto, peor). La diferencia entre territorios es enorme: en **Coquimbo
-(44%)** y **Valparaíso (33%)** una fracción muy alta de los reclamos se responde
-tarde, frente a **Magallanes (<1%)**, casi siempre en plazo. Es una desigualdad que
-no tiene que ver con el volumen de reclamos sino con la **capacidad de gestión** de
-cada red, y señala dónde el derecho ciudadano a una respuesta oportuna se está
-cumpliendo y dónde no.
-:::
-
-# Evolución temporal
-
-## Row
-
-```{r}
-#| title: "Actividades registradas por mes y tema"
-serie[, Mes := as.integer(Mes)]
-g <- ggplot(serie, aes(x = Mes, y = actividades, color = tema, group = tema,
-                       text = paste0(tema, " · mes ", Mes, ": ",
-                                     format(actividades, big.mark=".")))) +
-  geom_line(linewidth = 1) + geom_point(size = 1.5) +
-  scale_x_continuous(breaks = 1:12) +
-  labs(x = "Mes", y = "Actividades", color = "Tema") +
-  tg + theme(legend.position = "bottom")
-interactivo(g)
-```
-
-## Row
-
-::: {.card title="Cómo leer esta sección"}
-Cada línea sigue, mes a mes, el volumen de actividades registradas en uno de los
-tres grandes temas. El rasgo dominante es la **estacionalidad**: el registro cae en
-**enero-febrero** (el verano austral, con menor actividad administrativa) y se
-sostiene de marzo en adelante, reflejando el ciclo de gestión del sistema de salud
-más que un cambio real en la participación de la gente. También se aprecia la
-escala: el volumen está dominado por **OIRS y reclamos**, mientras que la
-participación social y la satisfacción usuaria operan en magnitudes mucho menores.
+Más allá de *cuántos* reclamos se reciben, esto mide **con qué calidad los responde
+el sistema**: el porcentaje contestado **fuera del plazo legal** (mientras más alto,
+peor). La brecha entre territorios es enorme —**Coquimbo (44%)** y **Valparaíso
+(33%)** frente a **Magallanes (<1%)**— y refleja diferencias en la **capacidad de
+gestión** de cada red, no en el volumen de reclamos. Señala dónde el derecho a una
+respuesta oportuna se cumple y dónde no.
 :::
 
 # Hallazgos del modelo
 
-## Row {height="20%"}
+## Row {height="22%"}
 
 ```{r}
 #| content: valuebox
@@ -395,21 +406,12 @@ list(value = paste0(geti("icc_barrera_pct"), "%"))
 list(value = paste0(geti("icc_intensidad_pct"), "%"))
 ```
 
-```{r}
-#| content: valuebox
-#| title: "Mejora del modelo (AIC)"
-#| icon: graph-down
-#| color: success
-list(value = paste0(format(geti("aic_barrera_simple"), big.mark="."),
-                    " → ", format(geti("aic_barrera_mixto"), big.mark=".")))
-```
-
-## Row {height="52%"}
+## Row {height="50%"}
 
 ### Column
 
 ```{r}
-#| title: "Probabilidad de registrar participación social, por región"
+#| title: "Probabilidad de registrar, por región (ajustada por tipo y mes)"
 g <- ggplot(mreg, aes(x = reorder(region, prob_registra), y = prob_registra,
                       text = paste0(region, ": ", round(100*prob_registra,1), "%"))) +
   geom_col(fill = "#238b45") + coord_flip() +
@@ -433,17 +435,17 @@ interactivo(g)
 
 ## Row {height="28%"}
 
-::: {.card title="Qué dice el modelo (hurdle con efectos aleatorios)"}
-Para separar dos preguntas distintas —**¿un establecimiento registra participación?**
-y **¿cuánta?**— usamos un modelo de barrera (*hurdle*) con efectos aleatorios por
-establecimiento. Su resultado más fuerte: el **84% de la variación en *si* se
-registra está entre establecimientos**, no dentro de ellos a lo largo del año. En
-otras palabras, **registrar participación es un rasgo estable de cada
-establecimiento**, no algo que fluctúe al azar. Una parte de ese rasgo es el **tipo**
-de establecimiento (al incluirlo, la variación inexplicada baja a 67%), y otra parte
-es la **estacionalidad** (la probabilidad de registrar se multiplica de marzo en
-adelante). La implicación para la política pública es clara: para reducir el
-subregistro conviene actuar sobre **establecimientos concretos que estructuralmente
-no participan** —y sobre los tipos donde esto es más frecuente—, más que sobre
-regiones tratadas como un todo.
+::: {.card title="Qué dice el modelo (hurdle mixto: región + tipo + mes)"}
+Un único modelo de barrera (*hurdle*) con efectos aleatorios por establecimiento
+separa dos preguntas: **¿un establecimiento registra participación?** y **¿cuánta?**
+Incluye región, tipo de establecimiento y mes como factores. Su resultado central:
+la decisión de registrar es sobre todo un **rasgo estable de cada establecimiento**
+(ICC barrera del `r geti("icc_barrera_pct")`%), modulado fuertemente por el **tipo**
+(CESFAM y hospitales registran casi siempre; urgencias y postas casi nunca) y por la
+**estacionalidad** (el registro sube de marzo en adelante). La intensidad —cuánto se
+registra cuando se registra— también depende más del establecimiento que del
+territorio (ICC `r geti("icc_intensidad_pct")`%). Implicación de política: para
+reducir el subregistro conviene actuar sobre **establecimientos concretos**, y sobre
+los **tipos** donde la no participación es estructural, más que sobre regiones en
+abstracto.
 :::
