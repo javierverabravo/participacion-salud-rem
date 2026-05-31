@@ -1,5 +1,5 @@
 # =============================================================================
-# 10_datos_comunales.R  ·  Datos socioeconómicos por comuna
+# 02_datos_comunales.R  ·  Datos socioeconómicos por comuna
 # -----------------------------------------------------------------------------
 # Descarga y procesa la base de POBREZA COMUNAL (CASEN, estimación de áreas
 # pequeñas SAE) y construye una tabla comunal con: código de comuna, población

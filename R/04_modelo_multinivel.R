@@ -1,5 +1,5 @@
 # =============================================================================
-# 11_modelo_multinivel.R  ·  Determinantes socioeconómicos (modelo de 3 niveles)
+# 04_modelo_multinivel.R  ·  Determinantes socioeconómicos (modelo de 3 niveles)
 # -----------------------------------------------------------------------------
 # PREGUNTA DE FONDO: controlando por el tipo de establecimiento, ¿la participación
 # registrada responde a la NECESIDAD (más pobreza -> más participación) o a la

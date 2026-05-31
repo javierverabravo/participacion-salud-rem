@@ -1,5 +1,5 @@
 # =============================================================================
-# 13_tipologias.R  ·  Tipologías (perfiles) de participación  [pregunta 6]
+# 06_tipologias.R  ·  Tipologías (perfiles) de participación  [pregunta 6]
 # -----------------------------------------------------------------------------
 # ¿Existen "estilos" de participación entre establecimientos? Agrupamos los
 # establecimientos según la COMPOSICIÓN de su actividad entre los tres temas

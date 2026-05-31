@@ -1,0 +1,67 @@
+# =============================================================================
+# Actualización automática del dashboard (GitHub Actions)
+# -----------------------------------------------------------------------------
+# Este "workflow" corre solo una vez al mes (y también puede lanzarse a mano).
+# Reproduce todo el pipeline en un servidor de GitHub: instala R y sus paquetes,
+# descarga los datos del DEIS, ejecuta los análisis, renderiza el dashboard y
+# sube el resultado, lo que a su vez actualiza el sitio en GitHub Pages.
+# =============================================================================
+name: Actualizar dashboard mensual
+
+on:
+  schedule:
+    - cron: "0 9 1 * *"     # día 1 de cada mes, 09:00 UTC (~06:00 en Chile)
+  workflow_dispatch: {}      # permite ejecutarlo manualmente desde la pestaña Actions
+
+permissions:
+  contents: write            # necesario para que el robot pueda subir los cambios
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    env:
+      REM_ANIO: "2025"       # año a procesar (cámbialo aquí cuando corresponda)
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Instalar librerías de sistema (geoespacial)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgdal-dev libgeos-dev libproj-dev libudunits2-dev
+
+      - name: Instalar R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true   # paquetes precompilados (instalación rápida)
+
+      - name: Cachear paquetes de R
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: paquetes-r-${{ runner.os }}-v1
+
+      - name: Instalar paquetes de R
+        run: |
+          Rscript -e 'options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/latest"));
+            req <- c("here","readxl","data.table","lme4","ggplot2","plotly","DT","sf","spdep","chilemapas");
+            faltan <- req[!req %in% rownames(installed.packages())];
+            if (length(faltan)) install.packages(faltan)'
+
+      - name: Instalar Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+
+      - name: Ejecutar el pipeline completo
+        run: Rscript -e 'source("R/99_run_all.R")'
+
+      - name: Renderizar el dashboard
+        run: quarto render
+
+      - name: Subir los resultados actualizados
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs productos
+          git commit -m "Actualización automática del dashboard [skip ci]" || echo "Sin cambios que subir"
+          git push

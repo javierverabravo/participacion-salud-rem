@@ -1,5 +1,5 @@
 # =============================================================================
-# 12_espacial.R  ·  Autocorrelación espacial de la participación (Moran / LISA)
+# 05_espacial.R  ·  Autocorrelación espacial de la participación (Moran / LISA)
 # -----------------------------------------------------------------------------
 # PREGUNTA 2: ¿la cobertura de participación forma CLUSTERS territoriales, o se
 # distribuye al azar en el espacio? Lo medimos a nivel COMUNAL con:

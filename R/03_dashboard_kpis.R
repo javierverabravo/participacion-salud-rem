@@ -1,5 +1,5 @@
 # =============================================================================
-# 02_dashboard_kpis.R  ·  Insumos del dashboard (un solo modelo, el mejor)
+# 03_dashboard_kpis.R  ·  Insumos del dashboard (un solo modelo, el mejor)
 # -----------------------------------------------------------------------------
 # Calcula TODAS las tablas pequeñas que lee el dashboard (carpeta productos/):
 # KPIs, cobertura (región/comuna/tipo/dependencia), serie temporal, equidad,
