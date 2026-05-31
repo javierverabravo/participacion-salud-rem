@@ -5,16 +5,20 @@
 
 # --- Datos crudos REM (pesan ~1 GB, se descargan desde el DEIS) ---
 # No se versionan: se regeneran con el script de descarga.
+# OJO: NO usar "*.CSV". En Windows Git lo trata igual que "*.csv" e ignora
+# por error los crosswalk curados a mano, rompiendo el pipeline en Actions.
 Serie*.csv
-*.CSV
 datos/
 data/
 
 # --- Salidas y resultados generados por los scripts ---
 # (gráficos, tablas, objetos .rds) se reproducen al correr el código.
+# 'productos/' se regenera con R/99_run_all.R; 'crosswalk/' SÍ se versiona
+# (es insumo curado a mano, no se regenera).
 salidas/
 resultados/
 output/
+productos/
 *.rds
 
 # --- Archivos temporales y de sistema ---

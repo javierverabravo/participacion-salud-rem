@@ -1,0 +1,93 @@
+seccion_key;col;etiqueta;dimension
+A;Col01;TOTAL AMBOS SEXOS;total
+A;Col02;Hombres;sexo
+A;Col03;Mujeres;sexo
+A;Col04;Reclamos generados en el mes;reclamo_gestion
+A;Col05;Reclamos generados en el mes anterior;reclamo_gestion
+A;Col06;Reclamos Respondidos Fuera de Plazos Legales;reclamo_gestion
+A;Col07;Respuestas pendientes dentro del plazo legal;reclamo_gestion
+A;Col08;Respuestas pendientes fuera del plazo legal;reclamo_gestion
+A;Col09;Masculino;sexo
+A;Col10;Femenina;sexo
+A;Col11;No Binarie;identidad_genero
+A;Col12;No revelado;identidad_genero
+A;Col13;Pueblos Originarios;pueblos_originarios
+A;Col14;Migrantes;migrantes
+A;Col15;PRAIS;prais
+A;Col16;Niños, niñas y adolescentes;grupo_prioritario
+A;Col17;Gestantes;grupo_prioritario
+B.1;Col01;TOTAL;total
+B.1;Col02;Consejos de la Sociedad Civil (COSOC);instancia
+B.1;Col03;Instancias de participación de Adolescentes y Jóvenes;instancia
+B.1;Col04;Consejos Consultivos de Usuarios;instancia
+B.1;Col05;Consejo de Desarrollo Local;instancia
+B.1;Col06;Consejo de Integración de la Red Asistencial (CIRA);instancia
+B.1;Col07;Comités o Mesas de Trabajo;instancia
+B.1;Col08;Cabildos Ciudadanos Territoriales y Sectoriales;instancia
+B.1;Col09;Instancias de Participación Indígena en Salud;instancia
+B.1;Col10;Consejo Interreligioso;instancia
+B.1;Col11;Otras Instancias de participación;instancia
+B.1;Col12;Uso de TICS y/o Redes Sociales;instancia
+B.1;Col13;Total Ambos Sexos;total
+B.1;Col14;Hombres;sexo
+B.1;Col15;Mujeres;sexo
+B.1;Col16;Trans Masculino;identidad_genero
+B.1;Col17;Trans Femenina;identidad_genero
+B.1;Col18;No Binarie;identidad_genero
+B.1;Col19;No revelado;identidad_genero
+B.1;Col20;Pueblos Originarios;pueblos_originarios
+B.1;Col21;Migrantes;migrantes
+B.1;Col22;PRAIS;prais
+B.2;Col01;N° DE SESIONES;total
+B.2;Col02;Total Ambos Sexos;total
+B.2;Col03;Hombres;sexo
+B.2;Col04;Mujeres;sexo
+B.2;Col05;Trans Masculino;identidad_genero
+B.2;Col06;Trans Femenina;identidad_genero
+B.2;Col07;No binarie;identidad_genero
+B.2;Col08;No revelado;identidad_genero
+B.2;Col09;Pueblos Originarios;pueblos_originarios
+B.2;Col10;Migrantes;migrantes
+B.2;Col11;PRAIS;prais
+B.2;Col12;Consejos de la Sociedad Civil (COSOC);instancia
+B.2;Col13;Consejos Consultivos de Usuarios;instancia
+B.2;Col14;Consejo de Desarrollo Local (CDL);instancia
+B.2;Col15;Organizaciones sociales;instancia
+B.2;Col16;Instancias de Participación Indígena;instancia
+B.2;Col17;Consejo Interreligioso;instancia
+C.1;Col01;TOTAL;total
+C.1;Col02;Comités Gestión Usuaria: Análisis de reclamos;instancia
+C.1;Col03;Comités Gestión Usuaria: Planes de mejora;instancia
+C.1;Col04;Medición de Satisfacción Usuaria;linea_satisfaccion
+C.1;Col05;Acompañamiento Espiritual;linea_satisfaccion
+C.1;Col06;Asistencia Religiosa;linea_satisfaccion
+C.1;Col07;Asistencia Espiritual Indígena;linea_satisfaccion
+C.1;Col08;Hospital Amigo;linea_satisfaccion
+C.1;Col09;Uso de TICS y/o Redes Sociales;instancia
+C.1;Col10;Total Ambos Sexos;total
+C.1;Col11;Hombres;sexo
+C.1;Col12;Mujeres;sexo
+C.1;Col13;Trans Masculino;identidad_genero
+C.1;Col14;Trans Femenina;identidad_genero
+C.1;Col15;No Binarie;identidad_genero
+C.1;Col16;No revelado;identidad_genero
+C.1;Col17;Pueblos Originarios;pueblos_originarios
+C.1;Col18;Migrantes;migrantes
+C.1;Col19;PRAIS;prais
+C.2;Col01;N° DE SESIONES;total
+C.2;Col02;Total Ambos Sexos;total
+C.2;Col03;Hombres;sexo
+C.2;Col04;Mujeres;sexo
+C.2;Col05;Trans Masculino;identidad_genero
+C.2;Col06;Trans Femenina;identidad_genero
+C.2;Col07;No binarie;identidad_genero
+C.2;Col08;No revelado;identidad_genero
+C.2;Col09;Pueblos Originarios;pueblos_originarios
+C.2;Col10;Migrantes;migrantes
+C.2;Col11;PRAIS;prais
+C.2;Col12;Consejos de la Sociedad Civil (COSOC);instancia
+C.2;Col13;Consejos Consultivos de Usuarios;instancia
+C.2;Col14;Consejo de Desarrollo Local (CDL);instancia
+C.2;Col15;Organizaciones sociales;instancia
+C.2;Col16;Instancias de Participación Indígena;instancia
+C.2;Col17;Consejo Interreligioso;instancia
