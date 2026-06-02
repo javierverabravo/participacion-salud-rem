@@ -1,4 +1,4 @@
-# Participación Ciudadana en Salud en Chile: un análisis estadístico de los Resúmenes Estadísticos Mensuales (REM 2025)
+# Participación Ciudadana en Salud en Chile: un análisis de los Resúmenes Estadísticos Mensuales (REM 2025)
 
 *Análisis reproducible de las actividades de participación ciudadana registradas por
 la red pública de salud chilena, con un dashboard interactivo de actualización
