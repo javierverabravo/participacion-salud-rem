@@ -101,4 +101,11 @@ rb[, pct_region := round(100 * eventos / sum(eventos), 1), by = IdRegion]
 rb <- dcast(rb, IdRegion ~ bloque, value.var = "pct_region", fill = 0)
 fwrite(rb[order(IdRegion)], file.path(dirs, "region_x_bloque.csv"), sep = ";", bom = TRUE)
 
-# ---- 4.
+# ---- 4. Indicadores de auditoria social (con denominador FONASA/CASEN) -----
+indicadores_auditoria_social(part, largo, anio, dirs)
+
+# ---- Resumen ---------------------------------------------------------------
+cat("\nComparativo de bloques:\n"); print(comp[, .(bloque, cobertura_pct, total_eventos,
+  pct_subregistro_estab_mes, brecha_genero_pp, pct_migrantes, icc_barrera_pct)])
+cat("\nTipologias cross-tema (k-means k=4):\n"); print(perfil)
+message("\nSintesis lista. Productos en productos/sintesis/")

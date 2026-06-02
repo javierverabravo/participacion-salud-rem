@@ -106,4 +106,18 @@ indicadores_auditoria_social <- function(part, largo, anio, dirs) {
   reg <- calc(N[, lapply(.SD, sum, na.rm = TRUE), by = IdRegion, .SDcols = cols_num][order(IdRegion)])
   com <- calc(copy(N))[order(-I_fa_reclamos_x1000)]
 
-  fwrite(nac, file.path(dirs, "indicadores_auditoria_nacional.csv
+  fwrite(nac, file.path(dirs, "indicadores_auditoria_nacional.csv"), sep = ";", bom = TRUE)
+  fwrite(reg, file.path(dirs, "indicadores_auditoria_region.csv"),   sep = ";", bom = TRUE)
+  fwrite(com, file.path(dirs, "indicadores_auditoria_comuna.csv"),   sep = ";", bom = TRUE)
+
+  cat("\nDenominador usado:", denom_fuente, "\n")
+  cat("Indicadores de auditoria social (nacional):\n")
+  print(nac[, .(I_fa_reclamos_x1000, T_se_pct, I_dd_partic_x100, I_ci_intercult_x1000,
+                tasa_fuera_plazo_pct, razon_felicit_reclamos)])
+  if (denom_fuente == "ninguno")
+    message("[indicadores] Sin denominador: tasas per capita en NA. Falta comunal.rds y FONASA.")
+  else if (grepl("CASEN", denom_fuente))
+    message("[indicadores] Usando poblacion CASEN 2024 como proxy. Para 'por 1.000 inscritos', ",
+            "deja datos/externos/poblacion_inscrita_fonasa.csv y corre 03 + 30.")
+  invisible(nac)
+}

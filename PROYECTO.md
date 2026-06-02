@@ -85,4 +85,73 @@ por git localmente, re-comprometidos por GitHub Actions después de cada ejecuci
 | Indicador | A · OIRS | B · Part. social | C · Satisfacción |
 |---|---:|---:|---:|
 | Cobertura (% estab.) | 49,9 % | 51,1 % | 24,4 % |
-| Subregistro estab-mes | 60,4 % | 71,7 % 
+| 60,4 % | 71,7 % | 91,6 % |
+| Mediana de meses con registro | 12 | 7 | 3 |
+| ICC barrera (peso del establecimiento) | 93,9 % | 65,8 % | 74,3 % |
+| Varianza nivel comuna | 29,1 % | 17,5 % | 4,1 % |
+| OR pobreza (+10 pp) | 0,59 (ns) | 0,85 (ns) | **0,58 (p<0,001)** |
+| I de Moran (espacial) | 0,109 (p≈0) | 0,049 (ns) | 0,119 (p<0,001) |
+| Mujeres entre participantes | 61,5 % | 66,5 % | 68,7 % |
+
+- **Lo institucional manda en las tres** (ICC de la barrera 66–94 %): registrar
+  depende del establecimiento, no del territorio.
+- **El territorio NO pesa igual:** B (participación social) es el caso institucional
+  puro (sin geografía, pobreza ns); A (OIRS) tiene geografía real (comuna 29 %,
+  Moran significativo); C (satisfacción) es la **única** donde la **pobreza comunal
+  predice** el registro (OR 0,58; p<0,001) y hay clústeres espaciales.
+- **El subregistro crece de A a C** (60 → 72 → 92 %) y está en **filas ausentes**,
+  no en celdas vacías.
+- **Auditoría social (nacional):** fricción administrativa 11,0 reclamos/1.000;
+  46,5 % de reclamos por espera; 14,7 % fuera de plazo; razón felicitaciones/
+  reclamos 0,64; densidad democrática 9,1 participantes/100; cohesión intercultural
+  0,72/1.000. (Denominador: proxy CASEN 2024; reemplazar por FONASA.)
+
+---
+
+## 5. Cómo reproducir (paso a paso)
+
+Cualquiera que clone el repo y tenga R + Quarto puede llegar a las mismas
+conclusiones:
+
+1. Abrir la carpeta del proyecto en R/Positron.
+2. En la consola de R: `source("R/99_run_all.R")` — descarga los datos del DEIS,
+   construye el crosswalk A19b, agrega CASEN/FONASA, corre el motor sobre A/B/C y
+   genera la síntesis. Deja todo en `productos/{A,B,C,sintesis}/` (~70 min).
+3. (Opcional, per cápita real) Colocar `datos/externos/poblacion_inscrita_fonasa.csv`
+   y re-correr `03` + `30`.
+4. En la terminal: `quarto render` — genera el dashboard en `docs/`.
+5. `git add -A && git commit -m "..." && git push` — publica en GitHub Pages.
+
+El orden y las dependencias están en `R/99_run_all.R`. El esquema de numeración es
+por grupos: **0x** datos, **1x** motor e indicadores, **2x** análisis por bloque,
+**3x** síntesis, **99** maestro.
+
+---
+
+## 6. Backlog
+
+- [x] Reformulación por bloques A/B/C (motor + runners + síntesis).
+- [x] CASEN 2024, denominador FONASA, indicadores de auditoría social.
+- [x] **Dashboard `index.qmd` reconstruido por bloque** (lee `productos/{A,B,C,sintesis}/`;
+  páginas A/B/C + Síntesis + Metodología + Glosario). *Pendiente: renderizar con
+  `quarto render` y revisar visualmente.*
+- [ ] Conseguir el archivo FONASA de inscritos validados (portal JS sin URL estable)
+  para pasar los indicadores de "por habitante" a "por inscrito".
+- [ ] Publicar/actualizar GitHub Pages tras el render y verificar Actions mensual.
+- [ ] (Mejora) Ingreso municipal SINIM para probar "capacidad" de gestión directa.
+
+---
+
+## 7. Notas de la sesión (jun 2026 · revisión de flujo)
+
+- Se reconstruyó el dashboard a la estructura por bloques (antes leía los productos
+  planos de la versión global, que ya no se generan).
+- **El índice de git se corrompió** (`index file corrupt`, artefacto del mount). Se
+  arregla en la terminal del usuario: borrar `.git/index` y `git reset` (reconstruye
+  desde HEAD sin perder commits ni archivos).
+- **Mount Windows E::** desde el sandbox no se puede `rm`/`mv` ni borrar archivos, y
+  la herramienta Write puede dejar bytes nulos al final. Método fiable: escribir a un
+  temporal y `cat tmp > destino` por bash (verificado sin NULs). La limpieza de
+  archivos (borrar/mover) la hace el usuario.
+- Productos planos de la versión global quedan en `_archivo_pipeline_global/` (por
+  mover por el usuario); no afectan al repo (gitignored).

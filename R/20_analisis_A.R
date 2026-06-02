@@ -37,4 +37,12 @@ kpis_bloque(part, est, panel, largo, blq, dirb)
 cobertura_territorial(est, part, blq, dirb)
 serie_temporal(part, blq, dirb)
 equidad_bloque(largo, blq, dirb)
-subsecciones_bloque(largo, 
+subsecciones_bloque(largo, part, blq, dirb)
+
+# Modelos (con salvaguardas de convergencia)
+modelo_hurdle(panel, blq, dirb)
+modelo_multinivel(panel, com, est, part, blq, dirb)
+espacial_bloque(blq, dirb)
+tipologias_bloque(part, largo, est, blq, dirb)
+
+message("Bloque A listo. Productos en productos/A/")

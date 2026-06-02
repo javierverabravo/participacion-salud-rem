@@ -44,4 +44,44 @@ leer_sae <- function(ruta) {
   fil <- which(es_cod(M[[col_cod]])); dat <- M[fil]
   rate <- function(x) suppressWarnings(as.numeric(gsub(",", ".", trimws(x))))     # proporciones
   popn <- function(x) suppressWarnings(as.numeric(gsub("[^0-9]", "", x)))         # enteros con miles
-  cand
+  cand <- setdiff(seq_along(M), col_cod)
+  med_rate <- vapply(cand, function(j) median(rate(dat[[j]]), na.rm = TRUE), numeric(1))
+  med_pop  <- vapply(cand, function(j) median(popn(dat[[j]]), na.rm = TRUE), numeric(1))
+  col_rate <- cand[which(med_rate > 0 & med_rate < 1)][1]            # tasa como proporcion
+  if (is.na(col_rate)) col_rate <- cand[which(med_rate >= 1 & med_rate < 80)][1] # o ya en %
+  col_pop  <- cand[which(med_pop > 500)][1]
+  es_txt   <- vapply(cand, function(j) mean(is.na(rate(dat[[j]])) & nzchar(dat[[j]])) > 0.7, logical(1))
+  col_name <- cand[which(es_txt)][1]
+  factor_rate <- if (!is.na(col_rate) && median(rate(dat[[col_rate]]), na.rm = TRUE) < 1) 100 else 1
+  out <- data.table(
+    IdComuna = as.integer(dat[[col_cod]]),
+    comuna   = if (!is.na(col_name)) dat[[col_name]] else NA_character_,
+    poblacion = if (!is.na(col_pop)) popn(dat[[col_pop]]) else NA_real_,
+    tasa = if (!is.na(col_rate)) round(factor_rate * rate(dat[[col_rate]]), 1) else NA_real_)
+  message("  ", basename(ruta), ": ", nrow(out), " comunas | col_cod=", col_cod,
+          " col_tasa=", col_rate, " col_pob=", col_pop)
+  out[!is.na(IdComuna)]
+}
+
+ing <- leer_sae(fuentes$ingresos$file)
+mul <- leer_sae(fuentes$multi$file)
+if (is.null(ing)) stop("No se pudo leer la pobreza por ingresos CASEN 2024. ",
+                       "Descarga manual: ", fuentes$ingresos$url)
+
+comunal <- ing[, .(IdComuna, comuna, poblacion, pct_pobreza = tasa)]
+if (!is.null(mul))
+  comunal <- merge(comunal, mul[, .(IdComuna, pct_pobreza_multi = tasa)],
+                   by = "IdComuna", all.x = TRUE)
+
+saveRDS(comunal, here("datos", "externos", "comunal.rds"))
+fwrite(comunal, here("productos", "determinantes_comuna.csv"), sep = ";", bom = TRUE)
+
+# ---- Validacion ------------------------------------------------------------
+cat(sprintf("Comunas con pobreza CASEN 2024: %d\n", nrow(comunal)))
+cat("Resumen tasa de pobreza por ingresos (%):\n"); print(summary(comunal$pct_pobreza))
+est <- readRDS(here("datos", "establecimientos_lookup.rds")); setDT(est)
+com_rem <- unique(est$IdComuna)
+cat(sprintf("\nComunas del REM que cruzan con pobreza: %d de %d (%.1f%%)\n",
+            sum(com_rem %in% comunal$IdComuna), length(com_rem),
+            100 * mean(com_rem %in% comunal$IdComuna)))
+cat("\nComunas mas pobres (ingresos):\n"); print(head(comunal[order(-pct_pobreza)], 6))

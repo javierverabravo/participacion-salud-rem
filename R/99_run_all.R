@@ -31,4 +31,5 @@ source(here("R", "30_sintesis.R"))
 
 message(sprintf("\nPipeline completo en %.1f min. Productos en productos/{A,B,C,sintesis}/.",
                 as.numeric(difftime(Sys.time(), t0, units = "mins"))))
-messa
+message("Revisa productos/<bloque>/modelo_estado.csv para ver que modelos convergieron.")
+message("Luego, en la terminal:  quarto render")
