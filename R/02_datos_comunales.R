@@ -1,10 +1,18 @@
 # =============================================================================
-# 02_datos_comunales.R  ·  Datos socioeconómicos por comuna
+# 02_datos_comunales.R  ·  Determinantes sociales por comuna (CASEN 2024)
 # -----------------------------------------------------------------------------
-# Descarga y procesa la base de POBREZA COMUNAL (CASEN, estimación de áreas
-# pequeñas SAE) y construye una tabla comunal con: código de comuna, población
-# y tasa de pobreza por ingresos. El código de comuna coincide con el IdComuna
-# del REM, así que servirá de covariable de contexto en el modelo multinivel.
+# Descarga y procesa las ESTIMACIONES DE POBREZA COMUNAL (CASEN 2024, areas
+# pequenas SAE) del Observatorio Social (MDSF): pobreza por ingresos y pobreza
+# multidimensional. El codigo de comuna coincide con IdComuna del REM, asi que
+# sirve de covariable de contexto en el modelo multinivel y de insumo para los
+# indicadores de auditoria social.
+#
+# ACTUALIZACION: antes se usaba CASEN 2020 (revisada 2022); ahora CASEN 2024,
+# publicada en enero 2026 (la estimacion comunal mas reciente).
+#
+# Lector ROBUSTO: detecta automaticamente la columna de codigo de comuna
+# (4-5 digitos), la tasa de pobreza (proporcion 0-1) y la poblacion, para no
+# depender de la posicion exacta de las columnas si MDSF cambia el formato.
 #
 # SALIDA: datos/externos/comunal.rds + productos/determinantes_comuna.csv
 # =============================================================================
@@ -13,38 +21,27 @@ library(readxl)
 library(data.table)
 
 dir.create(here("datos", "externos"), recursive = TRUE, showWarnings = FALSE)
-ruta_pob <- here("datos", "externos", "pobreza_comunal.xlsx")
-url_pob <- paste0("https://observatorio.ministeriodesarrollosocial.gob.cl/",
-  "storage/docs/pobreza-comunal/2020/",
-  "Estimaciones_de_Tasa_de_Pobreza_por_Ingresos_por_Comunas_2020_revisada2022_09.xlsx")
 options(timeout = max(600, getOption("timeout")))
-if (!file.exists(ruta_pob)) download.file(url_pob, ruta_pob, mode = "wb")
+base_url <- paste0("https://observatorio.ministeriodesarrollosocial.gob.cl/",
+                   "storage/docs/pobreza-comunal/2024/")
+fuentes <- list(
+  ingresos = list(url = paste0(base_url, "SAE_ingresos_2024.xlsx"),
+                  file = here("datos", "externos", "pobreza_ingresos_2024.xlsx")),
+  multi    = list(url = paste0(base_url, "SAE_multidimensional_2024.xlsx"),
+                  file = here("datos", "externos", "pobreza_multi_2024.xlsx")))
+for (f in fuentes) if (!file.exists(f$file))
+  try(download.file(f$url, f$file, mode = "wb"), silent = TRUE)
 
-# ---- 1. Extraer (encabezado en fila 3 -> saltamos 3 filas) -----------------
-crudo <- read_excel(ruta_pob, sheet = 1, skip = 3, col_names = FALSE)
-setDT(crudo)
-# Asignamos nombres por posición (según la estructura inspeccionada).
-setnames(crudo, 1:6, c("cod", "region_txt", "comuna", "poblacion",
-                       "n_pobreza", "pct_pobreza"))
-comunal <- crudo[!is.na(cod), .(
-  IdComuna   = as.integer(cod),
-  comuna     = comuna,
-  poblacion  = as.numeric(poblacion),
-  pct_pobreza = round(100 * as.numeric(pct_pobreza), 1))]
-comunal <- comunal[!is.na(IdComuna)]
-
-saveRDS(comunal, here("datos", "externos", "comunal.rds"))
-fwrite(comunal, here("productos", "determinantes_comuna.csv"), sep = ";", bom = TRUE)
-
-# ---- 2. Validación ---------------------------------------------------------
-cat(sprintf("Comunas con datos de pobreza: %d\n", nrow(comunal)))
-cat("Resumen de la tasa de pobreza (%):\n"); print(summary(comunal$pct_pobreza))
-
-# Match con las comunas del REM.
-est <- readRDS(here("datos", "establecimientos_lookup.rds")); setDT(est)
-com_rem <- unique(est$IdComuna)
-cat(sprintf("\nComunas del REM que cruzan con pobreza: %d de %d (%.1f%%)\n",
-            sum(com_rem %in% comunal$IdComuna), length(com_rem),
-            100 * mean(com_rem %in% comunal$IdComuna)))
-cat("\nComunas más pobres:\n"); print(head(comunal[order(-pct_pobreza)], 6))
-cat("\nComunas menos pobres:\n"); print(head(comunal[order(pct_pobreza)], 6))
+# ---- Lector robusto de un archivo SAE comunal ------------------------------
+leer_sae <- function(ruta) {
+  if (!file.exists(ruta)) return(NULL)
+  raw <- suppressMessages(as.data.table(read_excel(ruta, sheet = 1, col_names = FALSE)))
+  M <- raw[, lapply(.SD, as.character)]
+  es_cod <- function(x) !is.na(x) & grepl("^[0-9]{4,5}$", trimws(x))
+  conteo <- vapply(M, function(x) sum(es_cod(x)), integer(1))
+  col_cod <- which.max(conteo)
+  if (max(conteo) < 100) { warning("No se detecto columna de comuna en ", basename(ruta)); return(NULL) }
+  fil <- which(es_cod(M[[col_cod]])); dat <- M[fil]
+  rate <- function(x) suppressWarnings(as.numeric(gsub(",", ".", trimws(x))))     # proporciones
+  popn <- function(x) suppressWarnings(as.numeric(gsub("[^0-9]", "", x)))         # enteros con miles
+  cand

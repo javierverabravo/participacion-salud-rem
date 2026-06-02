@@ -1,0 +1,62 @@
+/*-----------------------------------------------------------------------------
+  custom.scss · Tema de marca del dashboard "Participación en Salud · REM"
+  -----------------------------------------------------------------------------
+  Quarto compone el tema en dos capas:
+    - "scss:defaults": variables que se definen ANTES de Bootstrap (colores,
+      tipografías). Cambiarlas reestiliza todo de forma coherente.
+    - "scss:rules": CSS propio que se aplica DESPUÉS (ajustes finos).
+  No requiere conocer SCSS a fondo: basta cambiar los valores de color.
+-----------------------------------------------------------------------------*/
+
+/*-- scss:defaults --*/
+
+// Paleta institucional (azul-verde sobrio, tono salud pública).
+$primary:   #0f6e8c;   // color principal (KPIs, enlaces, barra superior)
+$info:      #2a9d8f;
+$secondary: #6c7a89;
+$success:   #2a9d8f;
+$warning:   #e09f3e;
+$danger:    #c1495b;
+
+$body-color:       #1f2933;
+$link-color:       $primary;
+$border-radius:    .55rem;
+
+// Tipografía: Inter para texto, con respaldo del sistema.
+$font-family-sans-serif: "Inter", "Source Sans Pro", system-ui, -apple-system,
+  "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+$h1-font-size: 1.55rem;
+
+/*-- scss:rules --*/
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+// ---- Portada / hero (tesis del proyecto, arriba del todo) -------------------
+.card.hero {
+  background: linear-gradient(100deg, #0f6e8c 0%, #11808a 55%, #2a9d8f 100%);
+  border: none;
+  color: #fff;
+}
+.card.hero .card-body { padding: .6rem 1.1rem; }
+.hero-box { display: flex; flex-direction: column; justify-content: center;
+  height: 100%; }
+.hero-kicker {
+  text-transform: uppercase; letter-spacing: .09em; font-size: .72rem;
+  font-weight: 600; opacity: .85; margin-bottom: .2rem;
+}
+.hero-thesis {
+  font-size: clamp(1.05rem, 1.7vw, 1.5rem); font-weight: 600; line-height: 1.25;
+}
+.hero-thesis strong { color: #ffe9b8; font-weight: 700; }
+
+// ---- Value boxes (KPIs) -----------------------------------------------------
+.value-box { box-shadow: 0 1px 3px rgba(15,23,42,.10); }
+.value-box .value-box-value { font-weight: 700; }
+.value-box-showcase i { opacity: .85; }
+
+// ---- Tarjetas y narrativas --------------------------------------------------
+.card { box-shadow: 0 1px 3px rgba(15,23,42,.06); }
+.card-header { font-weight: 600; }
+
+// Tablas DT un poco más legibles.
+table.dataTable td, table.dataTable th { font-size: .85rem; }

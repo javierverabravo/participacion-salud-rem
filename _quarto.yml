@@ -3,6 +3,10 @@
 # que es la que GitHub Pages publicará más adelante.
 project:
   output-dir: docs
+  # Renderiza SOLO el dashboard. Así PROYECTO.md (documento interno de trabajo)
+  # y el README NO se publican como páginas del sitio.
+  render:
+    - index.qmd
 
 # Título por defecto del sitio.
 lang: es
