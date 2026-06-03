@@ -456,6 +456,18 @@ interactivo(tryCatch(plot_terr_cob(), error = function(e) NULL))
 interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 ```
 
+## Row {.fill}
+
+::: {.card title="Cómo leer la página Territorio"}
+**El mapa nacional** pinta cada una de las ~345 comunas según su **cobertura de OIRS**: el porcentaje de establecimientos de esa comuna que registró al menos una vez en el año. La escala va de morado (cobertura baja, cerca de 0 %) a amarillo (alta, cerca de 100 %); las comunas en gris no tienen dato. Sirve para ver de un vistazo dónde el registro es denso y dónde escaso, sin promediar por región.
+
+**El gráfico de cobertura por región y sección** ordena las 16 regiones de mayor a menor cobertura, en tres paneles (OIRS, participación social y satisfacción). Cada barra es el % de establecimientos de la región que registra esa sección. Comparar los tres paneles muestra que una región puede ser fuerte en una sección y débil en otra.
+
+**El gráfico de inclusión** muestra, por región y sección, qué porcentaje de las personas participantes son de **pueblos originarios** (verde) o **migrantes** (azul). Recuerda que son proporciones sobre el total de participantes, no números absolutos: una región pequeña puede tener un % alto con pocas personas. Aquí se ve, por ejemplo, la mayor presencia indígena en las regiones del sur.
+
+*Importante:* este mapa es la **vista nacional**. El selector por región que se reenfoca al elegir una región se construye en la app interactiva (Shiny), porque un dashboard estático no recalcula en vivo.
+:::
+
 # A · OIRS
 
 ## Row {height="20%"}
@@ -475,10 +487,12 @@ vb(fmt(kget("A","total_reclamos","kpis_A_tipos")), "reclamos generados en el añ
    icon = "megaphone", color = "danger", title = "Reclamos")
 ```
 ```{r}
-vb(formatC(as.numeric(kget("A","razon_felicitaciones_reclamos","kpis_A_tipos")), format="f", digits=2),
-   "felicitaciones por cada reclamo",
-   "Razón felicitaciones/reclamos. Cercano a 1 indica tantas felicitaciones como reclamos.",
-   icon = "emoji-smile", color = "success", title = "Felicitaciones / reclamos")
+vb(fmt(kget("A","total_felicitaciones","kpis_A_tipos")),
+   paste0("felicitaciones registradas (≈",
+          formatC(as.numeric(kget("A","razon_felicitaciones_reclamos","kpis_A_tipos")), format="f", digits=1),
+          " por cada reclamo)"),
+   "Total de felicitaciones OIRS en 2025. Entre paréntesis, la razón felicitaciones/reclamos: cercana a 1 significa tantas felicitaciones como reclamos.",
+   icon = "emoji-smile", color = "success", title = "Felicitaciones")
 ```
 
 ## Row {height="44%"}
@@ -516,6 +530,18 @@ interactivo(plot_serie("A"))
 #| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("A"))
 ```
+
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de OIRS"}
+**Los cuatro recuadros** resumen la sección: la **cobertura** (`r pct(kget("A","pct_cobertura"))` de los establecimientos registra OIRS), el número de **consultas** (`r fmt(kget("A","total_consultas","kpis_A_tipos"))`), el de **reclamos** (`r fmt(kget("A","total_reclamos","kpis_A_tipos"))`) y las **felicitaciones** (`r fmt(kget("A","total_felicitaciones","kpis_A_tipos"))`, ≈1 por cada reclamo). La lección clave: OIRS **no es sinónimo de reclamos** — las consultas son, de lejos, lo más numeroso.
+
+**"Tipos de solicitud"** está en **escala logarítmica** (cada paso del eje multiplica por 10) justamente porque las consultas son tantas que, en escala normal, aplastarían a las demás barras. Léelo como un orden de magnitud, no como distancias lineales.
+
+**"Cobertura por tipo de establecimiento"** muestra qué proporción de cada tipo de centro registra OIRS: hospitales y CESFAM casi siempre, urgencias casi nunca (por diseño de su función). **La serie mensual** muestra el volumen de eventos mes a mes, donde se nota la baja de enero-febrero.
+
+**"¿Dónde vive la variación?"** reparte la varianza del *registrar o no* entre tres niveles. En OIRS, el **establecimiento** domina (rasgo institucional), pero la **comuna pesa ~29 %** — más que en las otras secciones —, señal de que aquí el territorio sí importa algo.
+:::
 
 # B · Participación social
 
@@ -566,6 +592,18 @@ interactivo(plot_cob_tipo("B"))
 interactivo(plot_var("B"))
 ```
 
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Participación social"}
+Esta sección es el **núcleo deliberativo** (consejos, cabildos, diálogos) y el caso **más institucional** de los tres: registrar depende casi por completo del establecimiento, no del territorio.
+
+**"B.1 vs B.2: perfil de participante"** compara las dos subsecciones, que miden cosas distintas: **B.1** son *actividades según instancia* y **B.2** son *sesiones según línea de acción*. El gráfico muestra, para cada grupo (mujeres, pueblos originarios, migrantes, PRAIS), el % de participantes en cada subsección. El hallazgo: **B.2 es bastante más inclusiva** — registra mucha mayor proporción de pueblos originarios (~8 %) y migrantes (~4,5 %) que B.1 (~2 % y ~1 %). La inclusión étnica y migrante se concentra en las líneas de acción.
+
+**"Pueblos originarios y migrantes por región"** territorializa eso mismo: dónde, geográficamente, la participación es más diversa. **"Cobertura por tipo"** muestra qué centros participan (postas y CESFAM sí, urgencias no).
+
+**"¿Dónde vive la variación?"**: aquí el **establecimiento explica casi todo** y la comuna y la región casi nada (`r comp[bloque=="B", var_comuna_pct]` % la comuna). No hay geografía: registrar deliberación es cuestión de gestión del centro.
+:::
+
 # C · Satisfacción
 
 ## Row {height="20%"}
@@ -614,6 +652,16 @@ interactivo(plot_cob_region("C"))
 #| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("C"))
 ```
+
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Satisfacción usuaria"}
+Es la sección de **menor cobertura** (`r pct(kget("C","pct_cobertura"))`) y **mayor subregistro** (`r pct(kget("C","pct_subregistro_estab_mes"))`), y la **única donde la pobreza comunal sí predice** el registro.
+
+**"Cobertura vs. pobreza comunal"** es un diagrama de dispersión: cada punto es una **comuna**, ubicada según su tasa de pobreza (eje horizontal) y su cobertura de satisfacción (eje vertical). La **línea roja** es la tendencia: aquí **baja de izquierda a derecha**, lo que significa que a mayor pobreza, menor registro (OR ≈ `r round(comp[bloque=="C", OR_pobreza_x10pp],2)` por cada +10 puntos de pobreza, p<0,001). Es el sesgo socioeconómico que no aparece en A ni en B.
+
+**"C.1 vs C.2: perfil de participante"** repite la lógica de B: C.2 (líneas de acción) es más inclusiva que C.1. **"Cobertura por región"** muestra lo baja y dispersa que es esta sección territorialmente. **"¿Dónde vive la variación?"**: el establecimiento sigue dominando, pero sobre esa base se monta el efecto pobreza.
+:::
 
 # Síntesis y auditoría social
 
@@ -718,6 +766,16 @@ res_rxb <- tryCatch({
 res_rxb
 ```
 
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Síntesis"}
+**La tabla comparativa** pone las tres secciones lado a lado. Las columnas clave: **Cobertura** (cuántos registran), **Subregistro** (cuántos meses-establecimiento quedan sin dato — crece de A a C), **ICC barrera** (qué tan institucional es registrar: 66–94 %, siempre alto), **Var. comuna** (cuánto pesa el territorio) y **OR pobreza** con su **p** (si la pobreza predice; solo es significativa en C).
+
+**Los cuatro indicadores de auditoría social** usan denominador poblacional (inscritos FONASA) para poder comparar territorios: **fricción administrativa** (reclamos por 1.000 inscritos), **severidad de espera** (% de reclamos que son por tiempos de espera), **fuera de plazo** (% de reclamos respondidos tarde) y **densidad democrática** (participantes por 100 inscritos).
+
+**"Perfiles de participación (k-means)"**: el algoritmo agrupa los establecimientos según *en qué* concentran su actividad. Cada barra es qué % de la actividad del perfil corresponde a A, B o C. Así se ve que "participar" significa cosas distintas: hay centros volcados a OIRS, otros a participación social comunitaria, otros a satisfacción. **"Qué sección domina cada región"** hace lo mismo a nivel territorial.
+:::
+
 # Nivel y robustez
 
 ## Row {height="58%"}
@@ -789,3 +847,13 @@ res_desc <- tryCatch({
 }, error = function(e) htmltools::HTML("Corre el pipeline."))
 res_desc
 ```
+
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Nivel y robustez"}
+**"Probabilidad de registrar por nivel de atención"**: cada barra es la probabilidad estimada de que un establecimiento de ese nivel registre la sección. La participación **se concentra en el nivel terciario** (hospitales) y es casi nula en el secundario. Esto justifica separar los **ceros estructurales** (centros que por diseño no participan) del **subregistro** real.
+
+**"Robustez ante ceros estructurales"** repite los modelos en dos universos: el **completo** y el **participativo** (excluyendo urgencias SAPU/SUR/SAR). Que el OR de pobreza y la varianza de comuna casi no cambien entre ambas columnas significa que las conclusiones **no son un artefacto** de incluir centros que nunca iban a registrar: son robustas.
+
+**"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo, el nivel y la dependencia administrativa, añadidos uno a uno. La lectura central: tipo y nivel explican la mayor parte (64–80 %), pero **la dependencia administrativa casi no agrega nada** (≤ 1 punto). Es decir, una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
+:::
