@@ -101,6 +101,24 @@ rb[, pct_region := round(100 * eventos / sum(eventos), 1), by = IdRegion]
 rb <- dcast(rb, IdRegion ~ bloque, value.var = "pct_region", fill = 0)
 fwrite(rb[order(IdRegion)], file.path(dirs, "region_x_bloque.csv"), sep = ";", bom = TRUE)
 
+# ---- 3b. Consolidado TERRITORIAL por bloque (insumo de la pagina Territorio) -
+# Region x bloque con cobertura + % pueblos originarios + % migrantes, leyendo
+# los productos por bloque (cobertura_region.csv y equidad_region.csv).
+ter <- rbindlist(lapply(c("A", "B", "C"), function(b) {
+  fc <- here("productos", b, "cobertura_region.csv")
+  fe <- here("productos", b, "equidad_region.csv")
+  if (!file.exists(fc)) return(NULL)
+  cc <- fread(fc, sep = ";")[, .(IdRegion, cobertura_pct = pct, n_estab = n_total)]
+  if (file.exists(fe)) {
+    ee <- fread(fe, sep = ";")[, .(IdRegion, pct_pueblos_originarios, pct_migrantes)]
+    cc <- merge(cc, ee, by = "IdRegion", all.x = TRUE)
+  }
+  cc[, bloque := b]; cc
+}), fill = TRUE)
+if (nrow(ter))
+  fwrite(ter[order(bloque, IdRegion)], file.path(dirs, "territorio_region.csv"),
+         sep = ";", bom = TRUE)
+
 # ---- 4. Indicadores de auditoria social (con denominador FONASA/CASEN) -----
 indicadores_auditoria_social(part, largo, anio, dirs)
 

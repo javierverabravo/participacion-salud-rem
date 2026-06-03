@@ -20,21 +20,28 @@ library(data.table)
 library(ggplot2)
 
 interactivo <- function(g) {
+  if (is.null(g)) return(htmltools::HTML("<div style='padding:1rem;opacity:.7'>Corre <code>R/10_run_all.R</code> para generar este gráfico.</div>"))
   if (requireNamespace("plotly", quietly = TRUE))
     plotly::ggplotly(g, tooltip = "text")
   else g
 }
-tg <- theme_minimal(base_size = 12) + theme(plot.title = element_blank())
+# Tema con texto de ejes legible (evita la superposición reportada).
+tg <- theme_minimal(base_size = 12) +
+  theme(plot.title = element_blank(),
+        axis.text = element_text(size = 9),
+        panel.spacing = unit(1, "lines"))
+# Acorta etiquetas largas de eje para que no se encimen.
+wrap2 <- function(x, n = 22) stringr_wrap(x, n)
+stringr_wrap <- function(x, n) vapply(x, function(s)
+  paste(strwrap(s, width = n), collapse = "\n"), character(1))
+mile <- function(x) format(x, big.mark = ".", decimal.mark = ",", scientific = FALSE)
 
 # ---- Lector de productos por bloque -----------------------------------------
-# Cada análisis por sección deja sus tablas en productos/<bloque>/<nombre>.csv.
-# gp() las lee de forma tolerante: si una tabla falta, devuelve NULL y el
-# tablero degrada con elegancia (no rompe el render).
 gp <- function(blq, name) {
   f <- file.path("productos", blq, paste0(name, ".csv"))
   if (file.exists(f)) data.table::fread(f, sep = ";", encoding = "UTF-8") else NULL
 }
-gs <- function(name) {  # productos de la síntesis (cruzan A/B/C)
+gs <- function(name) {
   f <- file.path("productos", "sintesis", paste0(name, ".csv"))
   if (file.exists(f)) data.table::fread(f, sep = ";", encoding = "UTF-8") else NULL
 }
@@ -50,7 +57,6 @@ tema_blq <- c(A = "OIRS · atención de usuarios",
               C = "Satisfacción usuaria y humanización")
 col_blq  <- c(A = "#0f6e8c", B = "#2a9d8f", C = "#e09f3e")
 
-# Nombres de región.
 reg_nom <- data.table(
   IdRegion = c(15,1,2,3,4,5,13,6,7,16,8,9,14,10,11,12),
   region   = c("Arica y Parinacota","Tarapacá","Antofagasta","Atacama",
@@ -59,7 +65,7 @@ reg_nom <- data.table(
                "Aysén","Magallanes"))
 pr <- function(dt) merge(dt, reg_nom, by = "IdRegion", all.x = TRUE)
 
-# ---- Funciones de gráfico reutilizables por bloque --------------------------
+# ---- Gráficos reutilizables -------------------------------------------------
 plot_cob_tipo <- function(blq) {
   d <- gp(blq, "cobertura_tipo"); if (is.null(d)) return(NULL)
   ggplot(d, aes(x = reorder(tipo_grp, pct), y = pct,
@@ -112,7 +118,68 @@ plot_cob_pobreza <- function(blq) {
         text = paste0(comuna, " · pobreza ", pct_pobreza, "% · cobertura ", cobertura, "%"))) +
     geom_point(alpha = 0.45, color = col_blq[[blq]]) +
     geom_smooth(method = "lm", se = TRUE, color = "#de2d26") +
-    labs(x = "Tasa de pobreza comunal (%)", y = "Cobertura (%)") + tg
+    labs(x = "Tasa de pobreza comunal (%)",
+         y = "Cobertura comunal (% de establecimientos que registra)") + tg
+}
+# Equidad por subsección (B.1 vs B.2, C.1 vs C.2).
+plot_eq_subseccion <- function(blq) {
+  d <- gp(blq, "equidad_subseccion"); if (is.null(d) || !nrow(d)) return(NULL)
+  m <- melt(d[, .(seccion,
+                  `% mujeres` = pct_mujeres,
+                  `% pueblos originarios` = pct_pueblos_originarios,
+                  `% migrantes` = pct_migrantes,
+                  `% PRAIS` = pct_prais)],
+            id.vars = "seccion", variable.name = "grupo", value.name = "p")
+  ggplot(m, aes(x = grupo, y = p, fill = seccion,
+        text = paste0(seccion, " · ", grupo, ": ", p, "%"))) +
+    geom_col(position = "dodge") + coord_flip() +
+    scale_fill_brewer(palette = "Set2", name = "Subsección") +
+    labs(x = NULL, y = "% de participantes") + tg + theme(legend.position = "bottom")
+}
+# Mapa coroplético nacional de cobertura comunal (vista nacional de Territorio).
+plot_mapa_cob <- function(blq) {
+  if (!all(vapply(c("sf", "chilemapas"), requireNamespace, logical(1), quietly = TRUE)))
+    return(NULL)
+  d <- gp(blq, "cobertura_vs_pobreza"); if (is.null(d)) return(NULL)
+  suppressPackageStartupMessages(library(sf))
+  d <- copy(d); d[, codigo_comuna := sprintf("%05d", IdComuna)]
+  mapa <- sf::st_as_sf(chilemapas::mapa_comunas)
+  mapa <- merge(mapa, d[, .(codigo_comuna, cobertura)], by = "codigo_comuna", all.x = TRUE)
+  ggplot(mapa) +
+    geom_sf(aes(fill = cobertura), color = NA) +
+    scale_fill_viridis_c(option = "C", name = "Cobertura %", na.value = "grey90") +
+    coord_sf(xlim = c(-76, -66)) +
+    theme_void(base_size = 11) + theme(legend.position = "right")
+}
+# Territorio: cobertura por región y bloque (vista nacional comparada).
+plot_terr_cob <- function() {
+  d <- gs("territorio_region"); if (is.null(d)) return(NULL)
+  d <- merge(d, reg_nom, by = "IdRegion", all.x = TRUE)
+  d[, tema := tema_blq[bloque]]
+  ggplot(d, aes(x = reorder(region, cobertura_pct), y = cobertura_pct, fill = bloque,
+        text = paste0(region, " · ", tema, ": ", cobertura_pct, "%"))) +
+    geom_col() + coord_flip() +
+    facet_wrap(~ tema) +
+    scale_fill_manual(values = col_blq, guide = "none") +
+    labs(x = NULL, y = "% de establecimientos que registra") +
+    tg + theme(strip.text = element_text(face = "bold", size = 9))
+}
+plot_terr_incl <- function() {
+  d <- gs("territorio_region"); if (is.null(d)) return(NULL)
+  d <- merge(d, reg_nom, by = "IdRegion", all.x = TRUE)
+  m <- melt(d[, .(region, bloque,
+                  `Pueblos originarios` = pct_pueblos_originarios,
+                  Migrantes = pct_migrantes)],
+            id.vars = c("region", "bloque"), variable.name = "grupo", value.name = "p")
+  m[, tema := tema_blq[bloque]]
+  ggplot(m, aes(x = reorder(region, p), y = p, fill = grupo,
+        text = paste0(region, " · ", tema, " · ", grupo, ": ", p, "%"))) +
+    geom_col(position = "dodge") + coord_flip() +
+    facet_wrap(~ tema) +
+    scale_fill_manual(values = c("Pueblos originarios" = "#238b45",
+                                 "Migrantes" = "#2c7fb8"), name = NULL) +
+    labs(x = NULL, y = "% de participantes") +
+    tg + theme(legend.position = "bottom", strip.text = element_text(face = "bold", size = 9))
 }
 
 # --- vb(): value box con subtítulo + tooltip explicativo ---------------------
@@ -131,7 +198,7 @@ vb <- function(valor, sub, def, icon = "info-circle", color = "primary", title =
 # --- Glosario (fuente única de verdad para los tooltips) ---------------------
 glosario <- data.table(
   Termino = c(
-    "Cobertura", "Subregistro", "REM-A19b", "OIRS",
+    "Cobertura", "Subregistro", "Meses con registro", "REM-A19b", "OIRS",
     "Participación social", "Satisfacción usuaria", "REM", "DEIS",
     "Establecimiento", "CESFAM", "Posta de Salud Rural (PSR)",
     "SAPU / SUR", "Dependencia administrativa",
@@ -143,6 +210,7 @@ glosario <- data.table(
   Definicion = c(
     "Porcentaje de establecimientos de la red pública que registró al menos una actividad de la sección durante el año. Mide si hubo registro, no cuánto ni con qué calidad.",
     "De todas las combinaciones de establecimiento y mes en que se esperaba un registro, el porcentaje que no tiene ninguno. Un valor sin registro puede deberse a ausencia real de actividad o a omisión administrativa; el dato no permite distinguir ambos casos.",
+    "Mediana de meses del año (de 0 a 12) en que un establecimiento que participa deja efectivamente un registro de la sección. Mide la constancia del registro, no su volumen.",
     "Sección del REM que consolida la participación ciudadana en salud. Reúne tres familias distintas: atención de usuarios (OIRS), participación social y satisfacción usuaria; este tablero las analiza por separado.",
     "Oficinas de Información, Reclamos y Sugerencias: el canal formal por el que la ciudadanía presenta reclamos, consultas, solicitudes o felicitaciones a un establecimiento de salud.",
     "Instancias de incidencia de la comunidad en la gestión sanitaria: consejos de desarrollo, cabildos, diálogos ciudadanos y mecanismos similares. Es el núcleo deliberativo que prioriza la norma.",
@@ -153,7 +221,7 @@ glosario <- data.table(
     "Centro de Salud Familiar: establecimiento de atención primaria que atiende a una población a cargo bajo el modelo de salud familiar y comunitaria.",
     "Establecimiento pequeño de atención primaria en zonas rurales, con dotación reducida y apoyo de rondas médicas.",
     "Servicio de Atención Primaria de Urgencia (SAPU) y Servicio de Urgencia Rural (SUR): atención de urgencia de baja complejidad. Registran poca participación por el diseño de su función.",
-    "Entidad de la que depende administrativamente el establecimiento (municipal, servicio de salud, etc.).",
+    "Entidad de la que depende administrativamente el establecimiento (municipal, servicio de salud, etc.). En este análisis no agrega poder explicativo una vez conocidos el tipo y el nivel del establecimiento.",
     "Medida de asociación: cuántas veces más (o menos) probable es un resultado al cambiar un factor. OR=1 indica que el factor no cambia la probabilidad; mayor que 1 la aumenta, menor que 1 la reduce.",
     "Probabilidad de observar un resultado al menos tan extremo como el obtenido si el factor en realidad no tuviera efecto. Por convención, valores bajo 0,05 se consideran estadísticamente significativos.",
     "Coeficiente de Correlación Intraclase: del total de la variación, el porcentaje atribuible a un nivel (establecimiento, comuna o región) en contraste con los demás.",
@@ -170,6 +238,7 @@ glosario <- data.table(
   Simple = c(
     "De cada 100 establecimientos, cuántos anotaron alguna actividad en el año.",
     "Cuántos registros mensuales que deberían existir aparecen sin ningún dato.",
+    "Cuántos meses del año, en promedio, un centro que participa realmente anota algo.",
     "La parte del formulario REM donde se anota la participación ciudadana en salud.",
     "La ventanilla donde reclamas, consultas o felicitas a tu centro de salud.",
     "Cuando vecinos y organizaciones participan en cómo se gestiona la salud local.",
@@ -196,7 +265,81 @@ glosario <- data.table(
     "La mesa donde se coordina y participa a nivel de toda la red de un servicio de salud."))
 def_de <- function(t) { d <- glosario[Termino == t, Definicion]; if (length(d)) d[1] else "" }
 
-comp <- gs("comparativo_bloques")   # una fila por bloque
+comp <- gs("comparativo_bloques")
+```
+
+# Metodología
+
+## Row {height="55%"}
+
+### Column {width="50%"}
+
+::: {.card title="Del dato oficial al tablero (pipeline reproducible)"}
+Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr con
+`source("R/10_run_all.R")`:
+
+1. **`00`** descarga los REM 2025 del DEIS y la base de establecimientos.
+2. **`01`** identifica las prestaciones de participación con un *crosswalk* curado del
+   diccionario y las clasifica en las secciones **A / B / C**; reconstruye el universo
+   establecimiento × mes (donde vive el subregistro).
+3. **`02–03`** agregan pobreza comunal (CASEN 2024) y el denominador poblacional (FONASA).
+4. **`04`** es el **motor**: para cada sección calcula KPIs, cobertura, serie, equidad,
+   modelo de barrera con efectos aleatorios, multinivel de 3 niveles, espacial y tipologías.
+5. **`06/07/08`** corren el motor sobre A, B y C; **`09`** sintetiza y calcula los
+   indicadores de auditoría social.
+
+Las tablas quedan en `productos/{A,B,C,sintesis}/` y son **lo único que lee este
+tablero**. El sitio se regenera corriendo el pipeline y `quarto render`.
+:::
+
+### Column {width="50%"}
+
+```{r}
+#| title: "Por qué cada método (y no el camino convencional)"
+metodos <- data.table(
+  `Método` = c("Modelo de barrera (hurdle) con efectos aleatorios",
+               "Multinivel de 3 niveles", "I de Moran / LISA", "k-means (tipologías)"),
+  `Pregunta` = c("¿Qué condiciona registrar o no, y cuánto?",
+    "¿La variación vive en el establecimiento, la comuna o la región?",
+    "¿Las comunas vecinas se parecen (clústeres) o es azar?",
+    "¿Qué perfiles de participación existen sin etiquetar?"),
+  `Por qué no lo convencional` = c(
+    "Muchos ceros y cola extrema sesgan la media; hay que separar 'si registra' de 'cuánto'. El glmmTMB de NB-truncada no converge → descomposición glmer + lmer.",
+    "Promediar por región subestima el error e infla diferencias que son composición de comunas.",
+    "Comparar mapas a ojo no cuantifica ni da significancia.",
+    "Clasificar por volumen total oculta que 'participar' significa cosas distintas."))
+if (requireNamespace("DT", quietly = TRUE))
+  DT::datatable(metodos, rownames = FALSE,
+    options = list(dom = "t", ordering = FALSE), class = "stripe compact")
+```
+
+## Row {height="45%"}
+
+::: {.card title="Decisiones de datos que cambian las conclusiones"}
+**Codificación UTF-8 con BOM** (no Latin-1, como decía la instrucción original) — leído
+mal, se corrompen los nombres. **El subregistro está en filas ausentes, no en celdas
+vacías:** por eso se reconstruye el panel completo establecimiento × mes y **no se
+colapsa NA a 0**. **El A19b separa instancias y demografía** en columnas marginales, así
+que no es posible cruzar "qué instancia" × "perfil de participante"; la equidad se reporta
+marginal por subsección. El **modelo de barrera de objeto único no converge** por la cola
+extrema; la solución estable es la **descomposición en dos partes** (barrera logística +
+intensidad log-lineal), siempre verificando convergencia (`modelo_estado.csv`).
+:::
+
+# Glosario
+
+## Row {height="100%"}
+
+```{r}
+#| title: "Glosario de términos (ordenable y buscable) — empieza por aquí"
+glo <- copy(glosario)
+setnames(glo, c("Término", "Definición técnica", "En palabras simples"))
+if (requireNamespace("DT", quietly = TRUE)) {
+  DT::datatable(glo, rownames = FALSE, escape = TRUE,
+    options = list(pageLength = 27, dom = "ft",
+                   columnDefs = list(list(width = "150px", targets = 0))),
+    class = "stripe hover compact")
+} else knitr::kable(glo)
 ```
 
 # Resumen
@@ -212,6 +355,13 @@ comp <- gs("comparativo_bloques")   # una fila por bloque
 :::
 
 ## Row {height="22%"}
+
+```{r}
+vb(fmt(kget("A","establecimientos_activos")),
+   "establecimientos de la red pública analizados (2025)",
+   "Universo de establecimientos activos en el REM 2025 sobre el que se calcula toda la cobertura.",
+   icon = "hospital", color = "info", title = "Red analizada")
+```
 
 ```{r}
 vb(pct(kget("A","pct_cobertura")), "de los establecimientos registra OIRS",
@@ -231,16 +381,7 @@ vb(pct(kget("C","pct_cobertura")), "registra gestión de satisfacción usuaria",
    title = "C · Satisfacción usuaria")
 ```
 
-```{r}
-vb(fmt(kget("A","establecimientos_activos")),
-   "establecimientos de la red pública analizados (2025)",
-   "Universo de establecimientos activos en el REM 2025 sobre el que se calcula toda la cobertura.",
-   icon = "hospital", color = "info", title = "Red analizada")
-```
-
 ## Row {height="42%"}
-
-### Column {width="58%"}
 
 ```{r}
 #| title: "Las tres secciones se comportan distinto (comparativo)"
@@ -248,35 +389,22 @@ res_comp <- tryCatch({
   d <- copy(comp)
   tab <- data.table(
     Sección = paste0(d$bloque, " · ", c("OIRS","Part. social","Satisfacción")),
-    `Cobertura %`        = d$cobertura_pct,
-    `Subregistro %`      = d$pct_subregistro_estab_mes,
-    `Meses c/registro`   = d$mediana_meses_con_registro,
-    `ICC barrera %`      = d$icc_barrera_pct,
-    `Var. comuna %`      = d$var_comuna_pct,
-    `OR pobreza`         = round(d$OR_pobreza_x10pp, 2),
-    `p pobreza`          = signif(d$pobreza_p_valor, 2))
+    `Cobertura %`             = d$cobertura_pct,
+    `Subregistro %`           = d$pct_subregistro_estab_mes,
+    `Meses con registro (mediana)` = d$mediana_meses_con_registro,
+    `ICC barrera %`           = d$icc_barrera_pct,
+    `Var. comuna %`           = d$var_comuna_pct,
+    `OR pobreza (×10pp)`      = round(d$OR_pobreza_x10pp, 2),
+    `p pobreza`               = signif(d$pobreza_p_valor, 2))
   if (requireNamespace("DT", quietly = TRUE))
     DT::datatable(tab, rownames = FALSE,
-      options = list(dom = "t", ordering = FALSE), class = "stripe compact")
+      options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact")
   else knitr::kable(tab)
 }, error = function(e) htmltools::HTML(paste0(
   "<div style='padding:1rem'>Corre <code>R/10_run_all.R</code> para generar ",
   "<code>productos/sintesis/comparativo_bloques.csv</code>.</div>")))
 res_comp
 ```
-
-### Column {width="42%"}
-
-::: {.card title="Cómo leer este tablero"}
-El A19b reúne **tres familias** de actividad que miden cosas distintas, así que se
-analizan por separado. Cada pestaña — **A**, **B**, **C** — aplica el mismo flujo
-(cobertura, serie temporal, equidad, modelo de barrera con efectos aleatorios,
-multinivel de 3 niveles, autocorrelación espacial y tipologías). La pestaña
-**Síntesis** las compara y añade los **indicadores de auditoría social** con
-denominador poblacional. En la tabla: el **subregistro** crece de A a C, lo
-**institucional** (ICC de la barrera) domina en las tres, pero la **pobreza comunal**
-solo predice el registro en **C** (p<0,001).
-:::
 
 ## Row {height="22%"}
 
@@ -293,11 +421,39 @@ res_serie <- tryCatch({
     geom_line(linewidth = 1) + geom_point(size = 1.3) +
     facet_wrap(~ panel, scales = "free_y", ncol = 3) +
     scale_x_continuous(breaks = c(1,4,7,10)) +
+    scale_y_continuous(labels = function(x) format(x, big.mark = ".", scientific = FALSE)) +
     scale_color_manual(values = col_blq, guide = "none") +
-    labs(x = "Mes", y = NULL) + tg + theme(strip.text = element_text(face = "bold"))
+    labs(x = "Mes", y = NULL) + tg + theme(strip.text = element_text(face = "bold", size = 9))
   interactivo(g)
 }, error = function(e) htmltools::HTML("Corre el pipeline para ver las series."))
 res_serie
+```
+
+# Territorio
+
+## Row {height="52%"}
+
+### Column {width="42%"}
+
+```{r}
+#| title: "Mapa nacional · cobertura comunal de OIRS (vista nacional)"
+res_mapa <- tryCatch(plot_mapa_cob("A"), error = function(e) NULL)
+if (is.null(res_mapa))
+  htmltools::HTML("<div style='padding:1rem;opacity:.75'>Instala <code>sf</code> y <code>chilemapas</code> y corre el pipeline para ver el mapa. La versión interactiva por región se construirá en la app Shiny.</div>") else res_mapa
+```
+
+### Column {width="58%"}
+
+```{r}
+#| title: "Cobertura por región y sección (¿dónde se registra más?)"
+interactivo(tryCatch(plot_terr_cob(), error = function(e) NULL))
+```
+
+## Row {height="48%"}
+
+```{r}
+#| title: "Inclusión territorial · pueblos originarios y migrantes por región y sección"
+interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 ```
 
 # A · OIRS
@@ -309,51 +465,57 @@ vb(pct(kget("A","pct_cobertura")), "% de establecimientos que registra OIRS",
    def_de("Cobertura"), icon = "chat-left-dots", color = "primary", title = "Cobertura")
 ```
 ```{r}
-vb(fmt(kget("A","establecimientos_participan")), "establecimientos con ≥1 registro OIRS",
-   "Establecimientos que registraron al menos un evento de atención de usuarios en 2025.",
-   icon = "hospital", color = "info", title = "Establecimientos")
+vb(fmt(kget("A","total_consultas","kpis_A_tipos")), "consultas (el grueso de OIRS, no son reclamos)",
+   "Total de consultas ciudadanas registradas en OIRS durante 2025. Dominan ampliamente sobre los reclamos.",
+   icon = "question-circle", color = "info", title = "Consultas")
 ```
 ```{r}
-vb(pct(kget("A","pct_subregistro_estab_mes")), "de combinaciones estab-mes sin registro",
-   def_de("Subregistro"), icon = "exclamation-triangle", color = "warning", title = "Subregistro")
+vb(fmt(kget("A","total_reclamos","kpis_A_tipos")), "reclamos generados en el año",
+   "Reclamos OIRS generados en el mes, sumados en el año (subsección de gestión de reclamos).",
+   icon = "megaphone", color = "danger", title = "Reclamos")
 ```
 ```{r}
-vb(paste0(kget("A","pct_mujeres","equidad_kpis"), "%"), "de las personas atendidas son mujeres",
-   "Composición por sexo de quienes figuran en los registros OIRS.",
-   icon = "gender-female", color = "success", title = "Mujeres")
+vb(formatC(as.numeric(kget("A","razon_felicitaciones_reclamos","kpis_A_tipos")), format="f", digits=2),
+   "felicitaciones por cada reclamo",
+   "Razón felicitaciones/reclamos. Cercano a 1 indica tantas felicitaciones como reclamos.",
+   icon = "emoji-smile", color = "success", title = "Felicitaciones / reclamos")
 ```
 
 ## Row {height="44%"}
 
 ### Column
 ```{r}
+#| title: "OIRS no es 'reclamos': tipos de solicitud (escala logarítmica)"
+res_a_tipos <- tryCatch({
+  d <- gp("A", "sub_A_tipos_solicitud"); if (is.null(d)) stop("falta")
+  d <- d[tipo != "Otros"]
+  g <- ggplot(d, aes(x = reorder(tipo, eventos), y = eventos,
+        text = paste0(tipo, ": ", mile(eventos), " eventos · ", mile(n_estab), " estab."))) +
+    geom_col(fill = col_blq[["A"]]) + coord_flip() +
+    scale_y_log10(labels = function(x) format(x, big.mark = ".", scientific = FALSE)) +
+    labs(x = NULL, y = "Eventos registrados (escala log)") + tg
+  interactivo(g)
+}, error = function(e) htmltools::HTML("Corre el pipeline para ver los tipos de solicitud."))
+res_a_tipos
+```
+### Column
+```{r}
 #| title: "Cobertura por tipo de establecimiento"
 interactivo(plot_cob_tipo("A"))
 ```
+
+## Row {height="36%"}
+
 ### Column
 ```{r}
 #| title: "Eventos OIRS registrados por mes"
 interactivo(plot_serie("A"))
 ```
-
-## Row {height="36%"}
-
-### Column {width="55%"}
+### Column
 ```{r}
-#| title: "¿Dónde vive la variación? (modelo multinivel de 3 niveles)"
+#| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("A"))
 ```
-### Column {width="45%"}
-::: {.card title="Lectura · OIRS"}
-La atención de usuarios es la sección de **mayor volumen** (`r fmt(kget("A","total_eventos"))`
-eventos) y la más institucionalizada: el establecimiento explica el
-**`r kget("A","icc_barrera_pct","modelo_icc")`%** de la barrera (ICC). Pero, a diferencia
-de la participación social, **tiene geografía**: la comuna pesa
-`r comp[bloque=="A", var_comuna_pct]`% y hay **autocorrelación espacial significativa**
-(I de Moran `r kget("A","I_Moran","moran_global")`, p≈0,001). La pobreza comunal **no**
-resulta significativa (OR `r round(comp[bloque=="A", OR_pobreza_x10pp],2)`,
-p=`r signif(comp[bloque=="A", pobreza_p_valor],2)`).
-:::
 
 # B · Participación social
 
@@ -382,8 +544,8 @@ vb(paste0(kget("B","pct_mujeres","equidad_kpis"), "%"), "de las personas partici
 
 ### Column
 ```{r}
-#| title: "Cobertura por tipo de establecimiento"
-interactivo(plot_cob_tipo("B"))
+#| title: "B.1 (instancias) vs B.2 (líneas de acción): perfil de participante"
+interactivo(tryCatch(plot_eq_subseccion("B"), error = function(e) NULL))
 ```
 ### Column
 ```{r}
@@ -393,22 +555,16 @@ interactivo(plot_eq_region("B"))
 
 ## Row {height="36%"}
 
-### Column {width="55%"}
+### Column
 ```{r}
-#| title: "¿Dónde vive la variación? (modelo multinivel de 3 niveles)"
+#| title: "Cobertura por tipo de establecimiento"
+interactivo(plot_cob_tipo("B"))
+```
+### Column
+```{r}
+#| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("B"))
 ```
-### Column {width="45%"}
-::: {.card title="Lectura · Participación social"}
-Es el **núcleo deliberativo** que prioriza la Norma General, y el caso **institucional
-puro**: el establecimiento explica el **`r kget("B","icc_barrera_pct","modelo_icc")`%** de
-la barrera, la comuna solo `r comp[bloque=="B", var_comuna_pct]`% y la región
-`r comp[bloque=="B", var_region_pct]`%; **sin clústeres espaciales** (Moran
-`r kget("B","I_Moran","moran_global")`, p>0,05) y la **pobreza no es significativa**
-(OR `r round(comp[bloque=="B", OR_pobreza_x10pp],2)`,
-p=`r signif(comp[bloque=="B", pobreza_p_valor],2)`). Registrar deliberación depende de la
-gestión del centro, no del territorio. Participan ~2 mujeres por cada hombre.
-:::
 
 # C · Satisfacción
 
@@ -437,32 +593,27 @@ vb(paste0(kget("C","pct_mujeres","equidad_kpis"), "%"), "de las personas son muj
 
 ### Column
 ```{r}
-#| title: "Cobertura por región (la más baja de las tres secciones)"
-interactivo(plot_cob_region("C"))
+#| title: "C.1 (satisfacción) vs C.2 (líneas de acción): perfil de participante"
+interactivo(tryCatch(plot_eq_subseccion("C"), error = function(e) NULL))
 ```
 ### Column
 ```{r}
-#| title: "Cobertura vs. pobreza comunal (aquí la pobreza SÍ predice)"
+#| title: "Cobertura vs. pobreza comunal — aquí la pobreza SÍ predice (cada punto es una comuna)"
 interactivo(plot_cob_pobreza("C"))
 ```
 
 ## Row {height="36%"}
 
-### Column {width="55%"}
+### Column
 ```{r}
-#| title: "¿Dónde vive la variación? (modelo multinivel de 3 niveles)"
+#| title: "Cobertura por región (la más baja de las tres secciones)"
+interactivo(plot_cob_region("C"))
+```
+### Column
+```{r}
+#| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("C"))
 ```
-### Column {width="45%"}
-::: {.card title="Lectura · Satisfacción usuaria"}
-Es la sección de **menor cobertura** (`r pct(kget("C","pct_cobertura"))`) y **mayor
-subregistro** (`r pct(kget("C","pct_subregistro_estab_mes"))`), y la **única donde la
-pobreza comunal predice** el registro: por cada +10 pp de pobreza, las probabilidades de
-registrar caen (OR **`r round(comp[bloque=="C", OR_pobreza_x10pp],2)`**, **p<0,001**).
-Tiene además **clústeres espaciales** (Moran `r kget("C","I_Moran","moran_global")`,
-p<0,001). Aquí el sesgo socioeconómico es real: las comunas más pobres registran menos
-satisfacción usuaria.
-:::
 
 # Síntesis y auditoría social
 
@@ -535,9 +686,10 @@ res_tip <- tryCatch({
             id.vars = "etiqueta", variable.name = "Sección", value.name = "p")
   g <- ggplot(m, aes(x = etiqueta, y = p, fill = Sección,
         text = paste0(etiqueta, " · ", Sección, ": ", round(p), "%"))) +
-    geom_col() + coord_flip() +
+    geom_col(position = "dodge") + coord_flip() +
     scale_fill_manual(values = col_blq, name = "Sección") +
-    labs(x = NULL, y = "Composición media del perfil (%)") +
+    scale_y_continuous(labels = function(x) paste0(x, "%")) +
+    labs(x = NULL, y = "Composición media de la actividad del perfil (% por sección)") +
     tg + theme(legend.position = "bottom")
   interactivo(g)
 }, error = function(e) htmltools::HTML(
@@ -547,19 +699,24 @@ res_tip
 
 ### Column {width="50%"}
 
-::: {.card title="Conclusión e implicancias de política"}
-Las tres secciones confirman que **registrar es un rasgo institucional del
-establecimiento** (ICC de la barrera 66–94 %), pero **el territorio no pesa igual**: es
-casi nulo en participación social, real en OIRS y **socioeconómico en satisfacción
-usuaria** (única con pobreza significativa). Lo que parece "territorio" en OIRS es, al
-considerar el **Servicio de Salud**, gestión de red más que geografía.
-
-**Implicancias:** (1) fijar metas de registro **por establecimiento y tipo**, no por
-región; (2) usar los **Servicios de Salud** como unidad de mejora del registro;
-(3) **validar la sección de participación social** en el instrumento REM (hoy sin regla
-de consistencia) para reducir el subregistro habilitado por diseño; (4) atender el
-**sesgo socioeconómico** específico de satisfacción usuaria.
-:::
+```{r}
+#| title: "Qué sección domina la actividad de cada región"
+res_rxb <- tryCatch({
+  rb <- gs("region_x_bloque"); if (is.null(rb)) stop("falta")
+  rb <- merge(rb, reg_nom, by = "IdRegion", all.x = TRUE)
+  m <- melt(rb, id.vars = c("IdRegion", "region"),
+            measure.vars = intersect(c("A","B","C"), names(rb)),
+            variable.name = "bloque", value.name = "p")
+  g <- ggplot(m, aes(x = region, y = p, fill = bloque,
+        text = paste0(region, " · ", tema_blq[as.character(bloque)], ": ", round(p), "%"))) +
+    geom_col() + coord_flip() +
+    scale_fill_manual(values = col_blq, name = "Sección", labels = tema_blq) +
+    labs(x = NULL, y = "% de la actividad de la región") +
+    tg + theme(legend.position = "bottom")
+  interactivo(g)
+}, error = function(e) htmltools::HTML("Corre el pipeline."))
+res_rxb
+```
 
 # Nivel y robustez
 
@@ -615,88 +772,20 @@ res_rob
 
 ## Row {height="42%"}
 
-::: {.card title="Cómo leer esta sección"}
-La participación se **concentra en el nivel terciario** (hospitales) en las tres secciones y
-es casi nula en el **secundario**; en OIRS los hospitales prácticamente siempre registran. Esto
-confirma que conviene separar los **ceros estructurales** (urgencias y niveles que por diseño no
-registran) del **subregistro** real. Al restringir el modelo al **universo participativo**
-(excluyendo urgencias SAPU/SUR/SAR), las conclusiones se mantienen: la **pobreza solo predice en
-satisfacción usuaria (C)** (OR ≈ 0,58, p<0,001, idéntico), la participación social (B) sigue siendo
-institucional pura, y la única señal que se **refuerza** es la **territorialidad de OIRS (A)** —la
-varianza de comuna sube de 29% a 33%—. El sesgo socioeconómico de C y la naturaleza institucional
-del registro son **robustos** a la corrección.
-:::
-
-# Metodología
-
-## Row {height="55%"}
-
-### Column {width="50%"}
-
-::: {.card title="Del dato oficial al tablero (pipeline reproducible)"}
-Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr con
-`source("R/10_run_all.R")`:
-
-1. **`00`** descarga los REM 2025 del DEIS y la base de establecimientos.
-2. **`01`** identifica las prestaciones de participación con un *crosswalk* curado del
-   diccionario y las clasifica en las secciones **A / B / C**; reconstruye el universo
-   establecimiento × mes (donde vive el subregistro).
-3. **`02–03`** agregan pobreza comunal (CASEN 2024) y el denominador poblacional (FONASA).
-4. **`10`** es el **motor**: para cada sección calcula KPIs, cobertura, serie, equidad,
-   modelo de barrera con efectos aleatorios, multinivel de 3 niveles, espacial y tipologías.
-5. **`20/21/22`** corren el motor sobre A, B y C; **`30`** sintetiza y calcula los
-   indicadores de auditoría social.
-
-Las tablas quedan en `productos/{A,B,C,sintesis}/` y son **lo único que lee este
-tablero**. El sitio se regenera corriendo el pipeline y `quarto render` (proceso manual).
-:::
-
-### Column {width="50%"}
-
 ```{r}
-#| title: "Por qué cada método (y no el camino convencional)"
-metodos <- data.table(
-  `Método` = c("Modelo de barrera (hurdle) con efectos aleatorios",
-               "Multinivel de 3 niveles", "I de Moran / LISA", "k-means (tipologías)"),
-  `Pregunta` = c("¿Qué condiciona registrar o no, y cuánto?",
-    "¿La variación vive en el establecimiento, la comuna o la región?",
-    "¿Las comunas vecinas se parecen (clústeres) o es azar?",
-    "¿Qué perfiles de participación existen sin etiquetar?"),
-  `Por qué no lo convencional` = c(
-    "Muchos ceros y cola extrema sesgan la media; hay que separar 'si registra' de 'cuánto'. El glmmTMB de NB-truncada no converge → descomposición glmer + lmer.",
-    "Promediar por región subestima el error e infla diferencias que son composición de comunas.",
-    "Comparar mapas a ojo no cuantifica ni da significancia.",
-    "Clasificar por volumen total oculta que 'participar' significa cosas distintas."))
-if (requireNamespace("DT", quietly = TRUE))
-  DT::datatable(metodos, rownames = FALSE,
-    options = list(dom = "t", ordering = FALSE), class = "stripe compact")
-```
-
-## Row {height="45%"}
-
-::: {.card title="Decisiones de datos que cambian las conclusiones"}
-**Codificación UTF-8 con BOM** (no Latin-1, como decía la instrucción original) — leído
-mal, se corrompen los nombres. **El subregistro está en filas ausentes, no en celdas
-vacías:** por eso se reconstruye el panel completo establecimiento × mes y **no se
-colapsa NA a 0**. **El A19b separa instancias y demografía**, así que no es posible cruzar
-"qué instancia" × "perfil de participante". El **modelo de barrera de objeto único no
-converge** por la cola extrema; la solución estable es la **descomposición en dos partes**
-(barrera logística + intensidad log-lineal), siempre verificando convergencia
-(`modelo_estado.csv`).
-:::
-
-# Glosario
-
-## Row {height="100%"}
-
-```{r}
-#| title: "Glosario de términos (ordenable y buscable)"
-glo <- copy(glosario)
-setnames(glo, c("Término", "Definición técnica", "En palabras simples"))
-if (requireNamespace("DT", quietly = TRUE)) {
-  DT::datatable(glo, rownames = FALSE, escape = TRUE,
-    options = list(pageLength = 26, dom = "ft",
-                   columnDefs = list(list(width = "150px", targets = 0))),
-    class = "stripe hover compact")
-} else knitr::kable(glo)
+#| title: "Descomposición de la varianza del establecimiento (¿tipo, nivel o dependencia?)"
+res_desc <- tryCatch({
+  dd <- rbindlist(lapply(c("A","B","C"), function(b){
+    d <- gp(b, "modelo_descomposicion"); if (is.null(d)) return(NULL)
+    d[, bloque := b]; d
+  }), fill = TRUE)
+  if (nrow(dd) == 0) stop("falta")
+  tab <- dcast(dd, modelo ~ bloque, value.var = "pct_reduccion_vs_M0")
+  if (requireNamespace("DT", quietly = TRUE))
+    DT::datatable(tab, rownames = FALSE,
+      options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact",
+      caption = "% de la varianza de establecimiento explicada al añadir cada factor. La dependencia administrativa casi no aporta sobre tipo+nivel.")
+  else knitr::kable(tab)
+}, error = function(e) htmltools::HTML("Corre el pipeline."))
+res_desc
 ```

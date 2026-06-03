@@ -105,6 +105,7 @@ message("Tabla larga: ", format(nrow(largo), big.mark = "."), " filas.")
 attrs <- c("TipoEstablecimientoGlosa", "DependenciaAdministrativa",
            "NivelAtencionEstabglosa", "NivelComplejidadEstabGlosa",
            "TipoPertenenciaEstabGlosa", "ComunaGlosa", "RegionGlosa",
+           "SeremiSaludGlosa_ServicioDeSaludGlosa",
            "Latitud", "Longitud", "EstadoFuncionamiento")
 maestra <- fread(here("datos", "establecimientos_maestra.csv"), sep = ";",
                  encoding = "UTF-8",

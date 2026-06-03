@@ -70,7 +70,77 @@ tipo_agrupado <- function(est) {
   # Universo participativo: urgencias (SAPU/SUR/SAR) casi no registran
   # participacion por diseno de su funcion -> ceros estructurales, no subregistro.
   est[, participa_estructural := !(tipo_grp %in% c("SAPU", "SUR", "SAR"))]
+  # Servicio de Salud (red operativa) para el analisis de efecto red.
+  if ("SeremiSaludGlosa_ServicioDeSaludGlosa" %in% names(est))
+    est[, servicio_salud := SeremiSaludGlosa_ServicioDeSaludGlosa]
+  else est[, servicio_salud := NA_character_]
+  # Dependencia administrativa limpia (Municipal, Servicio de Salud, etc.).
+  if ("DependenciaAdministrativa" %in% names(est))
+    est[, dependencia := fifelse(is.na(DependenciaAdministrativa) |
+                                 DependenciaAdministrativa == "",
+                                 "Sin dato", as.character(DependenciaAdministrativa))]
+  else est[, dependencia := "Sin dato"]
+  # Reclasificacion de nivel "No aplica / otro": inferir por tipo cuando la glosa
+  # oficial no trae nivel. Hospital -> Terciario; centros APS y urgencias de APS
+  # -> Primario (APS). Se conserva el original en nivel_atencion_orig (auditable).
+  est[, nivel_atencion_orig := nivel_atencion]
+  est[nivel_atencion == "No aplica / otro" & tipo_grp == "Hospital",
+      nivel_atencion := "Terciario"]
+  est[nivel_atencion == "No aplica / otro" &
+      tipo_grp %in% c("CESFAM", "CECOSF", "Posta Rural (PSR)", "SAPU",
+                      "SUR", "SAR", "COSAM"),
+      nivel_atencion := "Primario (APS)"]
+  diag <- est[, .(n = .N), by = .(tipo_grp, nivel_atencion_orig, nivel_atencion)][order(-n)]
+  dir.create(here("productos"), showWarnings = FALSE, recursive = TRUE)
+  fwrite(diag, here("productos", "diagnostico_nivel.csv"), sep = ";", bom = TRUE)
   est[]
+}
+
+# Tipo de solicitud OIRS (bloque A): separa reclamos de consultas, felicitaciones,
+# sugerencias y solicitudes (cada uno se entiende en su propia logica).
+tipo_solicitud_A <- function(desc) {
+  d <- tolower(desc)
+  fcase(
+    grepl("reclamo", d),       "Reclamos",
+    grepl("consulta", d),      "Consultas",
+    grepl("felicitacion", d),  "Felicitaciones",
+    grepl("sugerencia", d),    "Sugerencias",
+    grepl("solicitud", d),     "Solicitudes",
+    default = "Otros")
+}
+
+# Equidad por SUBSECCION (B.1 vs B.2, C.1 vs C.2): perfil de participante de cada
+# linea por separado. Los participantes son columnas marginales por subseccion
+# (no hay cruce instancia x participante en el dato crudo).
+equidad_subseccion <- function(largo, blq, dirb) {
+  secs <- switch(blq, A = "A", B = c("B.1", "B.2"), C = c("C.1", "C.2"), blq)
+  out <- list()
+  for (sk in secs) {
+    lg <- largo[seccion_key == sk]
+    if (nrow(lg) == 0) next
+    tot <- lg[dimension == "total" & grepl("ambos sexos", etiqueta, ignore.case = TRUE),
+              sum(valor, na.rm = TRUE)]; tot <- max(tot, 1)
+    sx <- lg[dimension == "sexo", .(p = sum(valor, na.rm = TRUE)), by = etiqueta]
+    sx[etiqueta == "Masculino", etiqueta := "Hombres"]
+    sx[etiqueta == "Femenina",  etiqueta := "Mujeres"]
+    sx <- sx[etiqueta %in% c("Hombres", "Mujeres"), .(p = sum(p)), by = etiqueta]
+    hb <- sx[etiqueta == "Hombres", sum(p)]; mj <- sx[etiqueta == "Mujeres", sum(p)]
+    g <- function(dim) lg[dimension == dim, sum(valor, na.rm = TRUE)]
+    out[[sk]] <- data.table(
+      seccion = sk, total_personas = tot, hombres = hb, mujeres = mj,
+      pct_mujeres = round(100 * mj / max(hb + mj, 1), 1),
+      pct_pueblos_originarios = round(100 * g("pueblos_originarios") / tot, 1),
+      pct_migrantes = round(100 * g("migrantes") / tot, 1),
+      pct_prais = round(100 * g("prais") / tot, 1))
+    gen <- lg[dimension == "identidad_genero",
+              .(personas = sum(valor, na.rm = TRUE)), by = etiqueta][order(-personas)]
+    if (nrow(gen))
+      fwrite(gen, file.path(dirb, sprintf("equidad_genero_%s.csv", gsub("\\.", "", sk))),
+             sep = ";", bom = TRUE)
+  }
+  if (length(out))
+    fwrite(rbindlist(out), file.path(dirb, "equidad_subseccion.csv"), sep = ";", bom = TRUE)
+  invisible(TRUE)
 }
 
 # Factor de tipo con CESFAM como referencia (si está presente).
@@ -90,10 +160,11 @@ construir_panel <- function(part, est, universo, blq) {
   panel <- merge(panel, pt, by = c("IdEstablecimiento", "Mes"),
                  all.x = TRUE, sort = FALSE)
   panel[is.na(valor), valor := 0]
-  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp, nivel_atencion, participa_estructural)],
+  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp, nivel_atencion, dependencia, participa_estructural)],
                  by = "IdEstablecimiento", all.x = TRUE, sort = FALSE)
   panel[is.na(tipo_grp), tipo_grp := "Otro"]
   panel[is.na(nivel_atencion), nivel_atencion := "No aplica / otro"]
+  panel[is.na(dependencia), dependencia := "Sin dato"]
   panel[is.na(participa_estructural), participa_estructural := FALSE]
   panel[, reporta := as.integer(valor > 0)]
   panel[]
@@ -260,6 +331,25 @@ subsecciones_bloque <- function(largo, part, blq, dirb) {
     gest <- largo[bloque == "A" & dimension == "reclamo_gestion",
                   .(total = sum(valor, na.rm = TRUE)), by = etiqueta][order(-total)]
     fwrite(gest, file.path(dirb, "sub_gestion_reclamos.csv"), sep = ";", bom = TRUE)
+    # A se entiende por TIPO de solicitud (no todo es "reclamo").
+    tip <- pb[, .(eventos = sum(valor_total, na.rm = TRUE),
+                  n_estab = uniqueN(IdEstablecimiento[valor_total > 0])),
+              by = .(tipo = tipo_solicitud_A(descripcion))][order(-eventos)]
+    fwrite(tip, file.path(dirb, "sub_A_tipos_solicitud.csv"), sep = ";", bom = TRUE)
+    gv <- function(t) tip[tipo == t, sum(eventos)]
+    # Los reclamos reales NO llevan la palabra "reclamo" en la glosa de la
+    # prestacion (van por motivo): se toman de la gestion ("Reclamos generados
+    # en el mes"). El grep literal solo captura una fraccion marginal.
+    rec <- gest[grepl("generados en el mes$", etiqueta), sum(total)]
+    if (length(rec) == 0 || is.na(rec) || rec == 0) rec <- gv("Reclamos")
+    fel <- gv("Felicitaciones")
+    fwrite(data.table(
+      indicador = c("total_reclamos", "total_consultas", "total_felicitaciones",
+                    "total_sugerencias", "total_solicitudes",
+                    "razon_felicitaciones_reclamos"),
+      valor = c(rec, gv("Consultas"), fel, gv("Sugerencias"), gv("Solicitudes"),
+                round(fel / max(rec, 1), 3))),
+      file.path(dirb, "kpis_A_tipos.csv"), sep = ";", bom = TRUE)
 
   } else if (blq == "B") {
     inst <- .instancias_intensidad(largo[seccion_key == "B.1"], n_estab_total)
@@ -326,6 +416,25 @@ modelo_hurdle <- function(panel, blq, dirb) {
   if ("nivel_atencion" %in% names(d))
     fwrite(d[, .(prob_registra = round(mean(p), 3)), by = nivel_atencion][order(-prob_registra)],
            file.path(dirb, "modelo_nivel.csv"), sep = ";", bom = TRUE)
+  if ("dependencia" %in% names(d))
+    fwrite(d[, .(prob_registra = round(mean(p), 3)), by = dependencia][order(-prob_registra)],
+           file.path(dirb, "modelo_dependencia.csv"), sep = ";", bom = TRUE)
+  if ("IdComuna" %in% names(d))
+    fwrite(d[, .(prob_registra = round(mean(p), 3), n = .N), by = IdComuna][order(-prob_registra)],
+           file.path(dirb, "modelo_comuna.csv"), sep = ";", bom = TRUE)
+  # OR de cada tipo vs CESFAM (efecto fijo de la barrera): quien reporta mas.
+  co_b <- tryCatch(summary(m_b)$coefficients, error = function(e) NULL)
+  if (!is.null(co_b)) {
+    rn <- rownames(co_b); idx <- grep("^tipo_grp", rn)
+    if (length(idx))
+      fwrite(data.table(
+        tipo = sub("^tipo_grp", "", rn[idx]),
+        OR_vs_CESFAM = round(exp(co_b[idx, "Estimate"]), 2),
+        IC95_inf = round(exp(co_b[idx, "Estimate"] - 1.96 * co_b[idx, "Std. Error"]), 2),
+        IC95_sup = round(exp(co_b[idx, "Estimate"] + 1.96 * co_b[idx, "Std. Error"]), 2),
+        p_valor = round(co_b[idx, "Pr(>|z|)"], 4))[order(-OR_vs_CESFAM)],
+        file.path(dirb, "modelo_tipo_or.csv"), sep = ";", bom = TRUE)
+  }
   mmes <- d[, .(prob_registra = round(mean(p), 3)), by = Mes]
   mmes[, Mes := as.integer(as.character(Mes))]
   fwrite(mmes[order(Mes)], file.path(dirb, "modelo_estacionalidad.csv"), sep = ";", bom = TRUE)
@@ -468,6 +577,108 @@ espacial_bloque <- function(blq, dirb) {
             sprintf("I=%.3f p=%.3f", mi$estimate[["Moran I statistic"]], mi$p.value))
     TRUE
   }, error = function(e) { .estado(dirb, "espacial", "error", conditionMessage(e)); FALSE })
+  invisible(res)
+}
+
+# ---- 9b. Descomposicion de varianza del establecimiento (gestion vs tipo) --
+# Cuanto del efecto establecimiento explican tipo y nivel (M0 nulo -> M1 +tipo
+# -> M2 +tipo+nivel). Lo que NO explican = variacion entre centros del mismo
+# tipo/nivel (candidata a "gestion").
+modelo_descomposicion <- function(panel, blq, dirb) {
+  d <- copy(panel)[!is.na(tipo_grp) & !is.na(nivel_atencion)]
+  if (d[, sum(reporta)] < 30) {
+    .estado(dirb, "descomposicion", "omitido", "pocos positivos"); return(invisible(FALSE))
+  }
+  tiene_dep <- "dependencia" %in% names(d) && d[, uniqueN(dependencia)] > 1
+  d[, `:=`(tipo_grp = .factor_tipo(tipo_grp),
+           nivel_atencion = factor(nivel_atencion),
+           IdEstablecimiento = factor(IdEstablecimiento))]
+  if (tiene_dep) d[, dependencia := factor(dependencia)]
+  ctrl <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+  fit  <- function(f) tryCatch(glmer(f, family = binomial, data = d, control = ctrl),
+                               error = function(e) NULL)
+  vget <- function(m) if (is.null(m)) NA_real_ else as.numeric(VarCorr(m)$IdEstablecimiento)
+  m0 <- fit(reporta ~ (1 | IdEstablecimiento))
+  m1 <- fit(reporta ~ tipo_grp + (1 | IdEstablecimiento))
+  m2 <- fit(reporta ~ tipo_grp + nivel_atencion + (1 | IdEstablecimiento))
+  m3 <- if (tiene_dep)
+    fit(reporta ~ tipo_grp + nivel_atencion + dependencia + (1 | IdEstablecimiento)) else NULL
+  v0 <- vget(m0); v1 <- vget(m1); v2 <- vget(m2); v3 <- vget(m3)
+  red <- function(v) if (!is.na(v0) && v0 > 0 && !is.na(v)) round(100 * (v0 - v) / v0, 1) else NA
+  tab <- data.table(
+    modelo = c("M0 nulo (solo establecimiento)", "M1 + tipo",
+               "M2 + tipo + nivel", "M3 + tipo + nivel + dependencia"),
+    var_establecimiento = round(c(v0, v1, v2, v3), 3),
+    pct_reduccion_vs_M0 = c(0, red(v1), red(v2), red(v3)))
+  fwrite(tab, file.path(dirb, "modelo_descomposicion.csv"), sep = ";", bom = TRUE)
+  # OR de cada dependencia (vs referencia) en la barrera, condicional a tipo+nivel.
+  if (!is.null(m3)) {
+    co <- tryCatch(summary(m3)$coefficients, error = function(e) NULL)
+    if (!is.null(co)) {
+      rn <- rownames(co); idx <- grep("^dependencia", rn)
+      if (length(idx))
+        fwrite(data.table(
+          dependencia = sub("^dependencia", "", rn[idx]),
+          OR_vs_ref = round(exp(co[idx, "Estimate"]), 2),
+          IC95_inf = round(exp(co[idx, "Estimate"] - 1.96 * co[idx, "Std. Error"]), 2),
+          IC95_sup = round(exp(co[idx, "Estimate"] + 1.96 * co[idx, "Std. Error"]), 2),
+          p_valor = round(co[idx, "Pr(>|z|)"], 4))[order(-OR_vs_ref)],
+          file.path(dirb, "modelo_dependencia_or.csv"), sep = ";", bom = TRUE)
+    }
+  }
+  .estado(dirb, "descomposicion", "ok",
+          sprintf("tipo+nivel explican %s%% del efecto establecimiento%s",
+                  ifelse(is.na(red(v2)), "NA", red(v2)),
+                  if (!is.na(v3)) sprintf("; +dependencia %s%%", red(v3)) else ""))
+  invisible(TRUE)
+}
+
+# ---- 9c. Efecto red: el patron espacial es la red (Servicio de Salud)? -----
+# Compara el I de Moran de la cobertura comunal con el I de Moran de los
+# RESIDUOS tras descontar la media de cada Servicio de Salud. Si el patron
+# espacial cae a ~0, "lo que parece territorio" es la red de gestion.
+red_servicio <- function(est, blq, dirb) {
+  pkgs <- c("sf", "spdep", "chilemapas")
+  if (!all(vapply(pkgs, requireNamespace, logical(1), quietly = TRUE))) {
+    .estado(dirb, "red_servicio", "omitido", "faltan paquetes"); return(invisible(FALSE))
+  }
+  f_cob <- file.path(dirb, "cobertura_vs_pobreza.csv")
+  if (!file.exists(f_cob) || !("servicio_salud" %in% names(est))) {
+    .estado(dirb, "red_servicio", "omitido", "falta cobertura o servicio_salud")
+    return(invisible(FALSE))
+  }
+  res <- tryCatch({
+    suppressPackageStartupMessages({ library(sf); library(spdep) })
+    cob <- fread(f_cob, sep = ";")
+    cs <- est[!is.na(servicio_salud), .N, by = .(IdComuna, servicio_salud)][order(-N)]
+    cs <- cs[, .SD[1], by = IdComuna][, .(IdComuna, servicio_salud)]
+    cob <- merge(cob, cs, by = "IdComuna", all.x = TRUE)[!is.na(servicio_salud)]
+    serv <- cob[, .(cobertura = round(sum(cobertura * n) / sum(n), 1),
+                    n_comunas = .N, n_estab = sum(n)), by = servicio_salud][order(-cobertura)]
+    fwrite(serv, file.path(dirb, "cobertura_servicio.csv"), sep = ";", bom = TRUE)
+    cob[, cob_serv := sum(cobertura * n) / sum(n), by = servicio_salud]
+    cob[, residual := cobertura - cob_serv]
+    cob[, codigo_comuna := sprintf("%05d", IdComuna)]
+    mapa <- sf::st_as_sf(chilemapas::mapa_comunas)
+    mapa <- merge(mapa, cob[, .(codigo_comuna, cobertura, residual)],
+                  by = "codigo_comuna", all.x = TRUE)
+    mapa <- mapa[!is.na(mapa$cobertura) & !is.na(mapa$residual), ]
+    nb <- spdep::poly2nb(mapa, queen = TRUE)
+    lw <- spdep::nb2listw(nb, style = "W", zero.policy = TRUE)
+    mi_raw <- spdep::moran.test(mapa$cobertura, lw, zero.policy = TRUE, na.action = na.omit)
+    mi_res <- spdep::moran.test(mapa$residual,  lw, zero.policy = TRUE, na.action = na.omit)
+    fwrite(data.table(
+      indicador = c("I_Moran_comuna", "p_comuna",
+                    "I_Moran_residual_servicio", "p_residual"),
+      valor = round(c(mi_raw$estimate[["Moran I statistic"]], mi_raw$p.value,
+                      mi_res$estimate[["Moran I statistic"]], mi_res$p.value), 4)),
+      file.path(dirb, "moran_servicio.csv"), sep = ";", bom = TRUE)
+    .estado(dirb, "red_servicio", "ok",
+            sprintf("Moran comuna %.3f -> residual servicio %.3f",
+                    mi_raw$estimate[["Moran I statistic"]],
+                    mi_res$estimate[["Moran I statistic"]]))
+    TRUE
+  }, error = function(e) { .estado(dirb, "red_servicio", "error", conditionMessage(e)); FALSE })
   invisible(res)
 }
 
