@@ -3,6 +3,8 @@
 > Análisis reproducible de la participación ciudadana en la red pública de salud de Chile, a partir de los Resúmenes Estadísticos Mensuales (REM) del DEIS-MINSAL. Todo el procesamiento está en R; el resultado es un tablero web y un informe técnico.
 >
 > **Autor:** Javier Vera Bravo · [@Arleq89](https://github.com/Arleq89) · **Datos:** REM 2025 (DEIS-MINSAL).
+>
+> 📊 **Dashboard en vivo:** <https://arleq89.github.io/participacion-salud-rem/>
 
 Este documento no es solo una guía de instalación. Está escrito para que **otra persona pueda entender cómo se construyó el proyecto de principio a fin**: qué preguntas lo motivaron, qué encontramos al abrir los datos, qué decisiones cambiaron las conclusiones, qué caminos probamos y descartamos, y qué aprendimos en el camino. Si vienes llegando, léelo como una historia; si vienes a reproducirlo, salta a [Cómo reproducir todo](#cómo-reproducir-todo).
 
@@ -20,7 +22,7 @@ Para responderla había que pasar de un formulario administrativo de millones de
 
 ## Capítulo 1 · Abrir los datos (y la primera sorpresa)
 
-El REM se descarga del [repositorio de datos abiertos del DEIS](https://repositoriodeis.minsal.cl/DatosAbiertos/REM/) como un ZIP anual (~153 MB) con cinco series CSV (A, BS, BM, P, D) y los diccionarios. La participación vive casi toda en la **Serie A** (~7,1 millones de filas, 738 MB), donde cada fila es un establecimiento × mes × prestación, con 50 columnas de valores (`Col01`…`Col50`).
+El REM se descarga del [repositorio de datos abiertos del DEIS](https://repositoriodeis.minsal.cl/) (el listado de carpetas está deshabilitado, pero los ZIP se bajan directo, p. ej. `https://repositoriodeis.minsal.cl/DatosAbiertos/REM/SERIE_REM_2025.zip`) como un ZIP anual (~153 MB) con cinco series CSV (A, BS, BM, P, D) y los diccionarios. La participación vive casi toda en la **Serie A** (~7,1 millones de filas, 738 MB), donde cada fila es un establecimiento × mes × prestación, con 50 columnas de valores (`Col01`…`Col50`).
 
 **Primera lección, y costó:** la instrucción original del proyecto decía que los CSV venían en **Latin-1**. Era incorrecto. La codificación real es **UTF-8 con BOM**. Leídos como Latin-1, todos los nombres con tilde y "ñ" se corrompen ("La Araucanía" → "La AraucanÃ­a") y los cruces por nombre fallan en silencio. Detectarlo temprano evitó arrastrar basura por todo el análisis. *Moraleja: nunca confíes en la codificación declarada; verifícala con los propios datos.*
 
@@ -172,8 +174,4 @@ Scripts exploratorios y versiones anteriores quedan archivados en `R/exploratori
 4. **Un modelo que no converge no es un modelo.** Revisa dispersión, errores estándar y Hessiana; ten lista una alternativa estable (aquí, descomponer el hurdle en barrera + intensidad).
 5. **Separa ceros estructurales de subregistro.** No es lo mismo "una urgencia que por diseño no participa" que "un CESFAM que dejó de registrar".
 6. **Prueba tus hipótesis y acepta cuando el dato las rechaza** (la dependencia administrativa no explicaba nada: bien saberlo).
-7. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia y orden pedagógico antes que vistosidad.
-
----
-
-*Proyecto de análisis de participación ciudadana en salud · REM-A19b · DEIS-MINSAL Chile. Código en R, tablero en Quarto. Las cifras se regeneran corriendo el pipeline.*
+7. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia
