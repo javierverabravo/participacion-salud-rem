@@ -3,8 +3,7 @@
 *Análisis estadístico reproducible de las tres familias de actividades que la red
 pública de salud chilena registra en la sección REM-A19b —atención de usuarios
 (OIRS), participación social y satisfacción usuaria—, con modelos por sección,
-indicadores de auditoría social y un dashboard interactivo de actualización
-automática.*
+indicadores de auditoría social y un dashboard interactivo reproducible.*
 
 📊 **Dashboard en vivo:** https://arleq89.github.io/participacion-salud-rem/
 · 👤 **Autor:** Javier Vera Bravo — Salud Pública, Chile ([@Arleq89](https://github.com/Arleq89))
@@ -111,7 +110,7 @@ la **CASEN 2024**, la estimación comunal más reciente (publicada en enero de 2
 
 ## 4. Métodos
 
-El mismo flujo se aplica **a cada bloque por separado** (motor `R/10_engine.R`), con
+El mismo flujo se aplica **a cada bloque por separado** (motor `R/04_engine.R`), con
 salvaguardas de convergencia: cada modelo pesado va envuelto en control de errores y,
 si una sección es demasiado rala para estimarlo, se registra el motivo en
 `productos/<bloque>/modelo_estado.csv` y el pipeline continúa.
@@ -296,8 +295,8 @@ El proyecto se construyó por fases, y varias decisiones nacieron de errores cor
 6. **Espacial y tipologías.** I de Moran/LISA para clústeres territoriales; k-means
    para perfiles latentes de participación.
 7. **Consolidación y publicación.** El pipeline exploratorio se refactorizó a una
-   secuencia idempotente y parametrizable por año, con dashboard en **Quarto**,
-   publicación en **GitHub Pages** y actualización mensual vía **GitHub Actions**.
+   secuencia idempotente y parametrizable por año, con dashboard en **Quarto** y
+   publicación manual en **GitHub Pages**.
    (En paralelo, *onboarding* técnico desde cero: Git/GitHub —identidad, primer
    commit, push—, la distinción entre la **consola de R** y la **Terminal**, y Quarto.)
 8. **Reformulación por sección (2026).** El salto metodológico de esta versión:
@@ -311,8 +310,8 @@ El proyecto se construyó por fases, y varias decisiones nacieron de errores cor
 
 ## 9. Reproducibilidad
 
-Requiere R (≥ 4.5) y Quarto. El pipeline va de las fuentes oficiales a un sitio web
-que se reconstruye solo cada mes.
+Requiere R (≥ 4.5) y Quarto. El pipeline va de las fuentes oficiales a un sitio web estático que se
+reconstruye corriendo el pipeline y renderizando el dashboard.
 
 ```mermaid
 flowchart TD
@@ -322,7 +321,7 @@ flowchart TD
         CASEN["Pobreza comunal<br/>CASEN 2024"]
         FON["Inscritos<br/>FONASA"]
     end
-    subgraph PIPE["Pipeline en R · 99_run_all.R"]
+    subgraph PIPE["Pipeline en R · 10_run_all.R"]
         D0["00 · descarga"]
         D1["01 · procesamiento<br/>+ crosswalk A19b (A/B/C)"]
         D2["02 · CASEN 2024"]
@@ -336,7 +335,6 @@ flowchart TD
     PROD[("productos/<br/>{A,B,C,sintesis}/")]
     QMD["index.qmd<br/>Quarto"]
     PAGES(["GitHub Pages"])
-    GHA{{"GitHub Actions<br/>mensual"}}
 
     DEIS --> D0
     MAE --> D0
@@ -344,7 +342,6 @@ flowchart TD
     FON --> D3
     D0 --> D1 --> D2 --> D3 --> EN
     EN --> BA & BB & BC --> SN --> PROD --> QMD --> PAGES
-    GHA -. ejecuta .-> PIPE
 ```
 
 Para reproducirlo:
@@ -355,12 +352,12 @@ req <- c("here","data.table","readxl","lme4","sf","spdep","chilemapas")
 faltan <- req[!sapply(req, requireNamespace, quietly = TRUE)]
 if (length(faltan)) install.packages(faltan)
 
-source("R/99_run_all.R")   # descarga, procesa y analiza todo (≈ 70 min)
+source("R/10_run_all.R")   # descarga, procesa y analiza todo (≈ 70 min)
 ```
 
-Luego, en la terminal: `quarto render` (genera el dashboard en `docs/`). Para
-completar los indicadores per cápita, coloca el archivo de inscritos FONASA en
-`datos/externos/poblacion_inscrita_fonasa.csv` y vuelve a correr `03` + `30`.
+Luego, en la terminal: `quarto render` (genera el dashboard en `docs/`). Para los
+indicadores per cápita, coloca el archivo de **beneficiarios FONASA** (p. ej.
+`Beneficiarios 2025.csv`) en la raíz o en `datos/externos/` y vuelve a correr `03` + `09`.
 
 ```
 R/
@@ -368,13 +365,13 @@ R/
   01_procesamiento.R     Crosswalk A19b (bloques A/B/C), tabla larga, universo, cruce
   02_datos_comunales.R   Pobreza comunal CASEN 2024 (ingresos + multidimensional)
   03_fonasa_inscritos.R  Denominador poblacional FONASA (lector flexible)
-  10_engine.R            Motor reutilizable de análisis por bloque
-  11_indicadores.R       Indicadores de auditoría social (I_fa, T_se, I_dd, I_ci…)
-  20_analisis_A.R        Bloque A · OIRS
-  21_analisis_B.R        Bloque B · Participación social (B.1 + B.2)
-  22_analisis_C.R        Bloque C · Satisfacción usuaria (C.1 + C.2)
-  30_sintesis.R          Comparación de bloques + tipologías cross-tema + auditoría
-  99_run_all.R           Script maestro
+  04_engine.R            Motor reutilizable de análisis por bloque
+  05_indicadores.R       Indicadores de auditoría social (I_fa, T_se, I_dd, I_ci…)
+  06_analisis_A.R        Bloque A · OIRS
+  07_analisis_B.R        Bloque B · Participación social (B.1 + B.2)
+  08_analisis_C.R        Bloque C · Satisfacción usuaria (C.1 + C.2)
+  09_sintesis.R          Comparación de bloques + tipologías cross-tema + auditoría
+  10_run_all.R           Script maestro
   exploratorio/          Scripts de la fase global previa (archivados)
 crosswalk/  Diccionarios de códigos · productos/{A,B,C,sintesis}/  Tablas del dashboard
 index.qmd   Dashboard (Quarto) · docs/  Sitio publicado · datos/  (ignorada por Git)

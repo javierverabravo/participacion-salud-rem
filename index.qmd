@@ -210,7 +210,6 @@ comp <- gs("comparativo_bloques")   # una fila por bloque
 [Registrar participación es un rasgo **institucional del establecimiento** en las tres secciones del A19b — pero el peso del **territorio y de la pobreza no es uniforme**: casi nulo en participación social, real en OIRS y decisivo en satisfacción usuaria. Por eso se analizan **sección por sección**.]{.hero-thesis}
 :::
 :::
-:::
 
 ## Row {height="22%"}
 
@@ -261,7 +260,7 @@ res_comp <- tryCatch({
       options = list(dom = "t", ordering = FALSE), class = "stripe compact")
   else knitr::kable(tab)
 }, error = function(e) htmltools::HTML(paste0(
-  "<div style='padding:1rem'>Corre <code>R/99_run_all.R</code> para generar ",
+  "<div style='padding:1rem'>Corre <code>R/10_run_all.R</code> para generar ",
   "<code>productos/sintesis/comparativo_bloques.csv</code>.</div>")))
 res_comp
 ```
@@ -487,7 +486,7 @@ res_comp2 <- tryCatch({
     DT::datatable(tab, rownames = FALSE,
       options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact")
   else knitr::kable(tab)
-}, error = function(e) htmltools::HTML("Corre R/99_run_all.R."))
+}, error = function(e) htmltools::HTML("Corre R/10_run_all.R."))
 res_comp2
 ```
 
@@ -562,6 +561,72 @@ de consistencia) para reducir el subregistro habilitado por diseño; (4) atender
 **sesgo socioeconómico** específico de satisfacción usuaria.
 :::
 
+# Nivel y robustez
+
+## Row {height="58%"}
+
+### Column {width="55%"}
+
+```{r}
+#| title: "Probabilidad de registrar por nivel de atención (se concentra en el terciario)"
+res_niv <- tryCatch({
+  nv <- rbindlist(lapply(c("A","B","C"), function(b) {
+    d <- gp(b, "modelo_nivel"); if (is.null(d)) return(NULL)
+    d[, `:=`(bloque = b, tema = tema_blq[[b]])]
+  }))
+  nv[, nivel_atencion := factor(nivel_atencion,
+       levels = c("Terciario", "Secundario", "Primario (APS)", "No aplica / otro"))]
+  g <- ggplot(nv, aes(x = nivel_atencion, y = prob_registra, fill = bloque,
+        text = paste0(tema, " · ", nivel_atencion, ": ", round(100 * prob_registra, 1), "%"))) +
+    geom_col(position = "dodge") +
+    scale_fill_manual(values = col_blq, name = "Sección") +
+    scale_y_continuous(labels = function(x) paste0(round(100 * x), "%")) +
+    labs(x = NULL, y = "Prob. de registrar") +
+    tg + theme(legend.position = "bottom", axis.text.x = element_text(angle = 12, hjust = 1))
+  interactivo(g)
+}, error = function(e) htmltools::HTML("Corre el pipeline para ver la vista por nivel."))
+res_niv
+```
+
+### Column {width="45%"}
+
+```{r}
+#| title: "Robustez ante ceros estructurales (universo completo vs. participativo)"
+res_rob <- tryCatch({
+  rows <- lapply(c("A", "B", "C"), function(b) {
+    df <- gp(b, "modelo_determinantes"); dp <- gp(b, "modelo_determinantes_part")
+    vf <- gp(b, "modelo_multinivel_var"); vp <- gp(b, "modelo_multinivel_var_part")
+    gv <- function(d, i) if (!is.null(d)) d[indicador == i, valor] else NA
+    cv <- function(d) if (!is.null(d)) d[nivel == "Comuna", pct_varianza] else NA
+    data.table(Sección = paste0(b),
+      `OR pobreza (todos)` = round(gv(df, "OR_pobreza_x10pp"), 2),
+      `OR pobreza (particip.)` = round(gv(dp, "OR_pobreza_x10pp"), 2),
+      `Var. comuna todos` = paste0(cv(vf), "%"),
+      `Var. comuna particip.` = paste0(cv(vp), "%"))
+  })
+  tab <- rbindlist(rows)
+  if (requireNamespace("DT", quietly = TRUE))
+    DT::datatable(tab, rownames = FALSE,
+      options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact")
+  else knitr::kable(tab)
+}, error = function(e) htmltools::HTML("Corre el pipeline."))
+res_rob
+```
+
+## Row {height="42%"}
+
+::: {.card title="Cómo leer esta sección"}
+La participación se **concentra en el nivel terciario** (hospitales) en las tres secciones y
+es casi nula en el **secundario**; en OIRS los hospitales prácticamente siempre registran. Esto
+confirma que conviene separar los **ceros estructurales** (urgencias y niveles que por diseño no
+registran) del **subregistro** real. Al restringir el modelo al **universo participativo**
+(excluyendo urgencias SAPU/SUR/SAR), las conclusiones se mantienen: la **pobreza solo predice en
+satisfacción usuaria (C)** (OR ≈ 0,58, p<0,001, idéntico), la participación social (B) sigue siendo
+institucional pura, y la única señal que se **refuerza** es la **territorialidad de OIRS (A)** —la
+varianza de comuna sube de 29% a 33%—. El sesgo socioeconómico de C y la naturaleza institucional
+del registro son **robustos** a la corrección.
+:::
+
 # Metodología
 
 ## Row {height="55%"}
@@ -570,7 +635,7 @@ de consistencia) para reducir el subregistro habilitado por diseño; (4) atender
 
 ::: {.card title="Del dato oficial al tablero (pipeline reproducible)"}
 Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr con
-`source("R/99_run_all.R")`:
+`source("R/10_run_all.R")`:
 
 1. **`00`** descarga los REM 2025 del DEIS y la base de establecimientos.
 2. **`01`** identifica las prestaciones de participación con un *crosswalk* curado del
@@ -583,7 +648,7 @@ Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr 
    indicadores de auditoría social.
 
 Las tablas quedan en `productos/{A,B,C,sintesis}/` y son **lo único que lee este
-tablero**. **GitHub Actions** repite todo el día 1 de cada mes y republica el sitio.
+tablero**. El sitio se regenera corriendo el pipeline y `quarto render` (proceso manual).
 :::
 
 ### Column {width="50%"}

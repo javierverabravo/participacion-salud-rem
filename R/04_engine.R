@@ -1,5 +1,5 @@
 # =============================================================================
-# 10_engine.R  ·  MOTOR de análisis por bloque (funciones reutilizables)
+# 04_engine.R  ·  MOTOR de análisis por bloque (funciones reutilizables)
 # -----------------------------------------------------------------------------
 # Toda la lógica analítica vive aquí UNA sola vez, parametrizada por `blq`
 # (A = OIRS, B = participación social, C = satisfacción usuaria). Los runners
@@ -58,6 +58,18 @@ tipo_agrupado <- function(est) {
   est[, tipo_grp := ifelse(TipoEstablecimientoGlosa %in% principales,
                            corto[TipoEstablecimientoGlosa], "Otro")]
   est[is.na(tipo_grp), tipo_grp := "Otro"]
+  # Nivel de atencion (limpio) desde la glosa oficial del DEIS.
+  if ("NivelAtencionEstabglosa" %in% names(est)) {
+    na_glosa <- est$NivelAtencionEstabglosa
+    est[, nivel_atencion := fcase(
+      grepl("primar",   na_glosa, ignore.case = TRUE), "Primario (APS)",
+      grepl("secundar", na_glosa, ignore.case = TRUE), "Secundario",
+      grepl("terciar",  na_glosa, ignore.case = TRUE), "Terciario",
+      default = "No aplica / otro")]
+  } else est[, nivel_atencion := "No aplica / otro"]
+  # Universo participativo: urgencias (SAPU/SUR/SAR) casi no registran
+  # participacion por diseno de su funcion -> ceros estructurales, no subregistro.
+  est[, participa_estructural := !(tipo_grp %in% c("SAPU", "SUR", "SAR"))]
   est[]
 }
 
@@ -78,9 +90,11 @@ construir_panel <- function(part, est, universo, blq) {
   panel <- merge(panel, pt, by = c("IdEstablecimiento", "Mes"),
                  all.x = TRUE, sort = FALSE)
   panel[is.na(valor), valor := 0]
-  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp)],
+  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp, nivel_atencion, participa_estructural)],
                  by = "IdEstablecimiento", all.x = TRUE, sort = FALSE)
   panel[is.na(tipo_grp), tipo_grp := "Otro"]
+  panel[is.na(nivel_atencion), nivel_atencion := "No aplica / otro"]
+  panel[is.na(participa_estructural), participa_estructural := FALSE]
   panel[, reporta := as.integer(valor > 0)]
   panel[]
 }
@@ -309,6 +323,9 @@ modelo_hurdle <- function(panel, blq, dirb) {
          file.path(dirb, "modelo_region.csv"), sep = ";", bom = TRUE)
   fwrite(d[, .(prob_registra = round(mean(p), 3)), by = tipo_grp][order(-prob_registra)],
          file.path(dirb, "modelo_tipo.csv"), sep = ";", bom = TRUE)
+  if ("nivel_atencion" %in% names(d))
+    fwrite(d[, .(prob_registra = round(mean(p), 3)), by = nivel_atencion][order(-prob_registra)],
+           file.path(dirb, "modelo_nivel.csv"), sep = ";", bom = TRUE)
   mmes <- d[, .(prob_registra = round(mean(p), 3)), by = Mes]
   mmes[, Mes := as.integer(as.character(Mes))]
   fwrite(mmes[order(Mes)], file.path(dirb, "modelo_estacionalidad.csv"), sep = ";", bom = TRUE)
@@ -358,6 +375,41 @@ modelo_multinivel <- function(panel, com, est, part, blq, dirb) {
                                     "IC95_superior", "p_valor"),
                       valor = round(c(or, lo, hi, co["pobreza10", "Pr(>|z|)"]), 4)),
            file.path(dirb, "modelo_determinantes.csv"), sep = ";", bom = TRUE)
+  }
+
+  # --- Sensibilidad: universo participativo (excluye urgencias estructurales) ---
+  # Responde "¿cambia la pobreza/territorio al quitar los ceros estructurales?".
+  d2 <- droplevels(d[participa_estructural == TRUE])
+  if (nrow(d2) > 0 && sum(d2$reporta) >= 30) {
+    m2 <- tryCatch(
+      glmer(reporta ~ tipo_grp + pobreza10 + Mes +
+              (1 | IdRegion / IdComuna / IdEstablecimiento),
+            family = binomial, data = d2,
+            control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 3e5))),
+      error = function(e) { .estado(dirb, "multinivel_part", "error", conditionMessage(e)); NULL })
+    if (!is.null(m2)) {
+      vc2 <- as.data.frame(VarCorr(m2))
+      ve2 <- sum(vc2$vcov[grepl("IdEstablecimiento", vc2$grp)])
+      vco2 <- sum(vc2$vcov[grepl("IdComuna", vc2$grp) & !grepl("IdEstablecimiento", vc2$grp)])
+      vr2 <- sum(vc2$vcov[vc2$grp == "IdRegion"]); vres2 <- pi^2 / 3
+      tot2 <- ve2 + vco2 + vr2 + vres2
+      fwrite(data.table(nivel = c("Establecimiento", "Comuna", "Región", "Residual (mes a mes)"),
+                        pct_varianza = round(100 * c(ve2, vco2, vr2, vres2) / tot2, 1)),
+             file.path(dirb, "modelo_multinivel_var_part.csv"), sep = ";", bom = TRUE)
+      co2 <- summary(m2)$coefficients
+      if ("pobreza10" %in% rownames(co2)) {
+        or2 <- exp(co2["pobreza10", "Estimate"])
+        lo2 <- exp(co2["pobreza10", "Estimate"] - 1.96 * co2["pobreza10", "Std. Error"])
+        hi2 <- exp(co2["pobreza10", "Estimate"] + 1.96 * co2["pobreza10", "Std. Error"])
+        fwrite(data.table(indicador = c("OR_pobreza_x10pp", "IC95_inferior",
+                                        "IC95_superior", "p_valor"),
+                          valor = round(c(or2, lo2, hi2, co2["pobreza10", "Pr(>|z|)"]), 4)),
+               file.path(dirb, "modelo_determinantes_part.csv"), sep = ";", bom = TRUE)
+      }
+      .estado(dirb, "multinivel_part", "ok",
+              sprintf("universo participativo (n=%d estab): var estab %.1f%% comuna %.1f%%",
+                      d2[, uniqueN(IdEstablecimiento)], 100 * ve2 / tot2, 100 * vco2 / tot2))
+    }
   }
 
   # Cobertura comunal vs pobreza (insumo del mapa y del espacial).

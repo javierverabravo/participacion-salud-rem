@@ -1,82 +1,63 @@
-# Pasos finales para la reunión — orden de ejecución
+# Runbook — probar el flujo y publicar
 
-Hazlos en este orden en tu terminal (Git Bash recomendado; abajo va también la
-variante PowerShell). La carpeta del proyecto es la raíz del repo.
+Ejecuta en orden. Terminal de Positron (PowerShell) salvo donde diga consola de R.
 
 ## 1. Arreglar el índice de git (está corrupto)
 
-El índice se corrompió (artefacto del disco montado). Esto **no** toca tus commits
-ni tus archivos: solo reconstruye el índice desde el último commit.
-
-**Git Bash:**
-```bash
-cd "/e/PROYECTO PARTICIPACIÓN CIUDADANA EN SALUD"
-rm -f .git/index
-git reset
-git status
-```
-
-**PowerShell / CMD:**
 ```powershell
-cd "E:\PROYECTO PARTICIPACIÓN CIUDADANA EN SALUD"
-del .git\index
+Remove-Item .git\index
 git reset
 git status
 ```
 
-`git status` debe volver a funcionar y mostrar `index.qmd` y `PROYECTO.md`
-modificados, y `RESUMEN_EJECUTIVO.md` como nuevo.
+## 2. Renumerar los scripts a consecutivo (git mv conserva el historial)
 
-## 2. Borrar archivos temporales y obsoletos
+El contenido (llamadas `source()`, workflow, docs) ya quedó apuntando a los nombres
+nuevos; falta renombrar los archivos. Hazlo en este orden:
 
-Yo no pude borrarlos desde mi entorno (el disco montado lo impide).
-
-**Git Bash:**
-```bash
-rm -f R/_probe.txt _idx_clean.qmd _testwrite.txt
-# (opcional) archivar los productos planos de la versión global anterior:
-mkdir -p _archivo_pipeline_global
-mv productos/*.csv _archivo_pipeline_global/ 2>/dev/null
-[ -d salidas ] && mv salidas _archivo_pipeline_global/
+```powershell
+git mv R/10_engine.R     R/04_engine.R
+git mv R/11_indicadores.R R/05_indicadores.R
+git mv R/20_analisis_A.R R/06_analisis_A.R
+git mv R/21_analisis_B.R R/07_analisis_B.R
+git mv R/22_analisis_C.R R/08_analisis_C.R
+git mv R/30_sintesis.R   R/09_sintesis.R
+git mv R/99_run_all.R    R/10_run_all.R
 ```
 
-**PowerShell:**
+Esquema final: `00`–`03` datos · `04` motor · `05` indicadores · `06/07/08` bloques
+A/B/C · `09` síntesis · `10` maestro.
+
+## 3. Limpiar temporales
+
 ```powershell
 Remove-Item R\_probe.txt, _idx_clean.qmd, _testwrite.txt -ErrorAction SilentlyContinue
 ```
 
-(Los `productos/` y `salidas/` están en `.gitignore`, así que no afectan a GitHub;
-moverlos es solo orden local.)
+## 4. Probar el flujo
 
-## 3. Generar el dashboard nuevo
-
-En la **consola de R** (si aún no corriste el pipeline en esta versión):
+Humo rápido (que cargue sin error, sin re-correr 70 min) en la **consola de R**:
 ```r
-source("R/99_run_all.R")   # ~70 min; deja productos/{A,B,C,sintesis}/
+library(here)
+for (f in c("04_engine.R","05_indicadores.R")) source(here("R", f))  # deben cargar sin error
 ```
 
-En la **terminal**:
-```bash
+Corrida completa (cuando avisemos que el modelo nuevo está listo), en consola de R:
+```r
+source("R/10_run_all.R")   # ~70 min; regenera productos/{A,B,C,sintesis}/
+```
+
+## 5. Renderizar el dashboard
+
+```powershell
 quarto render
 ```
-Revisa que `docs/index.html` abra bien: pestañas **Resumen · A · B · C · Síntesis ·
-Metodología · Glosario**, cada una con sus KPIs y gráficos. Para el render local
-necesitas además los paquetes `ggplot2`, `plotly`, `DT`, `bslib` (instálalos si faltan).
+Abre `docs/index.html`: pestañas Resumen · A · B · C · Síntesis · Metodología · Glosario.
 
-## 4. Subir todo a GitHub
+## 6. Subir a GitHub
 
-```bash
+```powershell
 git add -A
-git commit -m "Dashboard por bloques A/B/C/síntesis; resumen ejecutivo; PROYECTO.md completo"
+git commit -m "Renumeración consecutiva de scripts (00-10); refs y docs actualizadas"
 git push
 ```
-
-GitHub Pages se actualizará solo desde `docs/`. El workflow mensual de Actions ya
-quedará apuntando a la estructura correcta.
-
-## Checklist antes de presentar
-
-- [ ] `git status` limpio y `git push` sin errores.
-- [ ] Dashboard renderizado abre con las 7 pestañas y sin chunks en rojo.
-- [ ] `RESUMEN_EJECUTIVO.md` a mano para mostrar las conclusiones.
-- [ ] Sitio en vivo: https://arleq89.github.io/participacion-salud-rem/

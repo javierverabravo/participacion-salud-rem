@@ -36,20 +36,20 @@ produce indicadores de auditoría social.
 01_procesamiento.R    Crosswalk A19b → bloques A/B/C; tabla larga; universo estab×mes
 02_datos_comunales.R  Pobreza comunal CASEN 2024 (ingresos + multidim., SAE, lector robusto)
 03_fonasa_inscritos.R Población inscrita validada FONASA (lector flexible; degrada con NA si falta)
-10_engine.R           Motor reutilizable por bloque: panel, KPIs, cobertura, serie, equidad,
+04_engine.R           Motor reutilizable por bloque: panel, KPIs, cobertura, serie, equidad,
                       subsecciones, hurdle mixto (glmer+lmer), multinivel 3 niveles, espacial,
                       tipologías k-means. tryCatch + modelo_estado.csv por convergencia.
-11_indicadores.R      Indicadores de auditoría social (I_fa, T_se, I_dd, I_ci + extras)
-20_analisis_A.R       Bloque A · OIRS (45 códigos; runners del motor)
-21_analisis_B.R       Bloque B · Participación social B.1+B.2 (26 códigos)
-22_analisis_C.R       Bloque C · Satisfacción usuaria C.1+C.2 (22 códigos)
-30_sintesis.R         Comparativo A/B/C + tipologías cross-tema + auditoría social
-99_run_all.R          Maestro: ejecuta 00→03→10→11→20→21→22→30 en orden
+05_indicadores.R      Indicadores de auditoría social (I_fa, T_se, I_dd, I_ci + extras)
+06_analisis_A.R       Bloque A · OIRS (45 códigos; runners del motor)
+07_analisis_B.R       Bloque B · Participación social B.1+B.2 (26 códigos)
+08_analisis_C.R       Bloque C · Satisfacción usuaria C.1+C.2 (22 códigos)
+09_sintesis.R         Comparativo A/B/C + tipologías cross-tema + auditoría social
+10_run_all.R          Maestro: ejecuta 00→03→10→11→20→21→22→30 en orden
 exploratorio/         Scripts de la fase global previa (archivados, no en el pipeline)
 ```
 
-Productos en `productos/{A,B,C,sintesis}/` (generados por 99_run_all.R; ignorados
-por git localmente, re-comprometidos por GitHub Actions después de cada ejecución).
+Productos en `productos/{A,B,C,sintesis}/` (generados por 10_run_all.R; ignorados
+por git localmente; el dashboard renderizado en `docs/` sí se versiona).
 
 ---
 
@@ -64,14 +64,14 @@ por git localmente, re-comprometidos por GitHub Actions después de cada ejecuci
   NB-truncada de objeto único **no converge** por la cola extrema (miles vs.
   medianas de pocas unidades). Siempre verificar convergencia: NaN, SE gigantes,
   dispersión ≈ 0.
-- **Motor parametrizado** (`10_engine.R`): las funciones reciben `blq` ("A","B","C")
+- **Motor parametrizado** (`04_engine.R`): las funciones reciben `blq` ("A","B","C")
   y usan `tryCatch`; si un modelo no converge escribe el motivo en
   `productos/<bloque>/modelo_estado.csv` y el pipeline continúa.
 - **Edit/Write en el mount Windows** puede corromper archivos grandes (artefacto
   de sincronización). Preferir `Write` completo y verificar con `Read`, no con bash.
 - **Crosswalk de columnas** (`crosswalk/crosswalk_columnas_A19b.csv`) es insumo
   curado a mano; SÍ se versiona (no se regenera). Los productos NO se versionan
-  localmente (sí los recrea Actions).
+  localmente (se regeneran corriendo el pipeline).
 - **CASEN 2024 comunal** disponible y auto-descargable desde el Observatorio Social
   (URLs en `02_datos_comunales.R`). Reemplaza CASEN 2020.
 - **FONASA inscritos**: URL inestable (portal JS). Colocar el archivo manualmente
@@ -114,7 +114,7 @@ Cualquiera que clone el repo y tenga R + Quarto puede llegar a las mismas
 conclusiones:
 
 1. Abrir la carpeta del proyecto en R/Positron.
-2. En la consola de R: `source("R/99_run_all.R")` — descarga los datos del DEIS,
+2. En la consola de R: `source("R/10_run_all.R")` — descarga los datos del DEIS,
    construye el crosswalk A19b, agrega CASEN/FONASA, corre el motor sobre A/B/C y
    genera la síntesis. Deja todo en `productos/{A,B,C,sintesis}/` (~70 min).
 3. (Opcional, per cápita real) Colocar `datos/externos/poblacion_inscrita_fonasa.csv`
@@ -122,7 +122,7 @@ conclusiones:
 4. En la terminal: `quarto render` — genera el dashboard en `docs/`.
 5. `git add -A && git commit -m "..." && git push` — publica en GitHub Pages.
 
-El orden y las dependencias están en `R/99_run_all.R`. El esquema de numeración es
+El orden y las dependencias están en `R/10_run_all.R`. El esquema de numeración es
 por grupos: **0x** datos, **1x** motor e indicadores, **2x** análisis por bloque,
 **3x** síntesis, **99** maestro.
 
@@ -135,9 +135,9 @@ por grupos: **0x** datos, **1x** motor e indicadores, **2x** análisis por bloqu
 - [x] **Dashboard `index.qmd` reconstruido por bloque** (lee `productos/{A,B,C,sintesis}/`;
   páginas A/B/C + Síntesis + Metodología + Glosario). *Pendiente: renderizar con
   `quarto render` y revisar visualmente.*
-- [ ] Conseguir el archivo FONASA de inscritos validados (portal JS sin URL estable)
-  para pasar los indicadores de "por habitante" a "por inscrito".
-- [ ] Publicar/actualizar GitHub Pages tras el render y verificar Actions mensual.
+- [x] Denominador FONASA: se usa `Beneficiarios 2025.csv` (beneficiarios por comuna,
+  dic-2025; subida manual). Indicadores ahora por inscrito (16,9 M, 98% comunas).
+- [ ] Publicar/actualizar GitHub Pages tras el render (proceso manual; sin Actions).
 - [ ] (Mejora) Ingreso municipal SINIM para probar "capacidad" de gestión directa.
 
 ---

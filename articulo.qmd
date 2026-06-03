@@ -1,0 +1,368 @@
+---
+title: "Participación ciudadana en salud en Chile: un análisis por secciones del REM-A19b (2025)"
+subtitle: "Informe técnico con énfasis en la fundamentación metodológica"
+author: "Javier Vera Bravo · Salud Pública, Chile · @Arleq89"
+date: 2026-06-02
+lang: es
+format:
+  pdf:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    geometry: margin=2.5cm
+    fig-pos: "H"
+    colorlinks: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+library(data.table)
+library(knitr)
+gp <- function(blq, name) {
+  f <- file.path("productos", blq, paste0(name, ".csv"))
+  if (file.exists(f)) fread(f, sep = ";", encoding = "UTF-8") else NULL
+}
+gs <- function(name) {
+  f <- file.path("productos", "sintesis", paste0(name, ".csv"))
+  if (file.exists(f)) fread(f, sep = ";", encoding = "UTF-8") else NULL
+}
+kt <- function(d, ...) if (!is.null(d)) kable(d, booktabs = TRUE, ...) else invisible(NULL)
+```
+
+# Resumen {.unnumbered}
+
+La participación ciudadana en salud es a la vez un **derecho** (Ley N.º 20.500, 2011) y
+un **determinante social de la salud** (CSDH/OMS, 2008). En Chile, su registro operativo
+vive en la sección **REM-A19b** del DEIS-MINSAL, que reúne tres familias de actividad
+distintas: atención de usuarios (**OIRS**), **participación social** y **satisfacción
+usuaria**. Estudios previos las analizaban en bloque; aquí se analizan **sección por
+sección** sobre 2.982 establecimientos de la red pública y 140.507 registros de 2025,
+mediante modelos de barrera (*hurdle*) con efectos aleatorios, modelos multinivel de tres
+niveles, autocorrelación espacial y agrupamiento. El hallazgo central es que **registrar
+participación es un rasgo institucional del establecimiento** en las tres secciones (la
+varianza del establecimiento domina; ICC de la barrera 66–94 %), pero **el peso del
+territorio y de la pobreza no es uniforme**: la participación social es el fenómeno más
+puramente institucional, mientras la satisfacción usuaria es la única sección donde la
+**pobreza comunal predice** el registro. Se añaden indicadores de **auditoría social** con
+denominador poblacional FONASA. El informe documenta en detalle **por qué** se eligió cada
+método.
+
+**Palabras clave:** participación en salud · OIRS · datos de conteo · modelos multinivel ·
+autocorrelación espacial · auditoría social · Chile.
+
+# Introducción
+
+La participación social en salud está consagrada en la normativa chilena —Ley N.º 20.500
+sobre Asociaciones y Participación Ciudadana en la Gestión Pública (2011) y la Norma
+General de Participación (Res. Ex. 31/2015)— y reconocida internacionalmente como
+determinante social de la salud [CSDH/OMS, 2008]. La literatura chilena, sin embargo,
+caracteriza esa participación como predominantemente **consultiva y no deliberativa**
+[Méndez et al., 2022; análisis bioético, 2025].
+
+Su medición operativa se concentra en la sección **REM-A19b**, que el Manual de Series REM
+del DEIS organiza en tres familias heterogéneas: la atención de usuarios vía **OIRS**
+(reclamos, consultas, solicitudes, felicitaciones), las **actividades de participación
+social** (consejos de desarrollo, COSOC, cabildos, CIRA) y la **gestión de la satisfacción
+usuaria y humanización**. El supuesto de este trabajo es que estas tres familias **miden
+cosas distintas y se comportan distinto**, de modo que analizarlas en bloque oculta su
+estructura. Por eso el diseño analiza **cada sección por separado** (bloques A, B y C) con
+un motor de métodos común, y las integra en una **síntesis** comparativa y en indicadores
+de **auditoría social** con denominador poblacional.
+
+# Datos y materiales
+
+**Fuente primaria.** Resúmenes Estadísticos Mensuales (REM) 2025 del DEIS-MINSAL, serie A,
+sección A19b. Tras el procesamiento se obtienen 140.507 registros de participación y una
+tabla larga de 1.884.628 filas. El crosswalk de prestaciones identifica **93 códigos A19b
+activos**, repartidos en cinco sub-secciones con layout propio: A (45 códigos), B.1 (12),
+B.2 (14), C.1 (12) y C.2 (10).
+
+**Universo y unidad de análisis.** La red comprende **2.982 establecimientos** en 344
+comunas y 16 regiones. La unidad de análisis es el **panel establecimiento × mes**
+(35.337 combinaciones esperadas), reconstruido explícitamente porque —como se argumenta en
+métodos— el subregistro se aloja en **filas ausentes**, no en celdas vacías.
+
+**Datos externos.** (i) Base maestra de establecimientos del DEIS (tipo, dependencia,
+**nivel de atención**, complejidad, georreferencia), con 100 % de match con el REM por
+código vigente o antiguo. (ii) **Pobreza comunal CASEN 2024** estimada por áreas pequeñas
+(SAE), con 100 % de match comunal. (iii) **Denominador poblacional FONASA**: beneficiarios
+por comuna (corte diciembre 2025), 16,9 millones de inscritos, mapeados al 98 % de las
+comunas.
+
+# Variables
+
+**Variable de resultado.** Para cada par establecimiento-mes se define `reporta` (1 si el
+establecimiento registró al menos un evento de la sección ese mes; 0 si no) y `valor` (el
+conteo de eventos). `reporta` alimenta la parte de **barrera**; `valor` (en positivos), la
+de **intensidad**.
+
+**Covariables de nivel establecimiento (invariantes en el tiempo).** Tipo de
+establecimiento agrupado (`tipo_grp`: CESFAM, Hospital, Posta Rural, CECOSF, SAPU, SUR,
+SAR, COSAM, Otro), **nivel de atención** (`nivel_atencion`: Primario/APS, Secundario,
+Terciario, No aplica) y un indicador de **universo participativo**
+(`participa_estructural`), que excluye las urgencias (SAPU/SUR/SAR) por tratarse de **ceros
+estructurales** —establecimientos que por el diseño de su función casi no registran
+participación—.
+
+**Covariables territoriales.** Región y comuna (efectos jerárquicos) y **tasa de pobreza
+comunal** (CASEN-SAE 2024), centrada y expresada por incrementos de 10 puntos
+porcentuales (`pobreza10`).
+
+**Estacionalidad.** Mes calendario (factor de 12 niveles).
+
+**Equidad.** Desagregaciones que exige la norma: sexo, identidad de género, pueblos
+originarios, personas migrantes y PRAIS, a partir de la dimensión demográfica del A19b.
+
+**Denominador.** Beneficiarios FONASA por comuna, para convertir conteos en tasas
+poblacionales (auditoría social).
+
+# Métodos y su fundamentación
+
+El mismo flujo se aplica **a cada sección por separado** mediante un motor de funciones
+reutilizable, con verificación de convergencia: si un modelo no converge, el motor registra
+el motivo y el pipeline continúa.
+
+## La estructura del dato y el problema de los ceros
+
+El diagnóstico mostró que el subregistro **no está en valores `NA` dentro de las filas**
+(solo ~0,7 % de `NA` en el valor) **sino en filas ausentes**: pares establecimiento-mes que
+simplemente no aparecen. Por eso se reconstruye el **panel completo** establecimiento × mes
+y **no se colapsan los `NA` a cero**: hacerlo confundiría "no se registró" con "no hubo
+actividad". Esta decisión es la que habilita medir el subregistro como cantidad.
+
+## Modelo de barrera (*hurdle*) con efectos aleatorios
+
+Los datos son **conteos con exceso de ceros**: la mayoría de los pares establecimiento-mes
+valen cero y la cola de positivos es extrema (medianas de pocas unidades frente a máximos de
+miles). Una regresión lineal o de Poisson sobre el conteo está mal especificada en este
+régimen [Mullahy, 1986; Neelon et al., 2016]. El modelo **hurdle** separa explícitamente dos
+preguntas —**¿registra o no?** (barrera) y, si registra, **¿cuánto?** (intensidad)— que es
+justamente la distinción de interés de política. Se prefiere el hurdle sobre el
+*zero-inflated* porque aquí el cero representa "no se cruzó el umbral de registro", no un
+proceso de inflación latente [Feng, 2021].
+
+Para capturar que registrar es un rasgo estable del establecimiento se añade un **intercepto
+aleatorio por establecimiento**. El ajuste de un hurdle de objeto único con binomial
+negativa truncada (`glmmTMB`) **no converge** por la cola extrema (dispersión que colapsa,
+Hessiano no definido positivo) [Brooks et al., 2017]. La solución estable y equivalente es
+la **descomposición en dos partes**: una **regresión logística mixta** (`glmer`) para la
+barrera y una **lineal mixta** (`lmer`) sobre el logaritmo del valor en los positivos
+[Bates et al., 2015]. Se reporta el **ICC** (coeficiente de correlación intraclase) como
+medida de cuánto de la decisión de registrar es atribuible al establecimiento.
+
+## Modelo multinivel de tres niveles
+
+Para repartir la variación entre **establecimiento, comuna y región** se ajusta un modelo
+logístico con interceptos anidados `(1 | región / comuna / establecimiento)` [Snijders y
+Bosker, 2012]. Promediar por región subestima el error e infla diferencias que en realidad
+son **composición de comunas**; el multinivel evita ese sesgo y permite probar el efecto de
+la **pobreza comunal** controlando por el tipo de establecimiento. Este diseño replica, en
+otra temática, el de García-Huidobro et al. (2018), que modeló la implementación del modelo
+de atención integral en 1.263 establecimientos de APS con la misma jerarquía y encontró que
+el **gasto municipal no predecía** la implementación —un paralelo directo a nuestros
+resultados—.
+
+## Nivel de atención y ceros estructurales (análisis de robustez)
+
+Como `tipo_grp` y `nivel_atencion` están **anidados** (un CESFAM es APS; un hospital es
+terciario), no se incluyen ambos como efectos principales en una misma fórmula para evitar
+colinealidad. En su lugar: (i) se reporta la **probabilidad de registrar por nivel de
+atención**, y (ii) se reestima el modelo multinivel sobre el **universo participativo**
+(excluyendo las urgencias estructurales) y se compara con el universo completo. Esta
+comparación **con/sin** prueba si la pobreza y la varianza territorial son artefactos de la
+composición por tipo o si son robustas.
+
+## Autocorrelación espacial: I de Moran y LISA
+
+Para distinguir un patrón geográfico de una coincidencia se usa el **I de Moran global** y
+los **indicadores locales LISA** sobre la cobertura comunal [Moran, 1950; Anselin, 1995],
+una técnica ya empleada en salud pública chilena a nivel comunal [Medwave, mortalidad por
+cáncer de mama en la R.M.]. Comparar mapas "a ojo" no cuantifica ni da significancia.
+
+## Tipologías por *k*-means
+
+Para descubrir perfiles latentes de participación sin etiquetarlos a priori se agrupan los
+establecimientos por la composición de su actividad entre las tres secciones (*k*-means,
+k = 4). Clasificar por volumen total ocultaría que "participar" significa cosas distintas.
+
+## Pobreza comunal y denominador poblacional
+
+La pobreza comunal proviene de **estimación de áreas pequeñas (SAE)** sobre CASEN
+[Rao y Molina, 2015; Casas-Cordero et al., 2016], la metodología oficial para cifras
+comunales. El denominador de las tasas de auditoría social son los **beneficiarios FONASA**
+por comuna —el denominador correcto para el sistema público, que atiende a la población
+inscrita en FONASA, no a la población total—.
+
+# Resultados
+
+## Las tres secciones se comportan distinto
+
+```{r}
+#| label: tbl-comparativo
+#| tbl-cap: "Comparativo de las tres secciones del A19b (2025)."
+d <- gs("comparativo_bloques")
+if (!is.null(d)) {
+  tab <- data.table(
+    `Sección` = paste0(d$bloque, " · ", d$tema),
+    `Cobertura %` = d$cobertura_pct,
+    `Subreg. %` = d$pct_subregistro_estab_mes,
+    `Meses` = d$mediana_meses_con_registro,
+    `ICC barrera %` = d$icc_barrera_pct,
+    `Var. estab %` = d$var_establecimiento_pct,
+    `Var. comuna %` = d$var_comuna_pct,
+    `OR pobreza` = round(d$OR_pobreza_x10pp, 2),
+    `p` = signif(d$pobreza_p_valor, 2))
+  kt(tab)
+}
+```
+
+La cobertura es similar en OIRS (49,9 %) y participación social (51,1 %) y mucho menor en
+satisfacción usuaria (24,4 %). El **subregistro establecimiento-mes crece de A a C**
+(60,4 % → 71,7 % → 91,6 %) y la **mediana de meses con registro cae** (12 → 7 → 3): la
+satisfacción usuaria se registra de forma esporádica. En las tres secciones **domina la
+varianza del establecimiento** (ICC de la barrera 93,9 %, 65,8 % y 74,3 %): registrar es,
+ante todo, un rasgo institucional.
+
+## El territorio no pesa igual
+
+La descomposición multinivel matiza la tesis única. La **participación social (B)** es el
+caso *institucional puro* (comuna ≈ 17,5 %, región < 1 %, sin clústeres espaciales —Moran
+0,049, p = 0,08— y pobreza no significativa). La **atención OIRS (A)** tiene un componente
+territorial real (comuna ≈ 29 %, Moran 0,109, p = 0,001). La **satisfacción usuaria (C)** es
+la **única** sección donde la **pobreza comunal predice** el registro (OR 0,58 por cada
++10 pp de pobreza; IC95 % 0,42–0,80; p < 0,001) y muestra clústeres espaciales
+(Moran 0,119, p < 0,001): en las comunas más pobres se registra menos.
+
+## La participación se concentra en el nivel terciario
+
+```{r}
+#| label: tbl-nivel
+#| tbl-cap: "Probabilidad de registrar por nivel de atención, por sección."
+rows <- lapply(c("A","B","C"), function(b){
+  d <- gp(b, "modelo_nivel"); if (is.null(d)) return(NULL)
+  setNames(d$prob_registra, d$nivel_atencion)
+})
+niv <- c("Terciario","Secundario","Primario (APS)","No aplica / otro")
+m <- sapply(rows, function(x) round(100 * x[niv], 1))
+if (is.matrix(m)) {
+  out <- data.table(`Nivel de atención` = niv,
+                    `A · OIRS (%)` = m[,1], `B · Part. social (%)` = m[,2],
+                    `C · Satisfacción (%)` = m[,3])
+  kt(out)
+}
+```
+
+En las tres secciones la probabilidad de registrar **se concentra en el nivel terciario**
+(hospitales) y es casi nula en el secundario. En OIRS los hospitales prácticamente siempre
+registran; en satisfacción usuaria, incluso los hospitales solo lo hacen en ~23 % y la APS
+en 2 %. Esto confirma la pertinencia de separar **ceros estructurales** de **subregistro**.
+
+## Robustez ante los ceros estructurales
+
+```{r}
+#| label: tbl-robustez
+#| tbl-cap: "Universo completo vs. participativo (excluye urgencias): OR de pobreza y varianza de comuna."
+rows <- lapply(c("A","B","C"), function(b){
+  df <- gp(b,"modelo_determinantes"); dp <- gp(b,"modelo_determinantes_part")
+  vf <- gp(b,"modelo_multinivel_var"); vp <- gp(b,"modelo_multinivel_var_part")
+  gv <- function(d,i) if (!is.null(d)) d[indicador==i, valor] else NA
+  cv <- function(d) if (!is.null(d)) d[nivel=="Comuna", pct_varianza] else NA
+  data.table(`Sección`=b,
+    `OR pobreza (todos)`=round(gv(df,"OR_pobreza_x10pp"),2),
+    `OR pobreza (particip.)`=round(gv(dp,"OR_pobreza_x10pp"),2),
+    `Var. comuna todos %`=cv(vf), `Var. comuna particip. %`=cv(vp))
+})
+kt(rbindlist(rows))
+```
+
+Al restringir el modelo al universo participativo, las conclusiones **se mantienen**: la
+pobreza sigue siendo significativa **solo** en satisfacción usuaria (OR 0,58, idéntico), la
+participación social sigue siendo institucional pura, y la única señal que **se refuerza** es
+la territorialidad de OIRS, cuya varianza de comuna sube de 29 % a 33 %. El sesgo
+socioeconómico de C y la naturaleza institucional del registro son **robustos**.
+
+## Tipologías e indicadores de auditoría social
+
+El agrupamiento *k*-means (k = 4) identifica un perfil mayoritario **centrado en OIRS**
+(≈ 1.090 + 264 establecimientos), uno **fuerte en participación social** (≈ 465, sobre todo
+postas y CESFAM) y uno pequeño **orientado a satisfacción** (≈ 61, hospitalario).
+
+```{r}
+#| label: tbl-auditoria
+#| tbl-cap: "Indicadores de auditoría social a nivel nacional (denominador FONASA, dic-2025)."
+a <- gs("indicadores_auditoria_nacional")
+if (!is.null(a)) {
+  out <- data.table(Indicador = c(
+    "Fricción administrativa (reclamos / 1.000 inscritos)",
+    "Severidad de espera (% reclamos por tiempos de espera)",
+    "Reclamos respondidos fuera de plazo (%)",
+    "Razón felicitaciones / reclamos",
+    "Densidad democrática (participantes / 100 inscritos)",
+    "Cohesión intercultural (actividades / 1.000 inscritos)"),
+    Valor = c(a$I_fa_reclamos_x1000[1], a$T_se_pct[1], a$tasa_fuera_plazo_pct[1],
+              a$razon_felicit_reclamos[1], a$I_dd_partic_x100[1], a$I_ci_intercult_x1000[1]))
+  kt(out)
+}
+```
+
+# Discusión
+
+Los resultados sostienen una tesis matizada: **registrar participación es institucional**
+—un rasgo del establecimiento y su gestión— pero **el territorio y la pobreza pesan de forma
+heterogénea** entre secciones. Que la pobreza comunal solo importe en satisfacción usuaria, y
+que al controlar por el Servicio de Salud la autocorrelación espacial de OIRS se atenúe,
+sugiere que lo que parece "territorio" es en buena medida **gestión de red**. Esto coincide
+con García-Huidobro et al. (2018), donde la capacidad municipal (gasto) tampoco explicaba la
+implementación: el determinante es organizacional, no de riqueza.
+
+En el plano normativo, el volumen registrado está **dominado por el reclamo** (OIRS, 17,4
+millones de eventos) frente a la deliberación (participación social, 250 mil), pese a que la
+Norma General sitúa la deliberación como núcleo del derecho. La participación que el sistema
+mide no es la que la norma prioriza —consistente con la caracterización de la participación
+chilena como consultiva [Méndez et al., 2022]—.
+
+**Implicancias de política:** (i) fijar metas de registro por **establecimiento y tipo**, no
+por región; (ii) usar los **Servicios de Salud** como unidad de mejora del registro; (iii)
+**validar la sección de participación social** en el instrumento REM (hoy "sin regla de
+consistencia"), pues el subregistro está habilitado por diseño; (iv) atender el **sesgo
+socioeconómico** específico de satisfacción usuaria.
+
+# Limitaciones
+
+El dato no permite distinguir **ausencia real de actividad** de **omisión administrativa**:
+un cero puede ser cualquiera de las dos. El A19b reporta **instancias y demografía por
+separado**, de modo que no es posible cruzar "qué instancia" con "perfil de participante".
+El denominador FONASA es un **corte de diciembre 2025** y se mapea por nombre de comuna al
+98 % (quedan fuera algunas comunas menores). Finalmente, este es un documento técnico que
+acompaña al repositorio y **no constituye una publicación revisada por pares**.
+
+# Reproducibilidad
+
+Todo el pipeline se ejecuta con `source("R/10_run_all.R")` y deja las tablas en
+`productos/{A,B,C,sintesis}/`, únicas que leen este informe y el dashboard. La secuencia es:
+`00` descarga REM y establecimientos · `01` crosswalk A19b y panel · `02` CASEN 2024 ·
+`03` denominador FONASA (subida manual) · `04` motor · `05` indicadores · `06/07/08` bloques
+A/B/C · `09` síntesis · `10` maestro. El REM se descarga automáticamente; el archivo FONASA
+se coloca a mano. Dashboard en vivo: <https://arleq89.github.io/participacion-salud-rem/>.
+
+# Referencias {.unnumbered}
+
+- Anselin, L. (1995). Local indicators of spatial association — LISA. *Geographical Analysis*, 27(2), 93–115.
+- Bates, D., Mächler, M., Bolker, B., y Walker, S. (2015). Fitting linear mixed-effects models using lme4. *Journal of Statistical Software*, 67(1), 1–48.
+- Brooks, M. E., et al. (2017). glmmTMB balances speed and flexibility among packages for zero-inflated GLMMs. *The R Journal*, 9(2), 378–400.
+- Casas-Cordero Valencia, C., Encina, J., y Corral, P. (2016). Poverty mapping for the Chilean comunas. En M. Pratesi (Ed.), *Analysis of Poverty Data by Small Area Estimation*. Wiley.
+- CSDH/OMS. (2008). *Closing the gap in a generation: health equity through action on the social determinants of health*. Organización Mundial de la Salud.
+- Feng, C. X. (2021). A comparison of zero-inflated and hurdle models for modeling zero-inflated count data. *Journal of Statistical Distributions and Applications*, 8(1).
+- García-Huidobro, D., Barros, X., Quiroz, A., Barría, M., Soto, G., y Vargas, I. (2018). Modelo de atención integral en salud familiar y comunitaria en la atención primaria chilena. *Revista Panamericana de Salud Pública*, 42, e160.
+- Méndez, C. A., et al. (2022). Análisis del sistema de salud chileno y su estructura en la participación social. *Saúde em Debate*, 46(spe4), 94–106.
+- Moran, P. A. P. (1950). Notes on continuous stochastic phenomena. *Biometrika*, 37(1/2), 17–23.
+- Mullahy, J. (1986). Specification and testing of some modified count data models. *Journal of Econometrics*, 33(3), 341–365.
+- Neelon, B., O'Malley, A. J., y Smith, V. A. (2016). Modeling zero-modified count and semicontinuous data in health services research, Part 1. *Statistics in Medicine*, 35(27).
+- Rao, J. N. K., y Molina, I. (2015). *Small Area Estimation* (2.ª ed.). Wiley.
+- Snijders, T. A. B., y Bosker, R. J. (2012). *Multilevel Analysis* (2.ª ed.). Sage.
+- Ministerio de Desarrollo Social y Familia. (2024). *Estimaciones de pobreza comunal por áreas pequeñas (SAE), CASEN 2024*. Observatorio Social.
+- Ministerio de Salud (DEIS). *Manual de Series REM*. Departamento de Estadísticas e Información de Salud.

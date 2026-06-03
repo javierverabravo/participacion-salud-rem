@@ -1,5 +1,5 @@
 # =============================================================================
-# 30_sintesis.R  ·  SINTESIS — comparacion de los tres bloques (A, B, C)
+# 09_sintesis.R  ·  SINTESIS — comparacion de los tres bloques (A, B, C)
 # -----------------------------------------------------------------------------
 # Entregable transversal que resume y compara las tres secciones. Reutiliza los
 # productos ya calculados por 20/21/22 (productos/A, /B, /C) y agrega analisis
@@ -9,14 +9,14 @@
 #   - Tipologias cross-tema (k-means sobre la composicion A/B/C de cada
 #     establecimiento): "participar" significa cosas distintas segun el tipo.
 #   - Matriz region x bloque: que bloque domina la actividad de cada region.
-#   - INDICADORES DE AUDITORIA SOCIAL (11_indicadores.R): I_fa, T_se, I_dd,
+#   - INDICADORES DE AUDITORIA SOCIAL (05_indicadores.R): I_fa, T_se, I_dd,
 #     I_ci y extras, con denominador FONASA (o poblacion CASEN como proxy).
 # Salidas en productos/sintesis/.
 # =============================================================================
 library(here)
 library(data.table)
-source(here("R", "10_engine.R"))
-source(here("R", "11_indicadores.R"))
+source(here("R", "04_engine.R"))
+source(here("R", "05_indicadores.R"))
 
 anio <- as.integer(Sys.getenv("REM_ANIO", unset = "2025"))
 dirs <- here("productos", "sintesis"); dir.create(dirs, recursive = TRUE, showWarnings = FALSE)

@@ -1,5 +1,5 @@
 # =============================================================================
-# 11_indicadores.R  ·  Indicadores de AUDITORIA SOCIAL (cruzan los 3 bloques)
+# 05_indicadores.R  ·  Indicadores de AUDITORIA SOCIAL (cruzan los 3 bloques)
 # -----------------------------------------------------------------------------
 # Construye indicadores operativos que combinan el REM-A19b con un denominador
 # poblacional. Se calculan a nivel NACIONAL, por REGION y por COMUNA, y

@@ -41,10 +41,7 @@ secrets*
 
 **/*.quarto_ipynb
 
-# --- Archivos de prueba / probe ---
-R/_probe.txt
-
-# --- Archivos de trabajo / bocetos (se versionan) ---
-# boceto_dashboard.md  → SÍ se versiona (diseño aprobado)
-# pipeline.svg         → SÍ se versiona
-# difusion/            → SÍ se versiona (policy brief, LinkedIn)
+# --- Denominador FONASA (descarga manual; no versionar el CSV grande) ---
+Beneficiarios*.csv
+*eneficiarios*.csv
+fonasa*.csv

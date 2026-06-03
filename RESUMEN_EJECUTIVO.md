@@ -57,14 +57,14 @@ El A19b reúne tres familias de actividad que miden cosas distintas y se comport
 
 ## Indicadores de auditoría social (nivel nacional)
 
-Con denominador poblacional (población inscrita; hoy proxy CASEN 2024, a reemplazar por FONASA):
+Con denominador FONASA (beneficiarios por comuna, diciembre 2025; 16,9 millones de inscritos):
 
-- **Fricción administrativa (I_fa):** 11,0 reclamos por cada 1.000 personas.
+- **Fricción administrativa (I_fa):** 13,1 reclamos por cada 1.000 inscritos.
 - **Severidad de espera (T_se):** 46,5 % de los reclamos son por tiempos de espera.
 - **Cumplimiento de plazos:** 14,7 % de los reclamos se responden fuera del plazo legal.
 - **Razón felicitaciones/reclamos:** 0,64 (más reclamos que felicitaciones).
-- **Densidad democrática (I_dd):** 9,1 participantes en participación social por cada 100 inscritos.
-- **Cohesión intercultural (I_ci):** 0,72 actividades interculturales por cada 1.000 inscritos.
+- **Densidad democrática (I_dd):** 10,8 participantes en participación social por cada 100 inscritos.
+- **Cohesión intercultural (I_ci):** 0,86 actividades interculturales por cada 1.000 inscritos.
 
 ## Implicancias para política
 
@@ -78,7 +78,7 @@ Con denominador poblacional (población inscrita; hoy proxy CASEN 2024, a reempl
 
 ## Cómo se llega a estas conclusiones (reproducible)
 
-`R/99_run_all.R` ejecuta todo el pipeline en orden y deja las tablas en `productos/{A,B,C,sintesis}/`:
+`R/10_run_all.R` ejecuta todo el pipeline en orden y deja las tablas en `productos/{A,B,C,sintesis}/`:
 descarga DEIS → crosswalk A19b por bloque → datos comunales CASEN + denominador FONASA → motor de
 análisis (hurdle mixto, multinivel 3 niveles, autocorrelación espacial, tipologías) por sección →
 síntesis e indicadores de auditoría social → dashboard Quarto.
