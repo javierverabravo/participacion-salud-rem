@@ -119,8 +119,19 @@ Requisitos: **R ≥ 4.3** y, para publicar el tablero, **Quarto**. Paquetes: `he
 
 ```r
 # Desde la raíz del proyecto, en R:
-source("R/10_run_all.R")     # pipeline completo (~110 min): datos -> productos/
+source("R/10_run_all.R")     # pipeline completo: datos -> productos/
 ```
+
+Los bloques A/B/C corren **en paralelo** (con respaldo secuencial automático si el cluster falla) y los modelos mixtos usan `nAGQ = 0`, lo que baja el tiempo de ~110 min a ~30–40 min en un equipo de varios núcleos. Se puede ajustar con variables de entorno antes del `source`:
+
+```r
+Sys.setenv(REM_PAR  = "0")   # "1" paralelo (def) | "0" secuencial
+Sys.setenv(REM_SENS = "0")   # "1" corre la sensibilidad participativa (def) | "0" la omite (más rápido)
+Sys.setenv(REM_DEP  = "1")   # "0" omite dependencia en la descomposición (def) | "1" la incluye
+Sys.setenv(REM_FAST = "1")   # "0" glmer exacto nAGQ=1 (def, ~30-40 min) | "1" rápido nAGQ=0 (~4 min, ICC algo menor)
+```
+
+La corrida **publicable** se hace en modo exacto (por defecto); `REM_FAST="1"` es solo para iterar rápido durante el desarrollo.
 
 Luego, en la terminal:
 

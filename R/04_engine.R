@@ -26,6 +26,11 @@ suppressPackageStartupMessages({
   library(lme4)
 })
 
+# nAGQ de los glmer: 1 = Laplace (exacto, ~30-40 min) por defecto;
+# REM_FAST="1" usa 0 (PIRLS, ~4 min pero ICC algo subestimado). Iterar rapido
+# con REM_FAST=1; la corrida final/publicada se deja en exacto (def).
+.nagq <- function() if (Sys.getenv("REM_FAST", unset = "0") == "1") 0L else 1L
+
 # ---- utilitarios -----------------------------------------------------------
 
 dir_bloque <- function(blq) {
@@ -388,7 +393,7 @@ modelo_hurdle <- function(panel, blq, dirb) {
 
   m_b <- tryCatch(
     glmer(reporta ~ IdRegion + tipo_grp + Mes + (1 | IdEstablecimiento),
-          family = binomial, data = d,
+          family = binomial, data = d, nAGQ = .nagq(),
           control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))),
     error = function(e) { .estado(dirb, "hurdle_barrera", "error", conditionMessage(e)); NULL })
 
@@ -460,7 +465,7 @@ modelo_multinivel <- function(panel, com, est, part, blq, dirb) {
   m <- tryCatch(
     glmer(reporta ~ tipo_grp + pobreza10 + Mes +
             (1 | IdRegion / IdComuna / IdEstablecimiento),
-          family = binomial, data = d,
+          family = binomial, data = d, nAGQ = .nagq(),
           control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 3e5))),
     error = function(e) { .estado(dirb, "multinivel", "error", conditionMessage(e)); NULL })
   if (is.null(m)) return(invisible(FALSE))
@@ -489,11 +494,12 @@ modelo_multinivel <- function(panel, com, est, part, blq, dirb) {
   # --- Sensibilidad: universo participativo (excluye urgencias estructurales) ---
   # Responde "¿cambia la pobreza/territorio al quitar los ceros estructurales?".
   d2 <- droplevels(d[participa_estructural == TRUE])
-  if (nrow(d2) > 0 && sum(d2$reporta) >= 30) {
+  hacer_sens <- Sys.getenv("REM_SENS", unset = "1") == "1"
+  if (hacer_sens && nrow(d2) > 0 && sum(d2$reporta) >= 30) {
     m2 <- tryCatch(
       glmer(reporta ~ tipo_grp + pobreza10 + Mes +
               (1 | IdRegion / IdComuna / IdEstablecimiento),
-            family = binomial, data = d2,
+            family = binomial, data = d2, nAGQ = .nagq(),
             control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 3e5))),
       error = function(e) { .estado(dirb, "multinivel_part", "error", conditionMessage(e)); NULL })
     if (!is.null(m2)) {
@@ -589,13 +595,14 @@ modelo_descomposicion <- function(panel, blq, dirb) {
   if (d[, sum(reporta)] < 30) {
     .estado(dirb, "descomposicion", "omitido", "pocos positivos"); return(invisible(FALSE))
   }
-  tiene_dep <- "dependencia" %in% names(d) && d[, uniqueN(dependencia)] > 1
+  tiene_dep <- Sys.getenv("REM_DEP", unset = "0") == "1" &&
+               "dependencia" %in% names(d) && d[, uniqueN(dependencia)] > 1
   d[, `:=`(tipo_grp = .factor_tipo(tipo_grp),
            nivel_atencion = factor(nivel_atencion),
            IdEstablecimiento = factor(IdEstablecimiento))]
   if (tiene_dep) d[, dependencia := factor(dependencia)]
   ctrl <- glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
-  fit  <- function(f) tryCatch(glmer(f, family = binomial, data = d, control = ctrl),
+  fit  <- function(f) tryCatch(glmer(f, family = binomial, data = d, nAGQ = .nagq(), control = ctrl),
                                error = function(e) NULL)
   vget <- function(m) if (is.null(m)) NA_real_ else as.numeric(VarCorr(m)$IdEstablecimiento)
   m0 <- fit(reporta ~ (1 | IdEstablecimiento))
@@ -605,11 +612,14 @@ modelo_descomposicion <- function(panel, blq, dirb) {
     fit(reporta ~ tipo_grp + nivel_atencion + dependencia + (1 | IdEstablecimiento)) else NULL
   v0 <- vget(m0); v1 <- vget(m1); v2 <- vget(m2); v3 <- vget(m3)
   red <- function(v) if (!is.na(v0) && v0 > 0 && !is.na(v)) round(100 * (v0 - v) / v0, 1) else NA
-  tab <- data.table(
-    modelo = c("M0 nulo (solo establecimiento)", "M1 + tipo",
-               "M2 + tipo + nivel", "M3 + tipo + nivel + dependencia"),
-    var_establecimiento = round(c(v0, v1, v2, v3), 3),
-    pct_reduccion_vs_M0 = c(0, red(v1), red(v2), red(v3)))
+  mods <- c("M0 nulo (solo establecimiento)", "M1 + tipo", "M2 + tipo + nivel")
+  vars <- c(v0, v1, v2); reds <- c(0, red(v1), red(v2))
+  if (!is.null(m3)) {
+    mods <- c(mods, "M3 + tipo + nivel + dependencia")
+    vars <- c(vars, v3); reds <- c(reds, red(v3))
+  }
+  tab <- data.table(modelo = mods, var_establecimiento = round(vars, 3),
+                    pct_reduccion_vs_M0 = reds)
   fwrite(tab, file.path(dirb, "modelo_descomposicion.csv"), sep = ";", bom = TRUE)
   # OR de cada dependencia (vs referencia) en la barrera, condicional a tipo+nivel.
   if (!is.null(m3)) {

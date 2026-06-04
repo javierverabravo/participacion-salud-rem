@@ -864,5 +864,5 @@ res_desc
 
 **"Robustez ante ceros estructurales"** repite los modelos en dos universos: el **completo** y el **participativo** (excluyendo urgencias SAPU/SUR/SAR). Que el OR de pobreza y la varianza de comuna casi no cambien entre ambas columnas significa que las conclusiones **no son un artefacto** de incluir centros que nunca iban a registrar: son robustas.
 
-**"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo, el nivel y la dependencia administrativa, añadidos uno a uno. La lectura central: tipo y nivel explican la mayor parte (64–80 %), pero **la dependencia administrativa casi no agrega nada** (≤ 1 punto). Es decir, una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
+**"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo y el nivel, añadidos uno a uno. Tipo y nivel explican la mayor parte (64–80 %). También se probó la **dependencia administrativa** y **casi no agregaba nada** (≤ 1 punto), por lo que se dejó fuera del modelo de rutina: una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
 :::
