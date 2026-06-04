@@ -316,8 +316,7 @@ if (requireNamespace("DT", quietly = TRUE))
 ## Row {height="45%"}
 
 ::: {.card title="Decisiones de datos que cambian las conclusiones"}
-**Codificación UTF-8 con BOM** (no Latin-1, como decía la instrucción original) — leído
-mal, se corrompen los nombres. **El subregistro está en filas ausentes, no en celdas
+**El subregistro está en filas ausentes, no en celdas
 vacías:** por eso se reconstruye el panel completo establecimiento × mes y **no se
 colapsa NA a 0**. **El A19b separa instancias y demografía** en columnas marginales, así
 que no es posible cruzar "qué instancia" × "perfil de participante"; la equidad se reporta
@@ -428,6 +427,16 @@ res_serie <- tryCatch({
 }, error = function(e) htmltools::HTML("Corre el pipeline para ver las series."))
 res_serie
 ```
+
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Resumen"}
+**Los cuatro recuadros** dan la foto general: **Red analizada** es el universo total de establecimientos públicos sobre el que se calcula todo; los otros tres son el **% que registra** cada sección — OIRS, participación social y satisfacción —, y ya muestran cómo cae la cobertura de A a C.
+
+**La tabla comparativa** resume cada sección en una línea. *Cobertura* = cuántos registran; *Subregistro* = qué % de los meses-establecimiento quedan sin dato (sube de A a C); *Meses con registro* = de los 12 del año, cuántos anota en mediana quien participa; *ICC barrera* = qué tan institucional es registrar (siempre alto); *Var. comuna* = cuánto pesa el territorio; *OR pobreza* con su *p* = si la pobreza comunal predice el registro (solo significativa en C).
+
+**El gráfico de volumen mensual** muestra, para cada sección por separado (ejes independientes), cuántos eventos se registran mes a mes; se nota la baja administrativa de enero-febrero. Es volumen bruto, no cobertura: una sección puede tener muchos eventos concentrados en pocos establecimientos.
+:::
 
 # Territorio
 

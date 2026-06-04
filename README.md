@@ -24,8 +24,6 @@ Para responderla había que pasar de un formulario administrativo de millones de
 
 El REM se descarga del [repositorio de datos abiertos del DEIS](https://repositoriodeis.minsal.cl/) (el listado de carpetas está deshabilitado, pero los ZIP se bajan directo, p. ej. `https://repositoriodeis.minsal.cl/DatosAbiertos/REM/SERIE_REM_2025.zip`) como un ZIP anual (~153 MB) con cinco series CSV (A, BS, BM, P, D) y los diccionarios. La participación vive casi toda en la **Serie A** (~7,1 millones de filas, 738 MB), donde cada fila es un establecimiento × mes × prestación, con 50 columnas de valores (`Col01`…`Col50`).
 
-**Primera lección, y costó:** la instrucción original del proyecto decía que los CSV venían en **Latin-1**. Era incorrecto. La codificación real es **UTF-8 con BOM**. Leídos como Latin-1, todos los nombres con tilde y "ñ" se corrompen ("La Araucanía" → "La AraucanÃ­a") y los cruces por nombre fallan en silencio. Detectarlo temprano evitó arrastrar basura por todo el análisis. *Moraleja: nunca confíes en la codificación declarada; verifícala con los propios datos.*
-
 Lo que descubrimos al caracterizar las celdas también marcó el rumbo: en las columnas de la Serie A, **~39 % están vacías (NA), ~24 % son ceros y ~37 % son positivas**. Esa mezcla de NA, cero real y positivo es justamente el corazón del problema del subregistro (Capítulo 3).
 
 ---
@@ -168,10 +166,9 @@ Scripts exploratorios y versiones anteriores quedan archivados en `R/exploratori
 
 ## Lecciones para quien siga este camino
 
-1. **Verifica la codificación con los datos, no con la documentación.** Un BOM mal leído corrompe cruces en silencio.
-2. **El subregistro suele estar en lo que no está.** Reconstruir el universo completo (filas ausentes) importa más que limpiar las celdas vacías. No colapses NA a 0.
-3. **Entiende el instrumento antes de modelar.** Saber que instancias y participantes son marginales independientes evita afirmar cruces que el dato no soporta.
-4. **Un modelo que no converge no es un modelo.** Revisa dispersión, errores estándar y Hessiana; ten lista una alternativa estable (aquí, descomponer el hurdle en barrera + intensidad).
-5. **Separa ceros estructurales de subregistro.** No es lo mismo "una urgencia que por diseño no participa" que "un CESFAM que dejó de registrar".
-6. **Prueba tus hipótesis y acepta cuando el dato las rechaza** (la dependencia administrativa no explicaba nada: bien saberlo).
-7. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia
+1. **El subregistro suele estar en lo que no está.** Reconstruir el universo completo (filas ausentes) importa más que limpiar las celdas vacías. No colapses NA a 0.
+2. **Entiende el instrumento antes de modelar.** Saber que instancias y participantes son marginales independientes evita afirmar cruces que el dato no soporta.
+3. **Un modelo que no converge no es un modelo.** Revisa dispersión, errores estándar y Hessiana; ten lista una alternativa estable (aquí, descomponer el hurdle en barrera + intensidad).
+4. **Separa ceros estructurales de subregistro.** No es lo mismo "una urgencia que por diseño no participa" que "un CESFAM que dejó de registrar".
+5. **Prueba tus hipótesis y acepta cuando el dato las rechaza** (la dependencia administrativa no explicaba nada: bien saberlo).
+6. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia
