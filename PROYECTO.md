@@ -1,4 +1,4 @@
-# PROYECTO.md — Brief de continuidad (handoff)
+# PROYECTO.md, Brief de continuidad (handoff)
 
 > Documento para retomar el proyecto en una nueva sesión de Cowork. Resume qué
 > es, qué está hecho, las decisiones clave y el trabajo pendiente. **Para
@@ -22,7 +22,7 @@ pesan igual**: son más relevantes en OIRS y, sobre todo, en satisfacción usuar
 
 ---
 
-## 2. Estado actual — pipeline por bloques (jun 2026)
+## 2. Estado actual, pipeline por bloques (jun 2026)
 
 El pipeline se **reformuló completamente** respecto a la versión global previa.
 Ahora analiza la A19b **sección por sección** (bloques A / B / C) con un motor
@@ -33,7 +33,7 @@ produce indicadores de auditoría social.
 
 ```
 00_descarga.R         Descarga REM 2025 + base maestra de establecimientos
-01_procesamiento.R    Crosswalk A19b → bloques A/B/C; tabla larga; universo estab×mes
+01_procesamiento.R    Crosswalk A19b, bloques A/B/C; tabla larga; universo estab×mes
 02_datos_comunales.R  Pobreza comunal CASEN 2024 (ingresos + multidim., SAE, lector robusto)
 03_fonasa_inscritos.R Población inscrita validada FONASA (lector flexible; degrada con NA si falta)
 04_engine.R           Motor reutilizable por bloque: panel, KPIs, cobertura, serie, equidad,
@@ -44,7 +44,7 @@ produce indicadores de auditoría social.
 07_analisis_B.R       Bloque B · Participación social B.1+B.2 (26 códigos)
 08_analisis_C.R       Bloque C · Satisfacción usuaria C.1+C.2 (22 códigos)
 09_sintesis.R         Comparativo A/B/C + tipologías cross-tema + auditoría social
-10_run_all.R          Maestro: ejecuta 00→03→10→11→20→21→22→30 en orden
+10_run_all.R          Maestro: ejecuta 00, 03, 10, 11, 20, 21, 22, 30 en orden
 exploratorio/         Scripts de la fase global previa (archivados, no en el pipeline)
 ```
 
@@ -59,7 +59,7 @@ por git localmente; el dashboard renderizado en `docs/` sí se versiona).
   separador `;`, `CodigoPrestacion` como texto.
 - **El subregistro está en filas ausentes**, no en NA. No colapsar NA a 0.
   El panel completo (estab × mes) se reconstruye en `01_procesamiento.R`.
-- **Modelo hurdle → descomposición en dos partes separadas** (`glmer` logística
+- **Modelo hurdle, descomposición en dos partes separadas** (`glmer` logística
   para barrera + `lmer` log-lineal para intensidad positiva). `glmmTMB` con
   NB-truncada de objeto único **no converge** por la cola extrema (miles vs.
   medianas de pocas unidades). Siempre verificar convergencia: NaN, SE gigantes,
@@ -93,13 +93,13 @@ por git localmente; el dashboard renderizado en `docs/` sí se versiona).
 | I de Moran (espacial) | 0,109 (p≈0) | 0,049 (ns) | 0,119 (p<0,001) |
 | Mujeres entre participantes | 61,5 % | 66,5 % | 68,7 % |
 
-- **Lo institucional manda en las tres** (ICC de la barrera 66–94 %): registrar
+- **Lo institucional manda en las tres** (ICC de la barrera 66 a 94 %): registrar
   depende del establecimiento, no del territorio.
 - **El territorio NO pesa igual:** B (participación social) es el caso institucional
   puro (sin geografía, pobreza ns); A (OIRS) tiene geografía real (comuna 29 %,
   Moran significativo); C (satisfacción) es la **única** donde la **pobreza comunal
   predice** el registro (OR 0,58; p<0,001) y hay clústeres espaciales.
-- **El subregistro crece de A a C** (60 → 72 → 92 %) y está en **filas ausentes**,
+- **El subregistro crece de A a C** (60, 72, 92 %) y está en **filas ausentes**,
   no en celdas vacías.
 - **Auditoría social (nacional):** fricción administrativa 11,0 reclamos/1.000;
   46,5 % de reclamos por espera; 14,7 % fuera de plazo; razón felicitaciones/
@@ -114,13 +114,13 @@ Cualquiera que clone el repo y tenga R + Quarto puede llegar a las mismas
 conclusiones:
 
 1. Abrir la carpeta del proyecto en R/Positron.
-2. En la consola de R: `source("R/10_run_all.R")` — descarga los datos del DEIS,
+2. En la consola de R: `source("R/10_run_all.R")`, descarga los datos del DEIS,
    construye el crosswalk A19b, agrega CASEN/FONASA, corre el motor sobre A/B/C y
    genera la síntesis. Deja todo en `productos/{A,B,C,sintesis}/` (~70 min).
 3. (Opcional, per cápita real) Colocar `datos/externos/poblacion_inscrita_fonasa.csv`
    y re-correr `03` + `30`.
-4. En la terminal: `quarto render` — genera el dashboard en `docs/`.
-5. `git add -A && git commit -m "..." && git push` — publica en GitHub Pages.
+4. En la terminal: `quarto render`, genera el dashboard en `docs/`.
+5. `git add -A && git commit -m "..." && git push`, publica en GitHub Pages.
 
 El orden y las dependencias están en `R/10_run_all.R`. El esquema de numeración es
 por grupos: **0x** datos, **1x** motor e indicadores, **2x** análisis por bloque,

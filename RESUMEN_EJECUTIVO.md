@@ -1,4 +1,4 @@
-# Participación ciudadana en salud (REM-A19b 2025) — Resumen ejecutivo
+# Participación ciudadana en salud (REM-A19b 2025), Resumen ejecutivo
 
 **Autor:** Javier Vera Bravo · Salud Pública, Chile ([@Arleq89](https://github.com/Arleq89))
 **Dashboard:** https://arleq89.github.io/participacion-salud-rem/ · **Repo:** https://github.com/Arleq89/participacion-salud-rem
@@ -9,16 +9,16 @@
 ## La tesis en una línea
 
 **Registrar participación es un rasgo institucional del establecimiento** (no del territorio ni
-de la pobreza) en las tres secciones del A19b — pero **el peso del territorio y de la pobreza
+de la pobreza) en las tres secciones del A19b, pero **el peso del territorio y de la pobreza
 NO es uniforme entre ellas**. Por eso conviene analizarlas por separado, no en bloque.
 
 ## Por qué por secciones
 
 El A19b reúne tres familias de actividad que miden cosas distintas y se comportan distinto:
 
-- **A · OIRS** — atención de usuarios: reclamos, consultas, sugerencias, solicitudes, felicitaciones.
-- **B · Participación social** — consejos de desarrollo, cabildos, diálogos ciudadanos (el núcleo deliberativo que prioriza la norma).
-- **C · Satisfacción usuaria y humanización** — encuestas, buzones, gestión de la experiencia.
+- **A · OIRS**, atención de usuarios: reclamos, consultas, sugerencias, solicitudes, felicitaciones.
+- **B · Participación social**, consejos de desarrollo, cabildos, diálogos ciudadanos (el núcleo deliberativo que prioriza la norma).
+- **C · Satisfacción usuaria y humanización**, encuestas, buzones, gestión de la experiencia.
 
 ## Hallazgos por sección
 
@@ -37,7 +37,7 @@ El A19b reúne tres familias de actividad que miden cosas distintas y se comport
 **Lectura:**
 
 1. **Lo institucional manda en las tres.** La decisión de registrar es sobre todo un rasgo del
-   establecimiento (ICC de la barrera 66–94 %): que un centro registre o no depende de su
+   establecimiento (ICC de la barrera 66 a 94 %): que un centro registre o no depende de su
    gestión interna, no de dónde está.
 
 2. **Pero el territorio no pesa igual.** La **participación social (B)** es el caso *institucional
@@ -46,9 +46,9 @@ El A19b reúne tres familias de actividad que miden cosas distintas y se comport
    espacial significativa). La **satisfacción usuaria (C)** es la única sección donde la **pobreza
    comunal SÍ predice** el registro (OR 0,58; p<0,001): las comunas más pobres registran menos.
 
-3. **El subregistro crece de A a C** (60 % → 72 % → 92 %) y no está en celdas vacías sino en
+3. **El subregistro crece de A a C** (60 %, 72 %, 92 %) y no está en celdas vacías sino en
    **filas ausentes**: muchos pares establecimiento-mes simplemente no reportan. Para B, el manual
-   REM indica que la sección "no presenta regla de consistencia" — el subregistro está **habilitado
+   REM indica que la sección "no presenta regla de consistencia", el subregistro está **habilitado
    por diseño** y es accionable desde el nivel central.
 
 4. **Lo que más se mide no es lo que la norma prioriza.** El volumen está dominado por el reclamo
@@ -79,9 +79,9 @@ Con denominador FONASA (beneficiarios por comuna, diciembre 2025; 16,9 millones 
 ## Cómo se llega a estas conclusiones (reproducible)
 
 `R/10_run_all.R` ejecuta todo el pipeline en orden y deja las tablas en `productos/{A,B,C,sintesis}/`:
-descarga DEIS → crosswalk A19b por bloque → datos comunales CASEN + denominador FONASA → motor de
-análisis (hurdle mixto, multinivel 3 niveles, autocorrelación espacial, tipologías) por sección →
-síntesis e indicadores de auditoría social → dashboard Quarto.
+descarga DEIS, crosswalk A19b por bloque, datos comunales CASEN + denominador FONASA, motor de
+análisis (hurdle mixto, multinivel 3 niveles, autocorrelación espacial, tipologías) por sección, 
+síntesis e indicadores de auditoría social, dashboard Quarto.
 
 *Métodos: modelos de barrera (hurdle) con efectos aleatorios por establecimiento, modelos
 multinivel de tres niveles, I de Moran / LISA y agrupamiento k-means. Detalle en el README.*

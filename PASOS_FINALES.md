@@ -1,4 +1,4 @@
-# Runbook — probar el flujo y publicar
+# Runbook, probar el flujo y publicar
 
 Ejecuta en orden. Terminal de Positron (PowerShell) salvo donde diga consola de R.
 
@@ -25,7 +25,7 @@ git mv R/30_sintesis.R   R/09_sintesis.R
 git mv R/99_run_all.R    R/10_run_all.R
 ```
 
-Esquema final: `00`–`03` datos · `04` motor · `05` indicadores · `06/07/08` bloques
+Esquema final: `00`-`03` datos · `04` motor · `05` indicadores · `06/07/08` bloques
 A/B/C · `09` síntesis · `10` maestro.
 
 ## 3. Limpiar temporales

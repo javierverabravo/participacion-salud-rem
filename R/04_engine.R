@@ -165,11 +165,12 @@ construir_panel <- function(part, est, universo, blq) {
   panel <- merge(panel, pt, by = c("IdEstablecimiento", "Mes"),
                  all.x = TRUE, sort = FALSE)
   panel[is.na(valor), valor := 0]
-  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp, nivel_atencion, dependencia, participa_estructural)],
+  panel <- merge(panel, est[, .(IdEstablecimiento, tipo_grp, nivel_atencion, dependencia, servicio_salud, participa_estructural)],
                  by = "IdEstablecimiento", all.x = TRUE, sort = FALSE)
   panel[is.na(tipo_grp), tipo_grp := "Otro"]
   panel[is.na(nivel_atencion), nivel_atencion := "No aplica / otro"]
   panel[is.na(dependencia), dependencia := "Sin dato"]
+  panel[is.na(servicio_salud), servicio_salud := "Sin dato"]
   panel[is.na(participa_estructural), participa_estructural := FALSE]
   panel[, reporta := as.integer(valor > 0)]
   panel[]
@@ -219,6 +220,9 @@ cobertura_territorial <- function(est, part, blq, dirb) {
          file.path(dirb, "cobertura_tipo.csv"), sep = ";", bom = TRUE)
   fwrite(cob("DependenciaAdministrativa")[order(-pct)],
          file.path(dirb, "cobertura_dependencia.csv"), sep = ";", bom = TRUE)
+  if ("servicio_salud" %in% names(e))
+    fwrite(cob("servicio_salud")[order(-pct)],
+           file.path(dirb, "cobertura_servicio.csv"), sep = ";", bom = TRUE)
   invisible(TRUE)
 }
 
@@ -491,6 +495,34 @@ modelo_multinivel <- function(panel, com, est, part, blq, dirb) {
            file.path(dirb, "modelo_determinantes.csv"), sep = ";", bom = TRUE)
   }
 
+  # --- Red vs geografia: mismo modelo con Servicio de Salud arriba en vez de region.
+  # Si la red explica mas varianza que la region, "lo territorial" es gestion de red.
+  if ("servicio_salud" %in% names(d) &&
+      d[!is.na(servicio_salud) & servicio_salud != "Sin dato", uniqueN(servicio_salud)] > 1) {
+    ds <- droplevels(d[!is.na(servicio_salud) & servicio_salud != "Sin dato"])
+    ds[, servicio_salud := factor(servicio_salud)]
+    ms <- tryCatch(
+      glmer(reporta ~ tipo_grp + pobreza10 + Mes +
+              (1 | servicio_salud / IdComuna / IdEstablecimiento),
+            family = binomial, data = ds, nAGQ = .nagq(),
+            control = glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 3e5))),
+      error = function(e) { .estado(dirb, "multinivel_servicio", "error", conditionMessage(e)); NULL })
+    if (!is.null(ms)) {
+      vcs <- as.data.frame(VarCorr(ms))
+      e2 <- sum(vcs$vcov[grepl("IdEstablecimiento", vcs$grp)])
+      c2 <- sum(vcs$vcov[grepl("IdComuna", vcs$grp) & !grepl("IdEstablecimiento", vcs$grp)])
+      s2 <- sum(vcs$vcov[vcs$grp == "servicio_salud"])
+      r2 <- pi^2 / 3; t2 <- e2 + c2 + s2 + r2
+      fwrite(data.table(
+        nivel = c("Establecimiento", "Comuna", "Servicio de Salud", "Residual (mes a mes)"),
+        pct_varianza = round(100 * c(e2, c2, s2, r2) / t2, 1)),
+        file.path(dirb, "modelo_multinivel_var_servicio.csv"), sep = ";", bom = TRUE)
+      .estado(dirb, "multinivel_servicio", "ok",
+              sprintf("var Servicio de Salud %.1f%% (comuna %.1f%%, region era %.1f%%)",
+                      100 * s2 / t2, 100 * c2 / t2, round(100 * v_reg / tot, 1)))
+    }
+  }
+
   # --- Sensibilidad: universo participativo (excluye urgencias estructurales) ---
   # Responde "¿cambia la pobreza/territorio al quitar los ceros estructurales?".
   d2 <- droplevels(d[participa_estructural == TRUE])
@@ -665,7 +697,7 @@ red_servicio <- function(est, blq, dirb) {
     cob <- merge(cob, cs, by = "IdComuna", all.x = TRUE)[!is.na(servicio_salud)]
     serv <- cob[, .(cobertura = round(sum(cobertura * n) / sum(n), 1),
                     n_comunas = .N, n_estab = sum(n)), by = servicio_salud][order(-cobertura)]
-    fwrite(serv, file.path(dirb, "cobertura_servicio.csv"), sep = ";", bom = TRUE)
+    fwrite(serv, file.path(dirb, "cobertura_servicio_red.csv"), sep = ";", bom = TRUE)
     cob[, cob_serv := sum(cobertura * n) / sum(n), by = servicio_salud]
     cob[, residual := cobertura - cob_serv]
     cob[, codigo_comuna := sprintf("%05d", IdComuna)]

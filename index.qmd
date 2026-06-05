@@ -181,6 +181,28 @@ plot_terr_incl <- function() {
     labs(x = NULL, y = "% de participantes") +
     tg + theme(legend.position = "bottom", strip.text = element_text(face = "bold", size = 9))
 }
+# Red vs geografía: varianza del registrar en la región vs en el Servicio de Salud.
+plot_red_vs_geo <- function() {
+  d <- rbindlist(lapply(c("A", "B", "C"), function(b) {
+    vr <- gp(b, "modelo_multinivel_var")
+    vs <- gp(b, "modelo_multinivel_var_servicio")
+    reg <- if (!is.null(vr)) vr[grepl("Regi", nivel), pct_varianza] else NA_real_
+    ser <- if (!is.null(vs)) vs[grepl("Servicio", nivel), pct_varianza] else NA_real_
+    data.table(bloque = b,
+               `Región (política)` = as.numeric(reg)[1],
+               `Servicio de Salud (red)` = as.numeric(ser)[1])
+  }), fill = TRUE)
+  if (all(is.na(d[["Servicio de Salud (red)"]]))) return(NULL)
+  m <- melt(d, id.vars = "bloque", variable.name = "nivel", value.name = "p")
+  m[, tema := tema_blq[bloque]]
+  ggplot(m, aes(x = tema, y = p, fill = nivel,
+        text = paste0(tema, " · ", nivel, ": ", p, "%"))) +
+    geom_col(position = "dodge") + coord_flip() +
+    scale_fill_manual(values = c("Región (política)" = "#9ecae1",
+                                 "Servicio de Salud (red)" = "#08519c"), name = NULL) +
+    labs(x = NULL, y = "% de la varianza del registrar en ese nivel") +
+    tg + theme(legend.position = "bottom")
+}
 
 # --- vb(): value box con subtítulo + tooltip explicativo ---------------------
 vb <- function(valor, sub, def, icon = "info-circle", color = "primary", title = NULL) {
@@ -282,7 +304,7 @@ Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr 
 2. **`01`** identifica las prestaciones de participación con un *crosswalk* curado del
    diccionario y las clasifica en las secciones **A / B / C**; reconstruye el universo
    establecimiento × mes (donde vive el subregistro).
-3. **`02–03`** agregan pobreza comunal (CASEN 2024) y el denominador poblacional (FONASA).
+3. **`02 a 03`** agregan pobreza comunal (CASEN 2024) y el denominador poblacional (FONASA).
 4. **`04`** es el **motor**: para cada sección calcula KPIs, cobertura, serie, equidad,
    modelo de barrera con efectos aleatorios, multinivel de 3 niveles, espacial y tipologías.
 5. **`06/07/08`** corren el motor sobre A, B y C; **`09`** sintetiza y calcula los
@@ -304,7 +326,7 @@ metodos <- data.table(
     "¿Las comunas vecinas se parecen (clústeres) o es azar?",
     "¿Qué perfiles de participación existen sin etiquetar?"),
   `Por qué no lo convencional` = c(
-    "Muchos ceros y cola extrema sesgan la media; hay que separar 'si registra' de 'cuánto'. El glmmTMB de NB-truncada no converge → descomposición glmer + lmer.",
+    "Muchos ceros y cola extrema sesgan la media; hay que separar 'si registra' de 'cuánto'. El glmmTMB de NB-truncada no converge, descomposición glmer + lmer.",
     "Promediar por región subestima el error e infla diferencias que son composición de comunas.",
     "Comparar mapas a ojo no cuantifica ni da significancia.",
     "Clasificar por volumen total oculta que 'participar' significa cosas distintas."))
@@ -330,7 +352,7 @@ intensidad log-lineal), siempre verificando convergencia (`modelo_estado.csv`).
 ## Row {height="100%"}
 
 ```{r}
-#| title: "Glosario de términos (ordenable y buscable) — empieza por aquí"
+#| title: "Glosario de términos (ordenable y buscable), empieza por aquí"
 glo <- copy(glosario)
 setnames(glo, c("Término", "Definición técnica", "En palabras simples"))
 if (requireNamespace("DT", quietly = TRUE)) {
@@ -349,7 +371,7 @@ if (requireNamespace("DT", quietly = TRUE)) {
 ::: {.hero-box}
 [Participación ciudadana en salud · REM-A19b Chile 2025]{.hero-kicker}
 
-[Registrar participación es un rasgo **institucional del establecimiento** en las tres secciones del A19b — pero el peso del **territorio y de la pobreza no es uniforme**: casi nulo en participación social, real en OIRS y decisivo en satisfacción usuaria. Por eso se analizan **sección por sección**.]{.hero-thesis}
+[Registrar participación es un rasgo **institucional del establecimiento** en las tres secciones del A19b, pero el peso del **territorio y de la pobreza no es uniforme**: casi nulo en participación social, real en OIRS y decisivo en satisfacción usuaria. Por eso se analizan **sección por sección**.]{.hero-thesis}
 :::
 :::
 
@@ -431,7 +453,7 @@ res_serie
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página de Resumen"}
-**Los cuatro recuadros** dan la foto general: **Red analizada** es el universo total de establecimientos públicos sobre el que se calcula todo; los otros tres son el **% que registra** cada sección — OIRS, participación social y satisfacción —, y ya muestran cómo cae la cobertura de A a C.
+**Los cuatro recuadros** dan la foto general: **Red analizada** es el universo total de establecimientos públicos sobre el que se calcula todo; los otros tres son el **% que registra** cada sección, OIRS, participación social y satisfacción, y ya muestran cómo cae la cobertura de A a C.
 
 **La tabla comparativa** resume cada sección en una línea. *Cobertura* = cuántos registran; *Subregistro* = qué % de los meses-establecimiento quedan sin dato (sube de A a C); *Meses con registro* = de los 12 del año, cuántos anota en mediana quien participa; *ICC barrera* = qué tan institucional es registrar (siempre alto); *Var. comuna* = cuánto pesa el territorio; *OR pobreza* con su *p* = si la pobreza comunal predice el registro (solo significativa en C).
 
@@ -460,9 +482,18 @@ interactivo(tryCatch(plot_terr_cob(), error = function(e) NULL))
 
 ## Row {height="48%"}
 
+### Column {width="58%"}
+
 ```{r}
 #| title: "Inclusión territorial · pueblos originarios y migrantes por región y sección"
 interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
+```
+
+### Column {width="42%"}
+
+```{r}
+#| title: "¿Red o geografía? Varianza del registro: región vs Servicio de Salud"
+interactivo(tryCatch(plot_red_vs_geo(), error = function(e) NULL))
 ```
 
 ## Row {.fill}
@@ -473,6 +504,8 @@ interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 **El gráfico de cobertura por región y sección** ordena las 16 regiones de mayor a menor cobertura, en tres paneles (OIRS, participación social y satisfacción). Cada barra es el % de establecimientos de la región que registra esa sección. Comparar los tres paneles muestra que una región puede ser fuerte en una sección y débil en otra.
 
 **El gráfico de inclusión** muestra, por región y sección, qué porcentaje de las personas participantes son de **pueblos originarios** (verde) o **migrantes** (azul). Recuerda que son proporciones sobre el total de participantes, no números absolutos: una región pequeña puede tener un % alto con pocas personas. Aquí se ve, por ejemplo, la mayor presencia indígena en las regiones del sur.
+
+**El gráfico "¿Red o geografía?"** compara cuánta de la variación del registrar vive en la **región política** (16) frente al **Servicio de Salud** (la red de gestión, 29 servicios). El resultado es claro: **ninguno de los dos explica casi nada** (ambos entre 0 y 2 %). La variación territorial es **municipal**, vive en la **comuna** (sobre todo en OIRS, cerca de 29 %), no en la región ni en la red. Dicho de otro modo, comunas de un mismo Servicio de Salud registran de forma muy distinta: lo que marca la diferencia es lo local y el establecimiento, no la red administrativa.
 
 *Importante:* este mapa es la **vista nacional**. El selector por región que se reenfoca al elegir una región se construye en la app interactiva (Shiny), porque un dashboard estático no recalcula en vivo.
 :::
@@ -543,13 +576,13 @@ interactivo(plot_var("A"))
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página de OIRS"}
-**Los cuatro recuadros** resumen la sección: la **cobertura** (`r pct(kget("A","pct_cobertura"))` de los establecimientos registra OIRS), el número de **consultas** (`r fmt(kget("A","total_consultas","kpis_A_tipos"))`), el de **reclamos** (`r fmt(kget("A","total_reclamos","kpis_A_tipos"))`) y las **felicitaciones** (`r fmt(kget("A","total_felicitaciones","kpis_A_tipos"))`, ≈1 por cada reclamo). La lección clave: OIRS **no es sinónimo de reclamos** — las consultas son, de lejos, lo más numeroso.
+**Los cuatro recuadros** resumen la sección: la **cobertura** (`r pct(kget("A","pct_cobertura"))` de los establecimientos registra OIRS), el número de **consultas** (`r fmt(kget("A","total_consultas","kpis_A_tipos"))`), el de **reclamos** (`r fmt(kget("A","total_reclamos","kpis_A_tipos"))`) y las **felicitaciones** (`r fmt(kget("A","total_felicitaciones","kpis_A_tipos"))`, ≈1 por cada reclamo). La lección clave: OIRS **no es sinónimo de reclamos**, las consultas son, de lejos, lo más numeroso.
 
 **"Tipos de solicitud"** está en **escala logarítmica** (cada paso del eje multiplica por 10) justamente porque las consultas son tantas que, en escala normal, aplastarían a las demás barras. Léelo como un orden de magnitud, no como distancias lineales.
 
 **"Cobertura por tipo de establecimiento"** muestra qué proporción de cada tipo de centro registra OIRS: hospitales y CESFAM casi siempre, urgencias casi nunca (por diseño de su función). **La serie mensual** muestra el volumen de eventos mes a mes, donde se nota la baja de enero-febrero.
 
-**"¿Dónde vive la variación?"** reparte la varianza del *registrar o no* entre tres niveles. En OIRS, el **establecimiento** domina (rasgo institucional), pero la **comuna pesa ~29 %** — más que en las otras secciones —, señal de que aquí el territorio sí importa algo.
+**"¿Dónde vive la variación?"** reparte la varianza del *registrar o no* entre tres niveles. En OIRS, el **establecimiento** domina (rasgo institucional), pero la **comuna pesa ~29 %**, más que en las otras secciones, señal de que aquí el territorio sí importa algo.
 :::
 
 # B · Participación social
@@ -606,7 +639,7 @@ interactivo(plot_var("B"))
 ::: {.card title="Cómo leer la página de Participación social"}
 Esta sección es el **núcleo deliberativo** (consejos, cabildos, diálogos) y el caso **más institucional** de los tres: registrar depende casi por completo del establecimiento, no del territorio.
 
-**"B.1 vs B.2: perfil de participante"** compara las dos subsecciones, que miden cosas distintas: **B.1** son *actividades según instancia* y **B.2** son *sesiones según línea de acción*. El gráfico muestra, para cada grupo (mujeres, pueblos originarios, migrantes, PRAIS), el % de participantes en cada subsección. El hallazgo: **B.2 es bastante más inclusiva** — registra mucha mayor proporción de pueblos originarios (~8 %) y migrantes (~4,5 %) que B.1 (~2 % y ~1 %). La inclusión étnica y migrante se concentra en las líneas de acción.
+**"B.1 vs B.2: perfil de participante"** compara las dos subsecciones, que miden cosas distintas: **B.1** son *actividades según instancia* y **B.2** son *sesiones según línea de acción*. El gráfico muestra, para cada grupo (mujeres, pueblos originarios, migrantes, PRAIS), el % de participantes en cada subsección. El hallazgo: **B.2 es bastante más inclusiva**, registra mucha mayor proporción de pueblos originarios (~8 %) y migrantes (~4,5 %) que B.1 (~2 % y ~1 %). La inclusión étnica y migrante se concentra en las líneas de acción.
 
 **"Pueblos originarios y migrantes por región"** territorializa eso mismo: dónde, geográficamente, la participación es más diversa. **"Cobertura por tipo"** muestra qué centros participan (postas y CESFAM sí, urgencias no).
 
@@ -645,7 +678,7 @@ interactivo(tryCatch(plot_eq_subseccion("C"), error = function(e) NULL))
 ```
 ### Column
 ```{r}
-#| title: "Cobertura vs. pobreza comunal — aquí la pobreza SÍ predice (cada punto es una comuna)"
+#| title: "Cobertura vs. pobreza comunal, aquí la pobreza SÍ predice (cada punto es una comuna)"
 interactivo(plot_cob_pobreza("C"))
 ```
 
@@ -778,7 +811,7 @@ res_rxb
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página de Síntesis"}
-**La tabla comparativa** pone las tres secciones lado a lado. Las columnas clave: **Cobertura** (cuántos registran), **Subregistro** (cuántos meses-establecimiento quedan sin dato — crece de A a C), **ICC barrera** (qué tan institucional es registrar: 66–94 %, siempre alto), **Var. comuna** (cuánto pesa el territorio) y **OR pobreza** con su **p** (si la pobreza predice; solo es significativa en C).
+**La tabla comparativa** pone las tres secciones lado a lado. Las columnas clave: **Cobertura** (cuántos registran), **Subregistro** (cuántos meses-establecimiento quedan sin dato, crece de A a C), **ICC barrera** (qué tan institucional es registrar: 66 a 94 %, siempre alto), **Var. comuna** (cuánto pesa el territorio) y **OR pobreza** con su **p** (si la pobreza predice; solo es significativa en C).
 
 **Los cuatro indicadores de auditoría social** usan denominador poblacional (inscritos FONASA) para poder comparar territorios: **fricción administrativa** (reclamos por 1.000 inscritos), **severidad de espera** (% de reclamos que son por tiempos de espera), **fuera de plazo** (% de reclamos respondidos tarde) y **densidad democrática** (participantes por 100 inscritos).
 
@@ -864,5 +897,5 @@ res_desc
 
 **"Robustez ante ceros estructurales"** repite los modelos en dos universos: el **completo** y el **participativo** (excluyendo urgencias SAPU/SUR/SAR). Que el OR de pobreza y la varianza de comuna casi no cambien entre ambas columnas significa que las conclusiones **no son un artefacto** de incluir centros que nunca iban a registrar: son robustas.
 
-**"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo y el nivel, añadidos uno a uno. Tipo y nivel explican la mayor parte (64–80 %). También se probó la **dependencia administrativa** y **casi no agregaba nada** (≤ 1 punto), por lo que se dejó fuera del modelo de rutina: una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
+**"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo y el nivel, añadidos uno a uno. Tipo y nivel explican la mayor parte (64 a 80 %). También se probó la **dependencia administrativa** y **casi no agregaba nada** (≤ 1 punto), por lo que se dejó fuera del modelo de rutina: una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
 :::

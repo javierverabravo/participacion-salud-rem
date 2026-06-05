@@ -32,18 +32,18 @@ Lo que descubrimos al caracterizar las celdas también marcó el rumbo: en las c
 
 El A19b no es una tabla homogénea: es un formulario con **secciones que miden cosas distintas y tienen layouts de columnas distintos**. Confirmamos en el diccionario que "SECCIÓN B" y "SECCIÓN C" son encabezados paraguas **sin códigos**; las secciones-hoja reales son cinco:
 
-- **A** — OIRS: reclamos, consultas, felicitaciones, sugerencias, solicitudes.
-- **B.1** — actividades de participación según *instancia* (consejos, cabildos, indígena, jóvenes…).
-- **B.2** — *sesiones* según *línea de acción* (cuentas públicas, presupuestos participativos, diálogos…).
-- **C.1** — líneas de satisfacción y humanización.
-- **C.2** — sesiones según línea de acción de satisfacción.
+- **A**, OIRS: reclamos, consultas, felicitaciones, sugerencias, solicitudes.
+- **B.1**, actividades de participación según *instancia* (consejos, cabildos, indígena, jóvenes…).
+- **B.2**, *sesiones* según *línea de acción* (cuentas públicas, presupuestos participativos, diálogos…).
+- **C.1**, líneas de satisfacción y humanización.
+- **C.2**, sesiones según línea de acción de satisfacción.
 
-Agrupamos esto en tres **bloques temáticos** — **A** (OIRS), **B** (=B.1+B.2), **C** (=C.1+C.2) — porque cada uno se entiende en su propia lógica y no tiene sentido forzarlos a la misma plantilla.
+Agrupamos esto en tres **bloques temáticos**, **A** (OIRS), **B** (=B.1+B.2), **C** (=C.1+C.2), porque cada uno se entiende en su propia lógica y no tiene sentido forzarlos a la misma plantilla.
 
 Para pasar de códigos a significado hubo que **construir dos crosswalks a mano** desde el diccionario, porque los códigos de celda del A19b (`19xxxxxx`) **no coinciden** con el `CodigoPrestacion` del CSV (`09xxxxxx`):
 
-1. `crosswalk_participacion_A19b.csv` — qué prestación es participación y a qué bloque/sección pertenece (**93 códigos activos**).
-2. `crosswalk_columnas_A19b.csv` — qué mide cada columna `Col01…Col50` dentro de cada sección (sexo, identidad de género, pueblos originarios, migrantes, PRAIS, instancia, total…).
+1. `crosswalk_participacion_A19b.csv`, qué prestación es participación y a qué bloque/sección pertenece (**93 códigos activos**).
+2. `crosswalk_columnas_A19b.csv`, qué mide cada columna `Col01…Col50` dentro de cada sección (sexo, identidad de género, pueblos originarios, migrantes, PRAIS, instancia, total…).
 
 **Decisión de datos importante que limita lo que se puede afirmar:** en el A19b los participantes (sexo, género, pueblos originarios, migrantes, PRAIS) y las instancias son **columnas marginales independientes**, no una tabla cruzada. Es decir, el formulario dice "hubo 30 actividades de cabildo" y por separado "participaron 200 mujeres", pero **no** dice cuántas mujeres en cabildos. Por eso el análisis de equidad es **marginal por subsección**, no un cruce instancia × participante: cruzarlos sería inventar datos.
 
@@ -65,11 +65,11 @@ Modelar conteos con muchísimos ceros y una cola larguísima es traicionero. Aqu
 
 **Lo que se descartó de entrada.** Se decidió **no usar AHP ni PCA clásico**: el AHP impone pesos subjetivos a un fenómeno que queremos *medir*, no *ponderar*; y el PCA sobre datos de conteo con ceros estructurales produce componentes difíciles de interpretar. En su lugar, la familia de métodos elegida fue: modelos de conteo de panel, *hurdle* para el exceso de ceros, autocorrelación espacial (Moran/LISA) y agrupamiento por composición (k-means).
 
-**El modelo que falló.** El primer intento "elegante" fue un *hurdle* de binomial negativa truncada en un solo objeto (`glmmTMB`, `truncated_nbinom2`/`nbinom1`). **No convergió**: la cola extrema (máximos de miles con mediana 4) colapsa el parámetro de dispersión y la matriz Hessiana deja de ser definida positiva. *Lección que quedó grabada: siempre verificar convergencia —NaN, errores estándar gigantes, dispersión ≈ 0— antes de creerle a un modelo.*
+**El modelo que falló.** El primer intento "elegante" fue un *hurdle* de binomial negativa truncada en un solo objeto (`glmmTMB`, `truncated_nbinom2`/`nbinom1`). **No convergió**: la cola extrema (máximos de miles con mediana 4) colapsa el parámetro de dispersión y la matriz Hessiana deja de ser definida positiva. *Lección que quedó grabada: siempre verificar convergencia, NaN, errores estándar gigantes, dispersión ≈ 0, antes de creerle a un modelo.*
 
 **La solución estable.** Separar el *hurdle* en **dos modelos**: una **barrera** (regresión logística: ¿registra o no?) y una **intensidad** (modelo lineal sobre el log del valor en los positivos: ¿cuánto, dado que registra?). Equivalente conceptualmente, pero numéricamente robusto. Luego se le añadieron **efectos aleatorios por establecimiento** (`lme4`), que convergieron limpio.
 
-**El refinamiento multinivel.** Como la pregunta era *dónde vive la variación*, el modelo final es **multinivel de tres niveles** (establecimiento ⊂ comuna ⊂ región), que reparte la varianza sin subestimar el error. Aquí apareció el resultado central: el **ICC de la barrera es altísimo** (66–94 % según sección) → registrar es, sobre todo, un **rasgo estructural y estable del establecimiento**, no del territorio.
+**El refinamiento multinivel.** Como la pregunta era *dónde vive la variación*, el modelo final es **multinivel de tres niveles** (establecimiento ⊂ comuna ⊂ región), que reparte la varianza sin subestimar el error. Aquí apareció el resultado central: el **ICC de la barrera es altísimo** (66 a 94 % según sección), registrar es, sobre todo, un **rasgo estructural y estable del establecimiento**, no del territorio.
 
 ---
 
@@ -86,11 +86,11 @@ Con el denominador se construyeron los **indicadores de auditoría social**: fri
 
 ## Capítulo 6 · Lo que encontramos
 
-Las piezas encajan en una conclusión coherente: **la participación es un fenómeno institucional, no territorial ni socioeconómico** — con matices importantes por sección.
+Las piezas encajan en una conclusión coherente: **la participación es un fenómeno institucional, no territorial ni socioeconómico**, con matices importantes por sección.
 
 - **Tipo de establecimiento explica casi todo "quién participa".** Hospitales y CESFAM ~100 %; postas rurales ~60 %; urgencias (SAPU/SUR) casi 0. El ~37 % que "nunca participa" es **estructural** (urgencias y niveles que por diseño no tienen instancias de participación), no necesariamente desidia. Por eso el modelo distingue **ceros estructurales** de **subregistro** real.
 - **El territorio no pesa igual en las tres secciones.** Es casi nulo en participación social (B), real en OIRS (A, la comuna pesa ~29 %) y **socioeconómico en satisfacción usuaria (C)**: es la **única** sección donde la pobreza comunal predice el registro (OR ≈ 0,58 por +10 pp de pobreza, p < 0,001). Las comunas más pobres registran menos satisfacción usuaria.
-- **Lo que parece "territorio" en OIRS es, en parte, gestión de red.** Al descontar el efecto del Servicio de Salud, la autocorrelación espacial cae: el patrón es más de red administrativa que de geografía.
+- **La variación territorial es municipal, no de la red ni de la región.** Al modelar el Servicio de Salud (la red de gestión, 29 servicios) como nivel, explica casi nada (0 a 2 % de la varianza), igual que la región. Donde sí vive la diferencia territorial es en la **comuna** (cerca de 29 % en OIRS): comunas de un mismo Servicio de Salud registran muy distinto. La autocorrelación espacial de OIRS se suaviza al agrupar por servicio, pero la red no homogeniza a sus comunas.
 - **La dependencia administrativa NO marca diferencia.** Probamos explícitamente si quién administra el establecimiento (municipal vs. servicio de salud) explica la varianza: una vez conocidos tipo y nivel, la dependencia añade prácticamente nada (≤ 0,7 pp) y sus coeficientes salen no significativos. Era una hipótesis razonable, y el dato la rechaza.
 - **OIRS no es "reclamos".** Dominan abrumadoramente las **consultas** (16,8 millones) frente a reclamos (138 mil) y felicitaciones (142 mil). La razón felicitaciones/reclamos real es ≈ 1,03. Presentar A como "reclamos" distorsiona; cada tipo de solicitud se entiende en su propia escala.
 - **Las líneas de acción son más inclusivas que las instancias.** En equidad por subsección, B.2 y C.2 registran mucha más participación de pueblos originarios y migrantes (8 % y ~5 %) que B.1 y C.1 (~2 % y ~1 %). La inclusión étnica/migrante vive en una subsección concreta.
@@ -103,7 +103,7 @@ Las piezas encajan en una conclusión coherente: **la participación es un fenó
 
 El primer entregable fue un **dashboard Quarto** estático (publicable gratis en GitHub Pages) que lee solo las tablas de `productos/`. Tras una ronda de comentarios, se rediseñó con una idea rectora: **que lo entienda cualquier persona sin formación técnica**. Los cambios principales:
 
-- **Orden pedagógico de páginas:** Metodología → Glosario → Resumen → **Territorio** → A → B → C → Síntesis → Nivel y robustez. Primero se explica cómo leer, después se muestra.
+- **Orden pedagógico de páginas:** Metodología, Glosario, Resumen, **Territorio**, A, B, C, Síntesis, Nivel y robustez. Primero se explica cómo leer, después se muestra.
 - **Glosario con doble definición** (técnica y "en palabras simples") y **tooltips de ayuda** en cada indicador, que explican qué significa y cómo se calcula al pasar el mouse.
 - **Cada sección en su propia lógica:** A separa consultas/reclamos/felicitaciones; B distingue B.1 (instancias) de B.2 (líneas de acción) con su perfil de participante; C corrige la lectura de cobertura vs. pobreza.
 - **Nueva página Territorio** con la mirada región por región (cobertura, pueblos originarios y migrantes por bloque), insumo de un futuro mapa interactivo.
@@ -119,16 +119,16 @@ Requisitos: **R ≥ 4.3** y, para publicar el tablero, **Quarto**. Paquetes: `he
 
 ```r
 # Desde la raíz del proyecto, en R:
-source("R/10_run_all.R")     # pipeline completo: datos -> productos/
+source("R/10_run_all.R") # pipeline completo: datos -> productos/
 ```
 
-Los bloques A/B/C corren **en paralelo** (con respaldo secuencial automático si el cluster falla) y los modelos mixtos usan `nAGQ = 0`, lo que baja el tiempo de ~110 min a ~30–40 min en un equipo de varios núcleos. Se puede ajustar con variables de entorno antes del `source`:
+Los bloques A/B/C corren **en paralelo** (con respaldo secuencial automático si el cluster falla) y los modelos mixtos usan `nAGQ = 0`, lo que baja el tiempo de ~110 min a ~30 a 40 min en un equipo de varios núcleos. Se puede ajustar con variables de entorno antes del `source`:
 
 ```r
-Sys.setenv(REM_PAR  = "0")   # "1" paralelo (def) | "0" secuencial
-Sys.setenv(REM_SENS = "0")   # "1" corre la sensibilidad participativa (def) | "0" la omite (más rápido)
-Sys.setenv(REM_DEP  = "1")   # "0" omite dependencia en la descomposición (def) | "1" la incluye
-Sys.setenv(REM_FAST = "1")   # "0" glmer exacto nAGQ=1 (def, ~30-40 min) | "1" rápido nAGQ=0 (~4 min, ICC algo menor)
+Sys.setenv(REM_PAR = "0") # "1" paralelo (def) | "0" secuencial
+Sys.setenv(REM_SENS = "0") # "1" corre la sensibilidad participativa (def) | "0" la omite (más rápido)
+Sys.setenv(REM_DEP = "1") # "0" omite dependencia en la descomposición (def) | "1" la incluye
+Sys.setenv(REM_FAST = "1") # "0" glmer exacto nAGQ=1 (def, ~30-40 min) | "1" rápido nAGQ=0 (~4 min, ICC algo menor)
 ```
 
 La corrida **publicable** se hace en modo exacto (por defecto); `REM_FAST="1"` es solo para iterar rápido durante el desarrollo.
@@ -136,8 +136,8 @@ La corrida **publicable** se hace en modo exacto (por defecto); `REM_FAST="1"` e
 Luego, en la terminal:
 
 ```bash
-quarto render                # genera el tablero en docs/
-quarto render articulo.qmd   # genera el informe técnico en PDF
+quarto render # genera el tablero en docs/
+quarto render articulo.qmd # genera el informe técnico en PDF
 ```
 
 El archivo **FONASA** (`Beneficiarios 2025.csv`) debe estar en la raíz o en `datos/externos/` antes de correr (no tiene descarga automática estable). Todo lo demás (REM y CASEN) se descarga solo.
@@ -152,7 +152,7 @@ El archivo **FONASA** (`Beneficiarios 2025.csv`) debe estar en la raíz o en `da
 | `R/03_fonasa_inscritos.R` | Denominador poblacional FONASA (lectura robusta del archivo local). |
 | `R/04_engine.R` | **Motor**: toda la lógica analítica por bloque (KPIs, cobertura, serie, equidad, subsecciones, hurdle mixto, multinivel, espacial, tipologías), con salvaguardas de convergencia. |
 | `R/05_indicadores.R` | Indicadores de auditoría social con denominador poblacional. |
-| `R/06/07/08_analisis_{A,B,C}.R` | Corren el motor sobre cada bloque → `productos/{A,B,C}/`. |
+| `R/06/07/08_analisis_{A,B,C}.R` | Corren el motor sobre cada bloque, `productos/{A,B,C}/`. |
 | `R/09_sintesis.R` | Comparativo A/B/C, tipologías cross-tema, consolidado territorial, indicadores. |
 | `R/10_run_all.R` | Orquesta todo lo anterior en orden. |
 
@@ -161,16 +161,16 @@ Scripts exploratorios y versiones anteriores quedan archivados en `R/exploratori
 ### Estructura del repositorio
 
 ```
-├── R/                     scripts del pipeline (00–10) + exploratorio/
-├── datos/                 REM crudo (en .gitignore) + externos/ (CASEN, FONASA)
-├── crosswalk/             diccionarios curados A19b (prestaciones y columnas)
-├── productos/             salidas del análisis (lo único que lee el tablero)
-│   ├── A/  B/  C/          una carpeta por bloque temático
-│   └── sintesis/           comparativos e indicadores transversales
-├── index.qmd              dashboard Quarto  ->  docs/
-├── articulo.qmd           informe técnico  ->  articulo.pdf
-├── _quarto.yml            configuración del sitio
-└── docs/                  sitio renderizado (GitHub Pages)
+├── R/            scripts del pipeline (00 a 10) + exploratorio/
+├── datos/        REM crudo (en .gitignore) + externos/ (CASEN, FONASA)
+├── crosswalk/    diccionarios curados A19b (prestaciones y columnas)
+├── productos/    salidas del análisis (lo único que lee el tablero)
+│   ├── A/ B/ C/   una carpeta por bloque temático
+│   └── sintesis/  comparativos e indicadores transversales
+├── index.qmd     dashboard Quarto (genera docs/)
+├── articulo.qmd  informe técnico (genera articulo.pdf)
+├── _quarto.yml   configuración del sitio
+└── docs/         sitio renderizado (GitHub Pages)
 ```
 
 ---

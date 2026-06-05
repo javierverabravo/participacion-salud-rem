@@ -119,6 +119,25 @@ if (nrow(ter))
   fwrite(ter[order(bloque, IdRegion)], file.path(dirs, "territorio_region.csv"),
          sep = ";", bom = TRUE)
 
+# ---- 3c. Feed comuna-nivel (region + Servicio de Salud + cobertura por bloque)
+# Insumo para el mapa y la futura app Shiny: permite filtrar por region o por
+# Servicio de Salud sin recalcular.
+est_lk <- tipo_agrupado(setDT(readRDS(here("datos", "establecimientos_lookup.rds"))))
+com_sl <- est_lk[!is.na(servicio_salud), .N, by = .(IdComuna, servicio_salud)][order(-N)]
+com_sl <- com_sl[, .SD[1], by = IdComuna][, .(IdComuna, servicio_salud)]
+com_rg <- est_lk[, .(IdRegion = IdRegion[1]), by = IdComuna]
+terc <- rbindlist(lapply(c("A", "B", "C"), function(b) {
+  fc <- here("productos", b, "cobertura_vs_pobreza.csv")
+  if (!file.exists(fc)) return(NULL)
+  d <- fread(fc, sep = ";"); d[, bloque := b]; d
+}), fill = TRUE)
+if (nrow(terc)) {
+  terc <- merge(terc, com_rg, by = "IdComuna", all.x = TRUE)
+  terc <- merge(terc, com_sl, by = "IdComuna", all.x = TRUE)
+  fwrite(terc[order(bloque, IdComuna)], file.path(dirs, "territorio_comuna.csv"),
+         sep = ";", bom = TRUE)
+}
+
 # ---- 4. Indicadores de auditoria social (con denominador FONASA/CASEN) -----
 indicadores_auditoria_social(part, largo, anio, dirs)
 

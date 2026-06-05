@@ -44,7 +44,7 @@ sección** sobre 2.982 establecimientos de la red pública y 140.507 registros d
 mediante modelos de barrera (*hurdle*) con efectos aleatorios, modelos multinivel de tres
 niveles, autocorrelación espacial y agrupamiento. El hallazgo central es que **registrar
 participación es un rasgo institucional del establecimiento** en las tres secciones (la
-varianza del establecimiento domina; ICC de la barrera 66–94 %), pero **el peso del
+varianza del establecimiento domina; ICC de la barrera 66 a 94 %), pero **el peso del
 territorio y de la pobreza no es uniforme**: la participación social es el fenómeno más
 puramente institucional, mientras la satisfacción usuaria es la única sección donde la
 **pobreza comunal predice** el registro. Se añaden indicadores de **auditoría social** con
@@ -56,9 +56,9 @@ autocorrelación espacial · auditoría social · Chile.
 
 # Introducción
 
-La participación social en salud está consagrada en la normativa chilena —Ley N.º 20.500
+La participación social en salud está consagrada en la normativa chilena, Ley N.º 20.500
 sobre Asociaciones y Participación Ciudadana en la Gestión Pública (2011) y la Norma
-General de Participación (Res. Ex. 31/2015)— y reconocida internacionalmente como
+General de Participación (Res. Ex. 31/2015),  y reconocida internacionalmente como
 determinante social de la salud [CSDH/OMS, 2008]. La literatura chilena, sin embargo,
 caracteriza esa participación como predominantemente **consultiva y no deliberativa**
 [Méndez et al., 2022; análisis bioético, 2025].
@@ -83,8 +83,8 @@ B.2 (14), C.1 (12) y C.2 (10).
 
 **Universo y unidad de análisis.** La red comprende **2.982 establecimientos** en 344
 comunas y 16 regiones. La unidad de análisis es el **panel establecimiento × mes**
-(35.337 combinaciones esperadas), reconstruido explícitamente porque —como se argumenta en
-métodos— el subregistro se aloja en **filas ausentes**, no en celdas vacías.
+(35.337 combinaciones esperadas), reconstruido explícitamente porque, como se argumenta en
+métodos,  el subregistro se aloja en **filas ausentes**, no en celdas vacías.
 
 **Datos externos.** (i) Base maestra de establecimientos del DEIS (tipo, dependencia,
 **nivel de atención**, complejidad, georreferencia), con 100 % de match con el REM por
@@ -105,8 +105,8 @@ establecimiento agrupado (`tipo_grp`: CESFAM, Hospital, Posta Rural, CECOSF, SAP
 SAR, COSAM, Otro), **nivel de atención** (`nivel_atencion`: Primario/APS, Secundario,
 Terciario, No aplica) y un indicador de **universo participativo**
 (`participa_estructural`), que excluye las urgencias (SAPU/SUR/SAR) por tratarse de **ceros
-estructurales** —establecimientos que por el diseño de su función casi no registran
-participación—.
+estructurales**, establecimientos que por el diseño de su función casi no registran
+participación, .
 
 **Covariables territoriales.** Región y comuna (efectos jerárquicos) y **tasa de pobreza
 comunal** (CASEN-SAE 2024), centrada y expresada por incrementos de 10 puntos
@@ -140,7 +140,7 @@ Los datos son **conteos con exceso de ceros**: la mayoría de los pares establec
 valen cero y la cola de positivos es extrema (medianas de pocas unidades frente a máximos de
 miles). Una regresión lineal o de Poisson sobre el conteo está mal especificada en este
 régimen [Mullahy, 1986; Neelon et al., 2016]. El modelo **hurdle** separa explícitamente dos
-preguntas —**¿registra o no?** (barrera) y, si registra, **¿cuánto?** (intensidad)— que es
+preguntas, **¿registra o no?** (barrera) y, si registra, **¿cuánto?** (intensidad),  que es
 justamente la distinción de interés de política. Se prefiere el hurdle sobre el
 *zero-inflated* porque aquí el cero representa "no se cruzó el umbral de registro", no un
 proceso de inflación latente [Feng, 2021].
@@ -151,8 +151,7 @@ negativa truncada (`glmmTMB`) **no converge** por la cola extrema (dispersión q
 Hessiano no definido positivo) [Brooks et al., 2017]. La solución estable y equivalente es
 la **descomposición en dos partes**: una **regresión logística mixta** (`glmer`) para la
 barrera y una **lineal mixta** (`lmer`) sobre el logaritmo del valor en los positivos
-[Bates et al., 2015]. Se reporta el **ICC** (coeficiente de correlación intraclase) como
-medida de cuánto de la decisión de registrar es atribuible al establecimiento.
+[Bates et al., 2015]. Los modelos se ajustan con la aproximación de **Laplace** y no con cuasi-verosimilitud penalizada, porque esta última subestima las componentes de varianza con respuesta binaria y agrupación fuerte [Breslow y Clayton, 1993; Rodríguez y Goldman, 1995; Bolker et al., 2009]; se verificó empíricamente que una aproximación más rápida subestimaba el ICC. Se reporta el **ICC** (coeficiente de correlación intraclase) en la escala de la **variable latente**, fijando la varianza de nivel 1 en pi²/3, el método estándar para particionar varianza en modelos logísticos multinivel [Goldstein et al., 2002; Browne et al., 2005; Merlo et al., 2006]; mide cuánto de la propensión a registrar es atribuible al establecimiento. Como complemento en la escala de odds ratios puede reportarse el *median odds ratio* [Merlo et al., 2006].
 
 ## Modelo multinivel de tres niveles
 
@@ -163,8 +162,7 @@ son **composición de comunas**; el multinivel evita ese sesgo y permite probar 
 la **pobreza comunal** controlando por el tipo de establecimiento. Este diseño replica, en
 otra temática, el de García-Huidobro et al. (2018), que modeló la implementación del modelo
 de atención integral en 1.263 establecimientos de APS con la misma jerarquía y encontró que
-el **gasto municipal no predecía** la implementación —un paralelo directo a nuestros
-resultados—.
+el **gasto municipal no predecía** la implementación, un paralelo directo a nuestros resultados [Austin y Merlo, 2017]. Al comparar la varianza de establecimiento entre modelos anidados (descomposición secuencial) se reconoce el **problema de reescalamiento** de los modelos logísticos: parte del cambio refleja el reescalamiento de la escala latente y no solo explicación genuina [Mood, 2010; Karlson et al., 2012], por lo que esa descomposición se interpreta de forma cualitativa.
 
 ## Nivel de atención y ceros estructurales (análisis de robustez)
 
@@ -187,15 +185,15 @@ cáncer de mama en la R.M.]. Comparar mapas "a ojo" no cuantifica ni da signific
 
 Para descubrir perfiles latentes de participación sin etiquetarlos a priori se agrupan los
 establecimientos por la composición de su actividad entre las tres secciones (*k*-means,
-k = 4). Clasificar por volumen total ocultaría que "participar" significa cosas distintas.
+k = 4). Clasificar por volumen total ocultaría que "participar" significa cosas distintas. Las tipologías se interpretan como **exploratorias**: el agrupamiento euclidiano sobre composiciones es una aproximación, y un tratamiento composicional pleno usaría una transformación de razón logarítmica [Aitchison, 1986].
 
 ## Pobreza comunal y denominador poblacional
 
 La pobreza comunal proviene de **estimación de áreas pequeñas (SAE)** sobre CASEN
 [Rao y Molina, 2015; Casas-Cordero et al., 2016], la metodología oficial para cifras
 comunales. El denominador de las tasas de auditoría social son los **beneficiarios FONASA**
-por comuna —el denominador correcto para el sistema público, que atiende a la población
-inscrita en FONASA, no a la población total—.
+por comuna, el denominador correcto para el sistema público, que atiende a la población
+inscrita en FONASA, no a la población total.
 
 # Resultados
 
@@ -222,7 +220,7 @@ if (!is.null(d)) {
 
 La cobertura es similar en OIRS (49,9 %) y participación social (51,1 %) y mucho menor en
 satisfacción usuaria (24,4 %). El **subregistro establecimiento-mes crece de A a C**
-(60,4 % → 71,7 % → 91,6 %) y la **mediana de meses con registro cae** (12 → 7 → 3): la
+(60,4 %, 71,7 %, 91,6 %) y la **mediana de meses con registro cae** (12, 7, 3): la
 satisfacción usuaria se registra de forma esporádica. En las tres secciones **domina la
 varianza del establecimiento** (ICC de la barrera 93,9 %, 65,8 % y 74,3 %): registrar es,
 ante todo, un rasgo institucional.
@@ -230,11 +228,11 @@ ante todo, un rasgo institucional.
 ## El territorio no pesa igual
 
 La descomposición multinivel matiza la tesis única. La **participación social (B)** es el
-caso *institucional puro* (comuna ≈ 17,5 %, región < 1 %, sin clústeres espaciales —Moran
-0,049, p = 0,08— y pobreza no significativa). La **atención OIRS (A)** tiene un componente
+caso *institucional puro* (comuna ≈ 17,5 %, región < 1 %, sin clústeres espaciales, Moran
+0,049, p = 0,08,  y pobreza no significativa). La **atención OIRS (A)** tiene un componente
 territorial real (comuna ≈ 29 %, Moran 0,109, p = 0,001). La **satisfacción usuaria (C)** es
 la **única** sección donde la **pobreza comunal predice** el registro (OR 0,58 por cada
-+10 pp de pobreza; IC95 % 0,42–0,80; p < 0,001) y muestra clústeres espaciales
++10 pp de pobreza; IC95 % 0,42 a 0,80; p < 0,001) y muestra clústeres espaciales
 (Moran 0,119, p < 0,001): en las comunas más pobres se registra menos.
 
 ## La participación se concentra en el nivel terciario
@@ -311,19 +309,13 @@ if (!is.null(a)) {
 
 # Discusión
 
-Los resultados sostienen una tesis matizada: **registrar participación es institucional**
-—un rasgo del establecimiento y su gestión— pero **el territorio y la pobreza pesan de forma
-heterogénea** entre secciones. Que la pobreza comunal solo importe en satisfacción usuaria, y
-que al controlar por el Servicio de Salud la autocorrelación espacial de OIRS se atenúe,
-sugiere que lo que parece "territorio" es en buena medida **gestión de red**. Esto coincide
-con García-Huidobro et al. (2018), donde la capacidad municipal (gasto) tampoco explicaba la
-implementación: el determinante es organizacional, no de riqueza.
+Los resultados sostienen una tesis matizada: **registrar participación es institucional**, un rasgo del establecimiento y su gestión, pero **el territorio y la pobreza pesan de forma heterogénea** entre secciones. La pobreza comunal solo importa en satisfacción usuaria. En cuanto al territorio, al modelar el **Servicio de Salud** (la red de gestión, 29 servicios) como nivel jerárquico explica casi nada de la varianza (0 a 2 %), igual que la región: la diferencia territorial vive en la **comuna** (cerca de 29 % en OIRS), no en la red ni en la región político-administrativa. La autocorrelación espacial de OIRS se atenúa al agrupar por servicio, pero la red no homogeniza a sus comunas, comunas de un mismo servicio registran de forma muy distinta. Esto coincide con García-Huidobro et al. (2018), donde la capacidad municipal (gasto) tampoco explicaba la implementación: el determinante es organizacional y local, no de riqueza ni de la red administrativa.
 
 En el plano normativo, el volumen registrado está **dominado por el reclamo** (OIRS, 17,4
 millones de eventos) frente a la deliberación (participación social, 250 mil), pese a que la
 Norma General sitúa la deliberación como núcleo del derecho. La participación que el sistema
-mide no es la que la norma prioriza —consistente con la caracterización de la participación
-chilena como consultiva [Méndez et al., 2022]—.
+mide no es la que la norma prioriza, consistente con la caracterización de la participación
+chilena como consultiva [Méndez et al., 2022].
 
 **Implicancias de política:** (i) fijar metas de registro por **establecimiento y tipo**, no
 por región; (ii) usar los **Servicios de Salud** como unidad de mejora del registro; (iii)
@@ -351,18 +343,28 @@ se coloca a mano. Dashboard en vivo: <https://arleq89.github.io/participacion-sa
 
 # Referencias {.unnumbered}
 
-- Anselin, L. (1995). Local indicators of spatial association — LISA. *Geographical Analysis*, 27(2), 93–115.
-- Bates, D., Mächler, M., Bolker, B., y Walker, S. (2015). Fitting linear mixed-effects models using lme4. *Journal of Statistical Software*, 67(1), 1–48.
-- Brooks, M. E., et al. (2017). glmmTMB balances speed and flexibility among packages for zero-inflated GLMMs. *The R Journal*, 9(2), 378–400.
+- Aitchison, J. (1986). *The Statistical Analysis of Compositional Data*. Chapman and Hall.
+- Anselin, L. (1995). Local indicators of spatial association, LISA. *Geographical Analysis*, 27(2), 93 a 115.
+- Austin, P. C., y Merlo, J. (2017). Intermediate and advanced topics in multilevel logistic regression analysis. *Statistics in Medicine*, 36(20), 3257 a 3277.
+- Bates, D., Mächler, M., Bolker, B., y Walker, S. (2015). Fitting linear mixed-effects models using lme4. *Journal of Statistical Software*, 67(1), 1 a 48.
+- Bolker, B. M., Brooks, M. E., Clark, C. J., Geange, S. W., Poulsen, J. R., Stevens, M. H. H., y White, J. S. S. (2009). Generalized linear mixed models: a practical guide for ecology and evolution. *Trends in Ecology and Evolution*, 24(3), 127 a 135.
+- Breslow, N. E., y Clayton, D. G. (1993). Approximate inference in generalized linear mixed models. *Journal of the American Statistical Association*, 88(421), 9 a 25.
+- Brooks, M. E., et al. (2017). glmmTMB balances speed and flexibility among packages for zero-inflated GLMMs. *The R Journal*, 9(2), 378 a 400.
+- Browne, W. J., Subramanian, S. V., Jones, K., y Goldstein, H. (2005). Variance partitioning in multilevel logistic models that exhibit overdispersion. *Journal of the Royal Statistical Society A*, 168(3), 599 a 613.
 - Casas-Cordero Valencia, C., Encina, J., y Corral, P. (2016). Poverty mapping for the Chilean comunas. En M. Pratesi (Ed.), *Analysis of Poverty Data by Small Area Estimation*. Wiley.
 - CSDH/OMS. (2008). *Closing the gap in a generation: health equity through action on the social determinants of health*. Organización Mundial de la Salud.
 - Feng, C. X. (2021). A comparison of zero-inflated and hurdle models for modeling zero-inflated count data. *Journal of Statistical Distributions and Applications*, 8(1).
 - García-Huidobro, D., Barros, X., Quiroz, A., Barría, M., Soto, G., y Vargas, I. (2018). Modelo de atención integral en salud familiar y comunitaria en la atención primaria chilena. *Revista Panamericana de Salud Pública*, 42, e160.
-- Méndez, C. A., et al. (2022). Análisis del sistema de salud chileno y su estructura en la participación social. *Saúde em Debate*, 46(spe4), 94–106.
-- Moran, P. A. P. (1950). Notes on continuous stochastic phenomena. *Biometrika*, 37(1/2), 17–23.
-- Mullahy, J. (1986). Specification and testing of some modified count data models. *Journal of Econometrics*, 33(3), 341–365.
+- Goldstein, H., Browne, W., y Rasbash, J. (2002). Partitioning variation in multilevel models. *Understanding Statistics*, 1(4), 223 a 231.
+- Karlson, K. B., Holm, A., y Breen, R. (2012). Comparing regression coefficients between same-sample nested models using logit and probit. *Sociological Methodology*, 42(1), 286 a 313.
+- Méndez, C. A., et al. (2022). Análisis del sistema de salud chileno y su estructura en la participación social. *Saúde em Debate*, 46(spe4), 94 a 106.
+- Merlo, J., Chaix, B., Ohlsson, H., Beckman, A., Johnell, K., Hjerpe, P., Råstam, L., y Larsen, K. (2006). A brief conceptual tutorial of multilevel analysis in social epidemiology: using measures of clustering in multilevel logistic regression to investigate contextual phenomena. *Journal of Epidemiology and Community Health*, 60(4), 290 a 297.
+- Mood, C. (2010). Logistic regression: why we cannot do what we think we can do, and what we can do about it. *European Sociological Review*, 26(1), 67 a 82.
+- Moran, P. A. P. (1950). Notes on continuous stochastic phenomena. *Biometrika*, 37(1/2), 17 a 23.
+- Mullahy, J. (1986). Specification and testing of some modified count data models. *Journal of Econometrics*, 33(3), 341 a 365.
 - Neelon, B., O'Malley, A. J., y Smith, V. A. (2016). Modeling zero-modified count and semicontinuous data in health services research, Part 1. *Statistics in Medicine*, 35(27).
 - Rao, J. N. K., y Molina, I. (2015). *Small Area Estimation* (2.ª ed.). Wiley.
+- Rodríguez, G., y Goldman, N. (1995). An assessment of estimation procedures for multilevel models with binary responses. *Journal of the Royal Statistical Society A*, 158(1), 73 a 89.
 - Snijders, T. A. B., y Bosker, R. J. (2012). *Multilevel Analysis* (2.ª ed.). Sage.
 - Ministerio de Desarrollo Social y Familia. (2024). *Estimaciones de pobreza comunal por áreas pequeñas (SAE), CASEN 2024*. Observatorio Social.
 - Ministerio de Salud (DEIS). *Manual de Series REM*. Departamento de Estadísticas e Información de Salud.
