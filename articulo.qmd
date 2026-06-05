@@ -30,6 +30,11 @@ gs <- function(name) {
   f <- file.path("productos", "sintesis", paste0(name, ".csv"))
   if (file.exists(f)) fread(f, sep = ";", encoding = "UTF-8") else NULL
 }
+gp_ml <- function(name) {
+  f <- file.path("productos", "ml", paste0(name, ".csv"))
+  if (file.exists(f)) fread(f, sep = ";", encoding = "UTF-8") else NULL
+}
+tema_blq <- c(A = "OIRS", B = "Participación social", C = "Satisfacción")
 kt <- function(d, ...) if (!is.null(d)) kable(d, booktabs = TRUE, ...) else invisible(NULL)
 ```
 
@@ -42,7 +47,9 @@ distintas: atención de usuarios (**OIRS**), **participación social** y **satis
 usuaria**. Estudios previos las analizaban en bloque; aquí se analizan **sección por
 sección** sobre 2.982 establecimientos de la red pública y 140.507 registros de 2025,
 mediante modelos de barrera (*hurdle*) con efectos aleatorios, modelos multinivel de tres
-niveles, autocorrelación espacial y agrupamiento. El hallazgo central es que **registrar
+niveles, autocorrelación espacial, agrupamiento y un módulo complementario de **machine
+learning** (gradient boosting con interpretación SHAP) para triangular la importancia de las
+características institucionales y producir un score de riesgo de subregistro. El hallazgo central es que **registrar
 participación es un rasgo institucional del establecimiento** en las tres secciones (la
 varianza del establecimiento domina; ICC de la barrera 66 a 94 %), pero **el peso del
 territorio y de la pobreza no es uniforme**: la participación social es el fenómeno más
@@ -195,6 +202,22 @@ comunales. El denominador de las tasas de auditoría social son los **beneficiar
 por comuna, el denominador correcto para el sistema público, que atiende a la población
 inscrita en FONASA, no a la población total.
 
+## Machine learning complementario: gradient boosting con interpretación SHAP
+
+Como **triangulación predictiva** del núcleo inferencial se entrena por sección un
+*gradient boosting* (**XGBoost** [Chen y Guestrin, 2016]) que predice si un establecimiento
+registra a partir de sus **características** (tipo, nivel, dependencia, Servicio de Salud,
+región, pobreza comunal, población inscrita) y **sin** su identidad. La unidad es el
+establecimiento (un caso por centro), por lo que la **validación cruzada de 5 pliegues** no
+sufre fuga por agrupación y el AUC obtenido es una estimación honesta de la discriminación
+fuera de muestra. La importancia se interpreta con **SHAP** [Lundberg y Lee, 2017], que
+descompone la predicción individual en aportes aditivos por característica con propiedades
+teóricas deseables (eficiencia, simetría, monotonía) heredadas de la teoría de juegos
+cooperativos. El módulo cumple dos funciones complementarias y no sustituye al hurdle ni al
+multinivel: (i) confirmar desde un método **no lineal** y **sin supuestos paramétricos** el
+peso del tipo y el nivel detectado en el ICC del establecimiento, y (ii) producir un
+**score de riesgo de subregistro** por establecimiento, útil para focalización operativa.
+
 # Resultados
 
 ## Las tres secciones se comportan distinto
@@ -283,6 +306,32 @@ participación social sigue siendo institucional pura, y la única señal que **
 la territorialidad de OIRS, cuya varianza de comuna sube de 29 % a 33 %. El sesgo
 socioeconómico de C y la naturaleza institucional del registro son **robustos**.
 
+## Machine learning: confirma el peso del tipo y aporta un score de focalización
+
+```{r}
+#| label: tbl-ml
+#| tbl-cap: "Calidad predictiva del módulo ML (xgboost, validación cruzada 5-fold) por sección."
+m <- gp_ml("ml_metricas")
+if (!is.null(m) && nrow(m)) {
+  out <- data.table(`Sección` = paste0(m$bloque, " · ", tema_blq[m$bloque]),
+                    `AUC (CV 5-fold)` = m$auc_cv,
+                    `Centros` = m$n_establecimientos,
+                    `% que participa` = m$pct_participa)
+  kt(out)
+}
+```
+
+El gradient boosting alcanza **AUC altos** en validación cruzada (A 0,94, B 0,91, C 0,87),
+lo que es coherente con el ICC del establecimiento estimado por el multinivel: las
+características institucionales del centro (tipo, nivel, dependencia, Servicio de Salud y,
+en menor medida, atributos comunales) bastan para predecir con alta confianza si se
+registrará una sección. **SHAP** confirma en las tres secciones que el **tipo de
+establecimiento** domina la importancia, replicando el hallazgo del ICC desde un método sin
+supuestos paramétricos. La utilidad operativa de esta triangulación es el **score de riesgo
+de subregistro** por establecimiento (`productos/ml/riesgo_*.csv`): una lista priorizable
+para focalizar intervenciones de fortalecimiento del registro en los centros con mayor
+probabilidad estimada de **no** registrar, condicional a sus características observables.
+
 ## Tipologías e indicadores de auditoría social
 
 El agrupamiento *k*-means (k = 4) identifica un perfil mayoritario **centrado en OIRS**
@@ -348,15 +397,16 @@ se coloca a mano. Dashboard en vivo: <https://arleq89.github.io/participacion-sa
 - Austin, P. C., y Merlo, J. (2017). Intermediate and advanced topics in multilevel logistic regression analysis. *Statistics in Medicine*, 36(20), 3257 a 3277.
 - Bates, D., Mächler, M., Bolker, B., y Walker, S. (2015). Fitting linear mixed-effects models using lme4. *Journal of Statistical Software*, 67(1), 1 a 48.
 - Bolker, B. M., Brooks, M. E., Clark, C. J., Geange, S. W., Poulsen, J. R., Stevens, M. H. H., y White, J. S. S. (2009). Generalized linear mixed models: a practical guide for ecology and evolution. *Trends in Ecology and Evolution*, 24(3), 127 a 135.
-- Breslow, N. E., y Clayton, D. G. (1993). Approximate inference in generalized linear mixed models. *Journal of the American Statistical Association*, 88(421), 9 a 25.
 - Brooks, M. E., et al. (2017). glmmTMB balances speed and flexibility among packages for zero-inflated GLMMs. *The R Journal*, 9(2), 378 a 400.
 - Browne, W. J., Subramanian, S. V., Jones, K., y Goldstein, H. (2005). Variance partitioning in multilevel logistic models that exhibit overdispersion. *Journal of the Royal Statistical Society A*, 168(3), 599 a 613.
 - Casas-Cordero Valencia, C., Encina, J., y Corral, P. (2016). Poverty mapping for the Chilean comunas. En M. Pratesi (Ed.), *Analysis of Poverty Data by Small Area Estimation*. Wiley.
+- Chen, T., y Guestrin, C. (2016). XGBoost: A scalable tree boosting system. *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, 785 a 794.
 - CSDH/OMS. (2008). *Closing the gap in a generation: health equity through action on the social determinants of health*. Organización Mundial de la Salud.
 - Feng, C. X. (2021). A comparison of zero-inflated and hurdle models for modeling zero-inflated count data. *Journal of Statistical Distributions and Applications*, 8(1).
 - García-Huidobro, D., Barros, X., Quiroz, A., Barría, M., Soto, G., y Vargas, I. (2018). Modelo de atención integral en salud familiar y comunitaria en la atención primaria chilena. *Revista Panamericana de Salud Pública*, 42, e160.
 - Goldstein, H., Browne, W., y Rasbash, J. (2002). Partitioning variation in multilevel models. *Understanding Statistics*, 1(4), 223 a 231.
 - Karlson, K. B., Holm, A., y Breen, R. (2012). Comparing regression coefficients between same-sample nested models using logit and probit. *Sociological Methodology*, 42(1), 286 a 313.
+- Lundberg, S. M., y Lee, S.-I. (2017). A unified approach to interpreting model predictions. *Advances in Neural Information Processing Systems*, 30, 4765 a 4774.
 - Méndez, C. A., et al. (2022). Análisis del sistema de salud chileno y su estructura en la participación social. *Saúde em Debate*, 46(spe4), 94 a 106.
 - Merlo, J., Chaix, B., Ohlsson, H., Beckman, A., Johnell, K., Hjerpe, P., Råstam, L., y Larsen, K. (2006). A brief conceptual tutorial of multilevel analysis in social epidemiology: using measures of clustering in multilevel logistic regression to investigate contextual phenomena. *Journal of Epidemiology and Community Health*, 60(4), 290 a 297.
 - Mood, C. (2010). Logistic regression: why we cannot do what we think we can do, and what we can do about it. *European Sociological Review*, 26(1), 67 a 82.

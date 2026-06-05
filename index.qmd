@@ -127,7 +127,10 @@ plot_cob_pobreza <- function(blq) {
 # Equidad por subsección (B.1 vs B.2, C.1 vs C.2).
 plot_eq_subseccion <- function(blq) {
   d <- gp(blq, "equidad_subseccion"); if (is.null(d) || !nrow(d)) return(NULL)
+  d <- copy(d)
+  d[, pct_hombres := round(100 * hombres / pmax(hombres + mujeres, 1), 1)]
   m <- melt(d[, .(seccion,
+                  `% hombres` = pct_hombres,
                   `% mujeres` = pct_mujeres,
                   `% pueblos originarios` = pct_pueblos_originarios,
                   `% migrantes` = pct_migrantes,
@@ -529,7 +532,8 @@ res_mapa_int <- tryCatch({
   mapa <- sf::st_transform(mapa, 4326)
   mapa$region <- ifelse(is.na(mapa$region), "Sin región", mapa$region)
   mapa$servicio_salud <- ifelse(is.na(mapa$servicio_salud), "Sin servicio", mapa$servicio_salud)
-  sd  <- crosstalk::SharedData$new(mapa)
+  grp_terr <- "mapa_terr"
+  sd  <- crosstalk::SharedData$new(mapa, group = grp_terr)
   pal <- leaflet::colorNumeric("viridis", domain = mapa$cobertura)
   m <- leaflet::leaflet(sd) |>
     leaflet::addProviderTiles("CartoDB.Positron") |>
@@ -540,6 +544,30 @@ res_mapa_int <- tryCatch({
       highlightOptions = leaflet::highlightOptions(weight = 2, color = "#222", bringToFront = TRUE)) |>
     leaflet::addLegend("bottomright", pal = pal, values = ~cobertura,
                        title = "Cobertura %", opacity = 0.9)
+  # Zoom automático al filtrar: cuando cambia el filtro crosstalk de Región o
+  # Servicio de Salud, encuadra el mapa a las comunas que quedan visibles
+  # (fillOpacity > 0). Sin Shiny: vía hook onRender + Crosstalk.FilterHandle.
+  m <- htmlwidgets::onRender(m, sprintf("
+function(el, x) {
+  var map = this;
+  if (typeof crosstalk === 'undefined') return;
+  var doFit = function() {
+    var b = L.latLngBounds([]);
+    map.eachLayer(function(layer) {
+      if (layer.getBounds && layer.options && layer.options.fillOpacity > 0.05) {
+        try { b.extend(layer.getBounds()); } catch(e) {}
+      }
+    });
+    if (b.isValid()) map.flyToBounds(b, {padding: [25, 25], maxZoom: 9, duration: 0.6});
+  };
+  setTimeout(function() {
+    try {
+      var ct = new crosstalk.FilterHandle('%s');
+      ct.on('change', function() { setTimeout(doFit, 220); });
+    } catch(e) {}
+  }, 600);
+}
+", grp_terr))
   filtros <- htmltools::tagList(
     crosstalk::filter_select("filt_reg", "Región", sd, ~region),
     crosstalk::filter_select("filt_ss", "Servicio de Salud", sd, ~servicio_salud))
@@ -772,9 +800,11 @@ vb(pct(kget("C","pct_subregistro_estab_mes")), "de combinaciones estab-mes sin r
    def_de("Subregistro"), icon = "exclamation-triangle", color = "danger", title = "Subregistro")
 ```
 ```{r}
-vb(paste0(kget("C","pct_mujeres","equidad_kpis"), "%"), "de las personas son mujeres",
-   "Composición por sexo en los registros de satisfacción usuaria.",
-   icon = "gender-female", color = "success", title = "Mujeres")
+vb(paste0("M ", kget("C","pct_mujeres","equidad_kpis"), "% · H ",
+          kget("C","pct_hombres","equidad_kpis"), "%"),
+   "brecha M/H en los registros (identidades diversas: panel inferior)",
+   "Composición binaria por sexo en los registros de satisfacción usuaria. Las identidades de género diversas (trans, no binarie y otras) aparecen en el panel 'Composición por sexo e identidad de género' al pie de la página.",
+   icon = "people", color = "success", title = "Sexo registrado")
 ```
 
 ## Row {height="44%"}
