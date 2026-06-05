@@ -21,9 +21,12 @@ library(ggplot2)
 
 interactivo <- function(g) {
   if (is.null(g)) return(htmltools::HTML("<div style='padding:1rem;opacity:.7'>Corre <code>R/10_run_all.R</code> para generar este gráfico.</div>"))
-  if (requireNamespace("plotly", quietly = TRUE))
-    plotly::ggplotly(g, tooltip = "text")
-  else g
+  if (requireNamespace("plotly", quietly = TRUE)) {
+    p <- plotly::ggplotly(g, tooltip = "text")
+    plotly::layout(p,
+      legend = list(orientation = "h", x = 0, y = -0.28, yanchor = "top"),
+      margin = list(b = 95, l = 10, r = 10, t = 28))
+  } else g
 }
 # Tema con texto de ejes legible (evita la superposición reportada).
 tg <- theme_minimal(base_size = 12) +
@@ -135,6 +138,50 @@ plot_eq_subseccion <- function(blq) {
     geom_col(position = "dodge") + coord_flip() +
     scale_fill_brewer(palette = "Set2", name = "Subsección") +
     labs(x = NULL, y = "% de participantes") + tg + theme(legend.position = "bottom")
+}
+# Composición por sexo e identidad de género (incluye identidades diversas).
+plot_sexo_genero <- function(blq) {
+  sx <- gp(blq, "equidad_sexo"); ge <- gp(blq, "equidad_genero")
+  d <- rbindlist(list(sx, ge), fill = TRUE)
+  if (is.null(d) || !nrow(d)) return(NULL)
+  d[grepl("binarie", etiqueta, ignore.case = TRUE), etiqueta := "No binarie"]
+  d <- d[, .(personas = sum(personas, na.rm = TRUE)), by = etiqueta][personas > 0]
+  ggplot(d, aes(x = reorder(etiqueta, personas), y = personas,
+        text = paste0(etiqueta, ": ", mile(personas), " personas"))) +
+    geom_col(fill = col_blq[[blq]]) + coord_flip() +
+    scale_y_log10(labels = function(x) format(x, big.mark = ".", scientific = FALSE)) +
+    labs(x = NULL, y = "Personas registradas (escala logarítmica)") + tg
+}
+# Grupos prioritarios (bloque A): niñez, adolescencia y gestantes.
+plot_grupos <- function(blq) {
+  d <- gp(blq, "equidad_grupos"); if (is.null(d) || !nrow(d)) return(NULL)
+  ggplot(d, aes(x = reorder(etiqueta, personas), y = personas,
+        text = paste0(etiqueta, ": ", mile(personas), " personas"))) +
+    geom_col(fill = "#7a5195") + coord_flip() +
+    labs(x = NULL, y = "Personas registradas") + tg
+}
+# Lector de productos de machine learning (productos/ml/).
+gp_ml <- function(name) {
+  f <- file.path("productos", "ml", paste0(name, ".csv"))
+  if (file.exists(f)) data.table::fread(f, sep = ";", encoding = "UTF-8") else NULL
+}
+# Participación social por clase: deliberativa / TICs / Otras.
+plot_b_clase <- function() {
+  d <- gp("B", "sub_b1_clase"); if (is.null(d) || !nrow(d)) return(NULL)
+  ggplot(d, aes(x = reorder(clase, actividades), y = actividades,
+        text = paste0(clase, ": ", mile(actividades), " actividades (", pct_actividades, "%)"))) +
+    geom_col(fill = col_blq[["B"]]) + coord_flip() +
+    scale_y_continuous(labels = function(x) format(x, big.mark = ".", scientific = FALSE)) +
+    labs(x = NULL, y = "Actividades registradas") + tg
+}
+# Importancia (SHAP) de las características en el modelo de machine learning.
+plot_ml_imp <- function(blq) {
+  d <- gp_ml(sprintf("shap_%s", blq)); if (is.null(d) || !nrow(d)) return(NULL)
+  d <- utils::head(d[order(-shap_abs_medio)], 12)
+  ggplot(d, aes(x = reorder(feature, shap_abs_medio), y = shap_abs_medio,
+        text = paste0(feature, ": ", shap_abs_medio))) +
+    geom_col(fill = col_blq[[blq]]) + coord_flip() +
+    labs(x = NULL, y = "Importancia media (|SHAP|)") + tg
 }
 # Mapa coroplético nacional de cobertura comunal (vista nacional de Territorio).
 plot_mapa_cob <- function(blq) {
@@ -414,6 +461,7 @@ res_comp <- tryCatch({
     `Subregistro %`           = d$pct_subregistro_estab_mes,
     `Meses con registro (mediana)` = d$mediana_meses_con_registro,
     `ICC barrera %`           = d$icc_barrera_pct,
+    `MOR estab.`              = sapply(d$bloque, function(b) round(as.numeric(kget(b, "MOR_establecimiento", "modelo_icc")), 1)),
     `Var. comuna %`           = d$var_comuna_pct,
     `OR pobreza (×10pp)`      = round(d$OR_pobreza_x10pp, 2),
     `p pobreza`               = signif(d$pobreza_p_valor, 2))
@@ -462,31 +510,54 @@ res_serie
 
 # Territorio
 
-## Row {height="52%"}
-
-### Column {width="42%"}
+## Row {height="50%"}
 
 ```{r}
-#| title: "Mapa nacional · cobertura comunal de OIRS (vista nacional)"
-res_mapa <- tryCatch(plot_mapa_cob("A"), error = function(e) NULL)
-if (is.null(res_mapa))
-  htmltools::HTML("<div style='padding:1rem;opacity:.75'>Instala <code>sf</code> y <code>chilemapas</code> y corre el pipeline para ver el mapa. La versión interactiva por región se construirá en la app Shiny.</div>") else res_mapa
+#| title: "Mapa interactivo: elige una Región o un Servicio de Salud (cobertura comunal de OIRS)"
+res_mapa_int <- tryCatch({
+  ok <- all(vapply(c("leaflet", "crosstalk", "sf", "chilemapas"),
+                   requireNamespace, logical(1), quietly = TRUE))
+  if (!ok) stop("faltan paquetes leaflet/crosstalk/sf/chilemapas")
+  suppressPackageStartupMessages({ library(sf); library(leaflet) })
+  tc <- gs("territorio_comuna"); if (is.null(tc)) stop("falta territorio_comuna.csv")
+  tc <- tc[bloque == "A"]
+  tc[, codigo_comuna := sprintf("%05d", IdComuna)]
+  tc <- merge(tc, reg_nom, by = "IdRegion", all.x = TRUE)
+  mapa <- sf::st_as_sf(chilemapas::mapa_comunas)
+  mapa <- merge(mapa, tc[, .(codigo_comuna, cobertura, comuna, servicio_salud,
+                             region, pct_pobreza)], by = "codigo_comuna")
+  mapa <- sf::st_transform(mapa, 4326)
+  mapa$region <- ifelse(is.na(mapa$region), "Sin región", mapa$region)
+  mapa$servicio_salud <- ifelse(is.na(mapa$servicio_salud), "Sin servicio", mapa$servicio_salud)
+  sd  <- crosstalk::SharedData$new(mapa)
+  pal <- leaflet::colorNumeric("viridis", domain = mapa$cobertura)
+  m <- leaflet::leaflet(sd) |>
+    leaflet::addProviderTiles("CartoDB.Positron") |>
+    leaflet::addPolygons(
+      fillColor = ~pal(cobertura), weight = 0.6, color = "white", fillOpacity = 0.85,
+      label = ~lapply(sprintf("<b>%s</b><br/>Cobertura OIRS: %s%%<br/>%s<br/>Pobreza comunal: %s%%",
+                              comuna, cobertura, servicio_salud, pct_pobreza), htmltools::HTML),
+      highlightOptions = leaflet::highlightOptions(weight = 2, color = "#222", bringToFront = TRUE)) |>
+    leaflet::addLegend("bottomright", pal = pal, values = ~cobertura,
+                       title = "Cobertura %", opacity = 0.9)
+  filtros <- htmltools::tagList(
+    crosstalk::filter_select("filt_reg", "Región", sd, ~region),
+    crosstalk::filter_select("filt_ss", "Servicio de Salud", sd, ~servicio_salud))
+  crosstalk::bscols(widths = c(3, 9), filtros, m)
+}, error = function(e) htmltools::HTML(paste0(
+  "<div style='padding:1rem;opacity:.8'>Para el mapa interactivo instala <code>leaflet</code> y ",
+  "<code>crosstalk</code> (<code>install.packages(c('leaflet','crosstalk'))</code>) y corre el ",
+  "pipeline. Detalle: ", conditionMessage(e), "</div>")))
+res_mapa_int
 ```
+
+## Row {height="27%"}
 
 ### Column {width="58%"}
 
 ```{r}
 #| title: "Cobertura por región y sección (¿dónde se registra más?)"
 interactivo(tryCatch(plot_terr_cob(), error = function(e) NULL))
-```
-
-## Row {height="48%"}
-
-### Column {width="58%"}
-
-```{r}
-#| title: "Inclusión territorial · pueblos originarios y migrantes por región y sección"
-interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 ```
 
 ### Column {width="42%"}
@@ -496,10 +567,17 @@ interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 interactivo(tryCatch(plot_red_vs_geo(), error = function(e) NULL))
 ```
 
+## Row {height="23%"}
+
+```{r}
+#| title: "Inclusión territorial · pueblos originarios y migrantes por región y sección"
+interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
+```
+
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página Territorio"}
-**El mapa nacional** pinta cada una de las ~345 comunas según su **cobertura de OIRS**: el porcentaje de establecimientos de esa comuna que registró al menos una vez en el año. La escala va de morado (cobertura baja, cerca de 0 %) a amarillo (alta, cerca de 100 %); las comunas en gris no tienen dato. Sirve para ver de un vistazo dónde el registro es denso y dónde escaso, sin promediar por región.
+**El mapa interactivo** pinta cada una de las ~345 comunas según su **cobertura de OIRS**: el porcentaje de establecimientos de esa comuna que registró al menos una vez en el año. La escala va de morado (cobertura baja, cerca de 0 %) a amarillo (alta, cerca de 100 %). Con los desplegables de la izquierda puedes filtrar por **Región** o por **Servicio de Salud** para ver solo esas comunas, y hacer zoom y pasar el mouse sobre cada comuna para ver su dato.
 
 **El gráfico de cobertura por región y sección** ordena las 16 regiones de mayor a menor cobertura, en tres paneles (OIRS, participación social y satisfacción). Cada barra es el % de establecimientos de la región que registra esa sección. Comparar los tres paneles muestra que una región puede ser fuerte en una sección y débil en otra.
 
@@ -507,7 +585,7 @@ interactivo(tryCatch(plot_red_vs_geo(), error = function(e) NULL))
 
 **El gráfico "¿Red o geografía?"** compara cuánta de la variación del registrar vive en la **región política** (16) frente al **Servicio de Salud** (la red de gestión, 29 servicios). El resultado es claro: **ninguno de los dos explica casi nada** (ambos entre 0 y 2 %). La variación territorial es **municipal**, vive en la **comuna** (sobre todo en OIRS, cerca de 29 %), no en la región ni en la red. Dicho de otro modo, comunas de un mismo Servicio de Salud registran de forma muy distinta: lo que marca la diferencia es lo local y el establecimiento, no la red administrativa.
 
-*Importante:* este mapa es la **vista nacional**. El selector por región que se reenfoca al elegir una región se construye en la app interactiva (Shiny), porque un dashboard estático no recalcula en vivo.
+*Nota:* al filtrar, el mapa muestra solo las comunas seleccionadas; usa la rueda del mouse para acercarte a la zona. El mapa colorea la cobertura de **OIRS**; las otras secciones se comparan en los gráficos de abajo.
 :::
 
 # A · OIRS
@@ -573,6 +651,19 @@ interactivo(plot_serie("A"))
 interactivo(plot_var("A"))
 ```
 
+## Row {height="30%"}
+
+### Column
+```{r}
+#| title: "Composición por sexo e identidad de género"
+interactivo(tryCatch(plot_sexo_genero("A"), error = function(e) NULL))
+```
+### Column
+```{r}
+#| title: "Grupos prioritarios: niñez, adolescencia y gestantes"
+interactivo(tryCatch(plot_grupos("A"), error = function(e) NULL))
+```
+
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página de OIRS"}
@@ -603,9 +694,10 @@ vb(pct(kget("B","pct_subregistro_estab_mes")), "de combinaciones estab-mes sin r
    def_de("Subregistro"), icon = "exclamation-triangle", color = "warning", title = "Subregistro")
 ```
 ```{r}
-vb(paste0(kget("B","pct_mujeres","equidad_kpis"), "%"), "de las personas participantes son mujeres",
-   "Composición por sexo de quienes participan en actividades de participación social.",
-   icon = "gender-female", color = "primary", title = "Mujeres")
+vb(pct(kget("B","cobertura_deliberativa_pct","kpis_B_nucleo")),
+   "registra participación DELIBERATIVA (sin TICs ni 'Otras')",
+   "Cobertura del núcleo deliberativo (consejos, cabildos, CDL, COSOC, indígena, jóvenes). Excluye el canal informativo TICs/redes y el cajón 'Otras', que inflan la cifra total.",
+   icon = "people", color = "danger", title = "Núcleo deliberativo")
 ```
 
 ## Row {height="44%"}
@@ -634,10 +726,26 @@ interactivo(plot_cob_tipo("B"))
 interactivo(plot_var("B"))
 ```
 
+## Row {height="30%"}
+
+### Column
+
+```{r}
+#| title: "Composición por sexo e identidad de género (incluye identidades diversas)"
+interactivo(tryCatch(plot_sexo_genero("B"), error = function(e) NULL))
+```
+
+### Column
+
+```{r}
+#| title: "Participación social por clase: deliberativa vs TICs vs 'Otras'"
+interactivo(tryCatch(plot_b_clase(), error = function(e) NULL))
+```
+
 ## Row {.fill}
 
 ::: {.card title="Cómo leer la página de Participación social"}
-Esta sección es el **núcleo deliberativo** (consejos, cabildos, diálogos) y el caso **más institucional** de los tres: registrar depende casi por completo del establecimiento, no del territorio.
+**Cuidado con la cifra de cabecera.** La participación social registrada está **inflada por dos categorías que no son deliberación**: "Uso de TICs y/o Redes Sociales" (un canal de comunicación) y "Otras Instancias" (un cajón de sastre). Juntas son cerca del **74 %** de las actividades. El gráfico **"por clase"** separa el **núcleo deliberativo real** (consejos, cabildos, CDL, COSOC, indígena, jóvenes) del resto, y el recuadro **"Núcleo deliberativo"** muestra la cobertura sin TICs ni "Otras". Aun así, registrar deliberación depende casi por completo del **establecimiento**, no del territorio.
 
 **"B.1 vs B.2: perfil de participante"** compara las dos subsecciones, que miden cosas distintas: **B.1** son *actividades según instancia* y **B.2** son *sesiones según línea de acción*. El gráfico muestra, para cada grupo (mujeres, pueblos originarios, migrantes, PRAIS), el % de participantes en cada subsección. El hallazgo: **B.2 es bastante más inclusiva**, registra mucha mayor proporción de pueblos originarios (~8 %) y migrantes (~4,5 %) que B.1 (~2 % y ~1 %). La inclusión étnica y migrante se concentra en las líneas de acción.
 
@@ -693,6 +801,13 @@ interactivo(plot_cob_region("C"))
 ```{r}
 #| title: "¿Dónde vive la variación? (multinivel de 3 niveles)"
 interactivo(plot_var("C"))
+```
+
+## Row {height="30%"}
+
+```{r}
+#| title: "Composición por sexo e identidad de género (incluye identidades diversas)"
+interactivo(tryCatch(plot_sexo_genero("C"), error = function(e) NULL))
 ```
 
 ## Row {.fill}
@@ -898,4 +1013,61 @@ res_desc
 **"Robustez ante ceros estructurales"** repite los modelos en dos universos: el **completo** y el **participativo** (excluyendo urgencias SAPU/SUR/SAR). Que el OR de pobreza y la varianza de comuna casi no cambien entre ambas columnas significa que las conclusiones **no son un artefacto** de incluir centros que nunca iban a registrar: son robustas.
 
 **"Descomposición de la varianza del establecimiento"**: muestra qué porcentaje del efecto-establecimiento logran explicar el tipo y el nivel, añadidos uno a uno. Tipo y nivel explican la mayor parte (64 a 80 %). También se probó la **dependencia administrativa** y **casi no agregaba nada** (≤ 1 punto), por lo que se dejó fuera del modelo de rutina: una vez que sabes qué tipo de centro es, *quién lo administra* no cambia si registra o no.
+:::
+
+# Machine learning
+
+## Row {height="16%"}
+
+```{r}
+#| title: "Calidad predictiva del modelo (AUC por validación cruzada)"
+res_ml_met <- tryCatch({
+  m <- gp_ml("ml_metricas"); if (is.null(m)) stop("falta")
+  m[, tema := tema_blq[bloque]]
+  tab <- m[, .(Sección = tema, `AUC (validación cruzada)` = auc_cv,
+               `Centros` = n_establecimientos, `% que participa` = pct_participa)]
+  if (requireNamespace("DT", quietly = TRUE))
+    DT::datatable(tab, rownames = FALSE, options = list(dom = "t", ordering = FALSE),
+                  class = "stripe compact")
+  else knitr::kable(tab)
+}, error = function(e) htmltools::HTML(paste0(
+  "<div style='padding:1rem;opacity:.8'>Instala <code>xgboost</code> ",
+  "(<code>install.packages('xgboost')</code>) y corre el pipeline para ver el módulo de ",
+  "machine learning.</div>")))
+res_ml_met
+```
+
+## Row {height="50%"}
+
+### Column
+
+```{r}
+#| title: "A · OIRS: qué características predicen registrar (SHAP)"
+interactivo(tryCatch(plot_ml_imp("A"), error = function(e) NULL))
+```
+
+### Column
+
+```{r}
+#| title: "B · Participación: importancia de características (SHAP)"
+interactivo(tryCatch(plot_ml_imp("B"), error = function(e) NULL))
+```
+
+### Column
+
+```{r}
+#| title: "C · Satisfacción: importancia de características (SHAP)"
+interactivo(tryCatch(plot_ml_imp("C"), error = function(e) NULL))
+```
+
+## Row {.fill}
+
+::: {.card title="Cómo leer la página de Machine learning"}
+Esta página es un **complemento predictivo**, no causal, del análisis principal. Un modelo de *gradient boosting* (xgboost) aprende a predecir si un establecimiento registra cada sección **a partir de sus características** (tipo, nivel, dependencia, Servicio de Salud, región, pobreza comunal y población), **sin** usar su identidad.
+
+**Importancia (SHAP).** Cada barra es cuánto pesa, en promedio, una característica para predecir el registro. Que el **tipo de establecimiento** domine confirma, desde un método totalmente distinto, lo que mostró el multinivel: registrar es sobre todo institucional. SHAP además capta efectos no lineales e interacciones que un modelo lineal podría perderse.
+
+**AUC.** Mide qué tan bien el modelo separa a quienes registran de quienes no (0,5 es azar, 1 es perfecto), estimado por validación cruzada para no engañarse con el ajuste.
+
+**Score de riesgo.** En `productos/ml/riesgo_*.csv` queda, por establecimiento, la probabilidad estimada de **no** registrar: una lista priorizada para **focalizar** dónde reforzar el registro. Es una herramienta operativa, no una afirmación causal.
 :::

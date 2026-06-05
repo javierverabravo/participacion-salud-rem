@@ -10,6 +10,22 @@ Este documento no es solo una guía de instalación. Está escrito para que **ot
 
 ---
 
+## Las cifras, en términos simples
+
+Para que cada número se entienda al aparecer, un mini glosario:
+
+- **Panel:** una tabla con una fila por cada combinación posible de establecimiento y mes del año. Es el "universo" de quién pudo registrar; permite ver no solo lo que se anotó, sino también lo que faltó.
+- **Cobertura:** de cada 100 establecimientos, cuántos anotaron al menos una actividad de la sección en el año.
+- **Subregistro:** de todas las combinaciones establecimiento-mes en que se esperaba un registro, qué porcentaje quedó sin ningún dato.
+- **Intensidad:** cuánto registra, en promedio, un establecimiento que sí participa (volumen por establecimiento activo).
+- **ICC (correlación intraclase):** de toda la variación en "registrar o no", qué parte se explica por el establecimiento, frente a la comuna, la región o el azar mes a mes. Un ICC alto significa que registrar es un rasgo estable del centro.
+- **Varianza de comuna / establecimiento:** la misma idea del ICC pero repartida entre niveles: cuánto pesa la comuna y cuánto el establecimiento.
+- **OR (odds ratio) de pobreza:** cuántas veces cambia la probabilidad de registrar por cada 10 puntos más de pobreza comunal. Menor que 1 significa que a más pobreza, menos registro.
+- **p-valor:** qué tan probable es que un resultado sea casualidad; bajo 0,05 se considera señal real.
+- **MOR (median odds ratio):** traduce el peso del establecimiento a la escala de los OR. Si tomas dos establecimientos al azar, es cuántas veces difieren típicamente sus probabilidades de registrar solo por ser establecimientos distintos.
+
+---
+
 ## La pregunta que originó el proyecto
 
 La Ley 20.500 y la Norma General de Participación Ciudadana obligan a los establecimientos de salud a abrir espacios de participación: oficinas de reclamos (OIRS), consejos de desarrollo local, cabildos, mediciones de satisfacción usuaria. Todo eso se reporta mes a mes en el REM, sección **A19b**.
@@ -53,7 +69,7 @@ Para pasar de códigos a significado hubo que **construir dos crosswalks a mano*
 
 La intuición inicial era que el subregistro estaría en las **celdas vacías** (NA) dentro de las filas. Al revisarlo, resultó falso: solo ~0,7 % de los valores totales son NA. **El subregistro está en las filas que no existen**: de 2.983 establecimientos, solo ~1.882 registran alguna participación y ~1.100 **nunca** aparecen.
 
-Esto obligó a un cambio metodológico de fondo: no basta con leer las filas que están; hay que **reconstruir el panel completo establecimiento × mes** (el "universo" de quién pudo haber registrado) y comparar contra lo efectivamente reportado. Y una regla de oro que se mantuvo en todo el pipeline: **nunca colapsar NA a 0**, porque "no sabemos" y "fue cero" son cosas distintas que el modelo debe tratar aparte.
+Esto obligó a un cambio metodológico de fondo: no basta con leer las filas que están; hay que **reconstruir el panel completo establecimiento × mes** y comparar contra lo efectivamente reportado. Un *panel* es, simplemente, una tabla con **una fila por cada combinación posible de establecimiento y mes** del año (los 2.983 establecimientos por los 12 meses): es el "universo" de quién pudo haber registrado en cada mes, e incluye también las filas que deberían existir y no están. Y una regla de oro que se mantuvo en todo el pipeline: **nunca colapsar NA a 0**, porque "no sabemos" y "fue cero" son cosas distintas que el modelo debe tratar aparte.
 
 Resultado del panel: ~60 % de las combinaciones establecimiento-mes están ausentes en OIRS, ~72 % en participación social y ~92 % en satisfacción. Con intermitencia alta (mediana de 3 de 12 meses registrados por par establecimiento-prestación).
 
@@ -63,7 +79,7 @@ Resultado del panel: ~60 % de las combinaciones establecimiento-mes están ausen
 
 Modelar conteos con muchísimos ceros y una cola larguísima es traicionero. Aquí está lo que probamos, en orden, y por qué terminamos donde terminamos.
 
-**Lo que se descartó de entrada.** Se decidió **no usar AHP ni PCA clásico**: el AHP impone pesos subjetivos a un fenómeno que queremos *medir*, no *ponderar*; y el PCA sobre datos de conteo con ceros estructurales produce componentes difíciles de interpretar. En su lugar, la familia de métodos elegida fue: modelos de conteo de panel, *hurdle* para el exceso de ceros, autocorrelación espacial (Moran/LISA) y agrupamiento por composición (k-means).
+**Lo que se descartó de entrada.** Se decidió **no usar PCA clásico** sobre datos de conteo con ceros estructurales, porque produce componentes difíciles de interpretar. En su lugar, la familia de métodos elegida fue: modelos de conteo de panel, *hurdle* para el exceso de ceros, autocorrelación espacial (Moran/LISA) y agrupamiento por composición (k-means).
 
 **El modelo que falló.** El primer intento "elegante" fue un *hurdle* de binomial negativa truncada en un solo objeto (`glmmTMB`, `truncated_nbinom2`/`nbinom1`). **No convergió**: la cola extrema (máximos de miles con mediana 4) colapsa el parámetro de dispersión y la matriz Hessiana deja de ser definida positiva. *Lección que quedó grabada: siempre verificar convergencia, NaN, errores estándar gigantes, dispersión ≈ 0, antes de creerle a un modelo.*
 
@@ -94,8 +110,9 @@ Las piezas encajan en una conclusión coherente: **la participación es un fenó
 - **La dependencia administrativa NO marca diferencia.** Probamos explícitamente si quién administra el establecimiento (municipal vs. servicio de salud) explica la varianza: una vez conocidos tipo y nivel, la dependencia añade prácticamente nada (≤ 0,7 pp) y sus coeficientes salen no significativos. Era una hipótesis razonable, y el dato la rechaza.
 - **OIRS no es "reclamos".** Dominan abrumadoramente las **consultas** (16,8 millones) frente a reclamos (138 mil) y felicitaciones (142 mil). La razón felicitaciones/reclamos real es ≈ 1,03. Presentar A como "reclamos" distorsiona; cada tipo de solicitud se entiende en su propia escala.
 - **Las líneas de acción son más inclusivas que las instancias.** En equidad por subsección, B.2 y C.2 registran mucha más participación de pueblos originarios y migrantes (8 % y ~5 %) que B.1 y C.1 (~2 % y ~1 %). La inclusión étnica/migrante vive en una subsección concreta.
+- **La participación social está inflada por TICs y un cajón de sastre.** Dos categorías que no son deliberación, "Uso de TICs y/o Redes Sociales" (un canal de comunicación) y "Otras Instancias" (inespecífica), suman cerca del **74 %** de las actividades de B.1. El núcleo deliberativo real (consejos, cabildos, CDL, COSOC, indígena, jóvenes) es la minoría, de modo que la cobertura de cabecera sobreestima la deliberación efectiva. El análisis separa ambas: cobertura total frente a cobertura del núcleo deliberativo.
 
-**Implicancias de política:** fijar metas de registro **por establecimiento y tipo**, no por región; usar los **Servicios de Salud** como unidad de mejora; **validar la sección de participación social** en el instrumento (hoy sin regla de consistencia, lo que habilita subregistro); y atender el **sesgo socioeconómico específico de satisfacción usuaria**.
+**Implicancias de política:** fijar metas de registro **por establecimiento y tipo**, no por región; usar los **Servicios de Salud** como unidad de mejora; **validar la sección de participación social** en el instrumento (hoy sin regla de consistencia, lo que habilita subregistro); **separar el registro deliberativo del canal informativo (TICs)** para no sobreestimar la participación; y atender el **sesgo socioeconómico específico de satisfacción usuaria**.
 
 ---
 
@@ -109,7 +126,7 @@ El primer entregable fue un **dashboard Quarto** estático (publicable gratis en
 - **Nueva página Territorio** con la mirada región por región (cobertura, pueblos originarios y migrantes por bloque), insumo de un futuro mapa interactivo.
 - Correcciones de presentación (superposición en móvil, ejes encimados) y verificación de convergencia visible en `modelo_estado.csv`.
 
-En paralelo se decidió construir, sobre los **mismos** productos, una futura **app Shiny** para la exploración interactiva real (filtros por región, segmentación dinámica), dejando el Quarto como versión estable y publicable.
+El dashboard incorpora además un **mapa interactivo** (leaflet con crosstalk, sin servidor) con filtros por región y por Servicio de Salud, y una página de **machine learning**: un gradient boosting (xgboost) con interpretación SHAP que, como complemento predictivo del análisis inferencial, confirma desde otro método el peso del tipo de establecimiento y produce un score de riesgo de subregistro para focalizar intervenciones.
 
 ---
 
@@ -161,17 +178,35 @@ Scripts exploratorios y versiones anteriores quedan archivados en `R/exploratori
 ### Estructura del repositorio
 
 ```
-├── R/            scripts del pipeline (00 a 10) + exploratorio/
-├── datos/        REM crudo (en .gitignore) + externos/ (CASEN, FONASA)
-├── crosswalk/    diccionarios curados A19b (prestaciones y columnas)
-├── productos/    salidas del análisis (lo único que lee el tablero)
-│   ├── A/ B/ C/   una carpeta por bloque temático
-│   └── sintesis/  comparativos e indicadores transversales
-├── index.qmd     dashboard Quarto (genera docs/)
-├── articulo.qmd  informe técnico (genera articulo.pdf)
-├── _quarto.yml   configuración del sitio
-└── docs/         sitio renderizado (GitHub Pages)
+participacion-salud-rem/
+├── R/                              scripts del pipeline, se corren en orden
+│   ├── 00_descarga.R                 baja los REM del DEIS + base de establecimientos
+│   ├── 01_procesamiento.R            crosswalks, filtra participación, arma el panel
+│   ├── 02_datos_comunales.R          pobreza comunal CASEN (SAE)
+│   ├── 03_fonasa_inscritos.R         denominador poblacional FONASA
+│   ├── 04_engine.R                   MOTOR: toda la lógica analítica por bloque
+│   ├── 05_indicadores.R              indicadores de auditoría social
+│   ├── 06/07/08_analisis_{A,B,C}.R   corren el motor sobre cada bloque
+│   ├── 09_sintesis.R                 comparativos, territorio, tipologías cross-tema
+│   ├── 10_run_all.R                  orquesta todo (paralelo, con respaldo)
+│   └── exploratorio/                 versiones anteriores archivadas
+├── crosswalk/                      diccionarios curados a mano del A19b (se versionan)
+├── datos/                          REM crudo + externos/ (CASEN, FONASA); en .gitignore
+├── productos/                      salidas del análisis (CSV); lo ÚNICO que lee el tablero
+│   ├── A/  B/  C/                    una carpeta por bloque temático (OIRS, participación, satisfacción)
+│   └── sintesis/                     comparativos e indicadores transversales
+├── index.qmd                      dashboard Quarto  ->  se renderiza a docs/
+├── articulo.qmd                   informe técnico  ->  se renderiza a articulo.pdf
+├── _quarto.yml  ·  custom.scss     configuración y estilos del sitio
+├── docs/                          sitio ya renderizado que publica GitHub Pages
+├── README.md                      este documento (la historia del proyecto)
+├── FUNDAMENTACION_ESTADISTICA.md  auditoría metodológica concepto por concepto
+├── referencias_literatura.md      bibliografía que respalda cada decisión
+├── RESUMEN_EJECUTIVO.md           hallazgos para reunión
+└── PROYECTO.md                    notas internas de trabajo y backlog
 ```
+
+El orden mental es: **datos** (`00` a `03`) alimentan el **motor** (`04` a `05`), que se aplica **por bloque** (`06` a `08`) y se **sintetiza** (`09`); `10` lo corre todo. Las salidas quedan en `productos/`, y de ahí beben el dashboard (`index.qmd`) y el artículo (`articulo.qmd`).
 
 ---
 

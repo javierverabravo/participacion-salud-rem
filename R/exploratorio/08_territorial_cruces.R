@@ -5,7 +5,7 @@
 # región con:
 #   (1) el TIPO de establecimiento (¿qué red tiene cada región?)
 #   (2) la TIPOLOGÍA DE REGISTRO  (los perfiles k-means: reclamos vs. participación
-#       social vs. satisfacción) → ¿qué "estilo" de participación predomina por región?
+#       social vs. satisfacción), ¿qué "estilo" de participación predomina por región?
 #
 # Esto permite leer el mapa con cuidado: buena parte de las diferencias regionales
 # es composición (más postas rurales, más CESFAM…), no un "efecto región" en sí.

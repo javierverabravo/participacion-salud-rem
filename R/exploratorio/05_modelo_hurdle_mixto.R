@@ -97,7 +97,7 @@ icc_intens  <- var_estab_i / (var_estab_i + var_resid_i)
 # (3) RESULTADOS CLAVE
 # ===========================================================================
 cat("\n==========================================================\n")
-cat("ICC — ¿cuánto de la variación está ENTRE establecimientos?\n")
+cat("ICC, ¿cuánto de la variación está ENTRE establecimientos?\n")
 cat("----------------------------------------------------------\n")
 cat(sprintf("ICC barrera   (¿registra o no?): %.1f%%\n", 100 * icc_barrera))
 cat(sprintf("ICC intensidad (¿cuánto?)      : %.1f%%\n", 100 * icc_intens))

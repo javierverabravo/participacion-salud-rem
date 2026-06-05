@@ -101,6 +101,6 @@ fwrite(cob_com, file.path(dir_prod, "cobertura_vs_pobreza.csv"), sep=";", bom=TR
 
 # ---- Resumen ---------------------------------------------------------------
 cat("\nDescomposición de la varianza (parte barrera):\n"); print(var_dt)
-cat(sprintf("\nEfecto de la pobreza: OR por +10 pp = %.3f (IC95 %.3f–%.3f, p=%.4f)\n",
+cat(sprintf("\nEfecto de la pobreza: OR por +10 pp = %.3f (IC95 %.3f-%.3f, p=%.4f)\n",
             or_pob, ic_low, ic_up, co["pobreza10","Pr(>|z|)"]))
 cat("OR > 1 => más pobreza se asocia a MÁS registro; OR < 1 => a MENOS.\n")

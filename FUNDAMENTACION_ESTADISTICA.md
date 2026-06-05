@@ -18,6 +18,7 @@
 | 8 | k-means sobre composición (shares) | Tipologías de participación | Aceptable, exploratorio (caveat composicional) | Aitchison 1986; Hartigan y Wong 1979 |
 | 9 | Pobreza comunal por SAE (CASEN) | Covariable contextual | Sólido | Rao y Molina 2015; Casas-Cordero 2016 |
 | 10 | Inferencia múltiple y nivel ecológico | Interpretación de p-valores y covariables | Declarado y acotado | Merlo 2006; Mood 2010 |
+| 11 | Machine learning (xgboost + SHAP) | Triangular importancia y score de riesgo | Complemento predictivo, no causal | Chen y Guestrin 2016; Lundberg y Lee 2017 |
 
 Conclusión general: la metodología es coherente con el estado del arte en análisis multinivel de datos administrativos de salud y en modelos de conteo con exceso de ceros. Los cuatro puntos que un revisor podría cuestionar (la definición del ICC en escala latente, la aproximación de verosimilitud, la comparación de varianzas entre modelos logísticos anidados y el k-means sobre composiciones) están aquí explicitados y, en tres de los cuatro, resueltos a favor de la opción más defendible.
 
@@ -79,7 +80,7 @@ Conclusión general: la metodología es coherente con el estado del arte en aná
 
 **Recomendación de blindaje.** Complementar el ICC con el **MOR (median odds ratio)** de Merlo (2006), que expresa el efecto contextual en la escala de odds ratios (más intuitiva y comparable con los OR de los efectos fijos) y no depende del supuesto pi²/3. Reportar ICC y MOR juntos es la práctica recomendada en la literatura de salud y elimina la principal objeción posible. Esta mejora es opcional y de bajo costo (se deriva de la misma varianza de establecimiento ya estimada).
 
-**Veredicto: sólido, con el ICC latente bien fundamentado; se recomienda añadir el MOR para dejar la objeción cerrada.**
+**Veredicto: sólido, con el ICC latente bien fundamentado; el MOR ahora se reporta junto al ICC, lo que deja la objeción cerrada.**
 
 ---
 
@@ -137,7 +138,7 @@ Conclusión general: la metodología es coherente con el estado del arte en aná
 
 **Recomendación de blindaje.** Si las tipologías van a tener peso argumental, (1) aplicar una transformación clr antes del k-means y (2) justificar k con silueta o estadístico de brecha. Como mejora, de costo medio.
 
-**Veredicto: aceptable como exploratorio; declarar la naturaleza descriptiva y, si se busca rigor pleno, transformar la composición y justificar k.**
+**Veredicto: reforzado. Ahora se aplica la transformación clr (Aitchison) antes del k-means y se reporta la silueta media para k=2 a 6 (`tipologias_silueta.csv`); las tipologías se mantienen como lectura exploratoria.**
 
 ---
 
@@ -176,6 +177,133 @@ En orden de impacto sobre la solidez percibida:
 5. Mantener la decisión de **Laplace** y su verificación contra el modo rápido como parte explícita de los métodos: es una fortaleza que conviene mostrar.
 
 Con (1) a (3) implementadas o declaradas, los cuatro puntos potencialmente cuestionables quedan cubiertos.
+
+---
+
+## 11. Machine learning complementario (xgboost + SHAP): para qué, y sus límites
+
+**Qué hacemos.** Como complemento *predictivo* del núcleo inferencial, entrenamos un gradient boosting (xgboost) que predice, por establecimiento, si registra cada sección a partir de sus características (tipo, nivel, dependencia, Servicio de Salud, región, pobreza comunal, población), sin su identidad. Reportamos la importancia por SHAP y un score de riesgo de subregistro.
+
+**Concepto.** xgboost (Chen y Guestrin, 2016) ajusta un ensamble de árboles de decisión que captura relaciones no lineales e interacciones sin imponer una forma funcional. SHAP (Lundberg y Lee, 2017), basado en los valores de Shapley de la teoría de juegos, reparte cada predicción entre las características de forma aditiva y con garantías de consistencia, lo que da una medida de importancia local y global interpretable.
+
+**Por qué, y qué aporta aquí.** No reemplaza al hurdle ni al multinivel: no entrega partición de varianza ni un contraste causal. Su valor es doble: (1) **triangular** desde un método distinto el hallazgo de que el tipo de establecimiento domina, y revelar interacciones que el modelo lineal podría perderse; (2) producir un **score de riesgo** de subregistro para focalizar intervenciones. La unidad es el establecimiento (una fila por centro), de modo que la validación cruzada k-fold no sufre fuga, y se excluye la identidad del establecimiento para que el modelo aprenda de las características y no memorice centros.
+
+**Supuestos y límite.** Es predictivo, no causal; el AUC mide separación, no mecanismo, y la importancia SHAP es asociativa. Se declara explícitamente como un apéndice complementario del análisis inferencial.
+
+**Veredicto: complemento válido y bien delimitado.**
+
+---
+
+## Fundamentación matemática y fórmulas
+
+Notación. Para un establecimiento $e$, en la comuna $c$ y la región $r$, en el mes $t$: $Y_{et}$ es el conteo de eventos de la sección; $\text{reporta}_{et} = \mathbb{1}(Y_{et} > 0)$ es la variable de barrera; $X$ es el vector de covariables (tipo de establecimiento, nivel de atención, pobreza comunal, mes).
+
+### Por qué un modelo hurdle, y su forma matemática
+
+El dato es un conteo con muchísimos ceros y una cola muy larga. Un Poisson o una regresión lineal sobre el conteo están mal especificados: no acomodan ese exceso de ceros ni la sobredispersión. El **modelo hurdle** (de barrera) lo resuelve separando la masa en el cero del proceso de los positivos. Su función de masa de probabilidad es:
+
+$$
+\Pr(Y = y) =
+\begin{cases}
+1 - \pi & \text{si } y = 0 \\[4pt]
+\pi \, \dfrac{f(y)}{1 - f(0)} & \text{si } y \geq 1
+\end{cases}
+$$
+
+donde $\pi = \Pr(Y > 0)$ es la probabilidad de cruzar el umbral (la **barrera**) y $f(\cdot)$ es la densidad de conteo de la **intensidad**, truncada en cero por el factor $1/(1-f(0))$. Esta es la formulación de Cragg (1971) para variables semicontinuas y de Mullahy (1986) para conteos.
+
+Se elige hurdle, y no un modelo inflado en cero (ZIP/ZINB), porque aquí el cero tiene un solo origen, "no se registró", y no una mezcla de dos procesos de cero (Feng, 2021; Mullahy, 1986). En investigación de servicios de salud, separar "si ocurre" de "cuánto" es práctica establecida para recuentos de utilización y registros administrativos (Neelon et al., 2016; Min y Agresti, 2005), que es exactamente nuestro caso.
+
+**Operacionalización en dos partes.** El hurdle de objeto único con binomial negativa truncada no converge por la cola extrema. Por la independencia de las dos partes en el hurdle, estimarlas por separado es equivalente:
+
+Barrera (regresión logística de efectos mixtos, tres niveles):
+
+$$
+\text{logit}\big(\pi_{et}\big) = \beta_0 + X_{et}\,\beta + u^{(R)}_{r} + u^{(C)}_{c} + u^{(E)}_{e},
+\qquad
+u^{(R)}_r \sim N(0,\sigma^2_R),\;
+u^{(C)}_c \sim N(0,\sigma^2_C),\;
+u^{(E)}_e \sim N(0,\sigma^2_E)
+$$
+
+Intensidad (modelo lineal mixto sobre el log del valor en los positivos):
+
+$$
+\log\big(Y_{et} \mid Y_{et} > 0\big) = \gamma_0 + X_{et}\,\gamma + w_{e} + \varepsilon_{et},
+\qquad
+w_e \sim N(0,\tau^2_E),\;\;
+\varepsilon_{et} \sim N(0,\sigma^2_\varepsilon)
+$$
+
+Los efectos aleatorios $u^{(E)}_e$ y $w_e$ capturan que registrar es un rasgo estable del establecimiento.
+
+### Partición de varianza e ICC en escala latente
+
+En el modelo logístico no hay varianza de nivel 1 observable. Bajo el enfoque de **variable latente**, se supone una variable continua subyacente con distribución logística estándar, cuya varianza es $\pi^2/3 \approx 3{,}29$. El coeficiente de correlación intraclase de un nivel es la proporción de varianza atribuible a ese nivel:
+
+$$
+\text{ICC}_{\text{establecimiento}} = \frac{\sigma^2_E}{\sigma^2_E + \sigma^2_C + \sigma^2_R + \pi^2/3}
+$$
+
+y de forma análoga para comuna y región (Goldstein, Browne y Rasbash, 2002; Merlo et al., 2006; Browne et al., 2005). Un ICC de establecimiento alto significa que la decisión de registrar es, sobre todo, un rasgo del centro.
+
+### Median Odds Ratio (MOR)
+
+El MOR traslada la varianza de establecimiento a la escala de odds ratios, comparable con los OR de los efectos fijos. Es el factor mediano por el que cambian las odds de registrar al comparar dos establecimientos elegidos al azar (el de mayor con el de menor propensión):
+
+$$
+\text{MOR} = \exp\!\Big(\sqrt{2\,\sigma^2_E}\;\Phi^{-1}(0{,}75)\Big) \approx \exp\!\big(0{,}9539\,\sigma_E\big),
+\qquad \Phi^{-1}(0{,}75) \approx 0{,}6745
+$$
+
+$\text{MOR} = 1$ indica que el establecimiento no introduce diferencias; cuanto mayor es el MOR, más pesa "qué establecimiento es" (Merlo et al., 2006). A diferencia del ICC, no depende del supuesto $\pi^2/3$.
+
+### Cambio proporcional de varianza (PCV)
+
+Para medir cuánto explican tipo y nivel del efecto establecimiento, se compara la varianza de establecimiento del modelo nulo $M_0$ con la del modelo con covariables $M_k$:
+
+$$
+\text{PCV} = \frac{\sigma^2_E(M_0) - \sigma^2_E(M_k)}{\sigma^2_E(M_0)} \times 100
+$$
+
+Se interpreta de forma cualitativa por el reescalamiento de la escala latente al añadir efectos fijos (Mood, 2010; Karlson, Holm y Breen, 2012); ver la sección 6.
+
+### Efecto de la pobreza (odds ratio)
+
+La pobreza comunal entra estandarizada en decenas de puntos, $\text{pobreza10} = \text{pobreza}/10$. Su odds ratio es:
+
+$$
+\text{OR}_{+10pp} = \exp(\beta_{\text{pobreza10}})
+$$
+
+el cambio multiplicativo en las odds de registrar por cada 10 puntos porcentuales más de pobreza. $\text{OR} < 1$ indica que a mayor pobreza, menor probabilidad de registro.
+
+### Autocorrelación espacial: I de Moran y LISA
+
+El I de Moran global mide si comunas vecinas tienen valores parecidos de cobertura $x$:
+
+$$
+I = \frac{n}{\sum_{i}\sum_{j} w_{ij}} \cdot
+\frac{\sum_{i}\sum_{j} w_{ij}\,(x_i - \bar{x})(x_j - \bar{x})}{\sum_{i}(x_i - \bar{x})^2}
+$$
+
+donde $w_{ij}$ es la matriz de pesos espaciales (contigüidad queen, estandarizada por fila) y $n$ el número de comunas. $I$ cercano a su valor esperado $-1/(n-1)$ indica ausencia de patrón. El indicador local (LISA) descompone ese global comuna por comuna:
+
+$$
+I_i = \frac{x_i - \bar{x}}{\sum_{k}(x_k - \bar{x})^2 / n} \sum_{j} w_{ij}\,(x_j - \bar{x})
+$$
+
+y permite localizar focos alto-alto y bajo-bajo (Moran, 1950; Anselin, 1995).
+
+### Tipologías por k-means
+
+Sobre las proporciones $s_e = (s_{e1}, \dots, s_{eK})$ con $\sum_k s_{ek} = 1$ (la composición de la actividad del establecimiento $e$), k-means minimiza la inercia intra-grupo:
+
+$$
+\arg\min_{\{C_1,\dots,C_g\}} \sum_{j=1}^{g} \sum_{e \in C_j} \lVert s_e - \mu_j \rVert^2
+$$
+
+con $\mu_j$ el centroide del grupo $j$. Como las proporciones viven en el símplex, la distancia euclidiana es una aproximación; el tratamiento composicional pleno usaría una transformación de razón logarítmica antes de agrupar (Aitchison, 1986). Por eso las tipologías se reportan como exploratorias (sección 8).
 
 ---
 
@@ -227,6 +355,11 @@ Estimación de áreas pequeñas y pobreza comunal:
 
 - Rao JNK, Molina I (2015). *Small Area Estimation*, 2.ª ed. Wiley.
 - Casas-Cordero Valencia C, Encina J, Corral P (2016). Poverty mapping for the Chilean comunas. En Pratesi M (ed.), *Analysis of Poverty Data by Small Area Estimation*. Wiley.
+
+Machine learning interpretable:
+
+- Chen T, Guestrin C (2016). XGBoost: a scalable tree boosting system. *Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining*, 785-794.
+- Lundberg SM, Lee SI (2017). A unified approach to interpreting model predictions. *Advances in Neural Information Processing Systems (NeurIPS)* 30, 4765-4774.
 
 Precedente y contexto chileno:
 

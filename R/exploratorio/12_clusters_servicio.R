@@ -3,7 +3,7 @@
 # -----------------------------------------------------------------------------
 # En 11 vimos que, tras controlar por pobreza y composición, AÚN queda
 # autocorrelación espacial en reclamos y satisfacción. Hipótesis: ese residuo es
-# la gestión de la RED — los ~29 Servicios de Salud, que agrupan establecimientos
+# la gestión de la RED, los ~29 Servicios de Salud, que agrupan establecimientos
 # y comunas. Aquí agregamos el Servicio de Salud como factor al modelo comunal y
 # vemos si el Moran de los residuos cae a ~0.
 #   - Si cae a no significativo -> el "territorio" era en realidad la RED (gestión

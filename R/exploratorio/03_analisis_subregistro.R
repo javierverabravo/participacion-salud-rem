@@ -15,7 +15,7 @@
 #   AUSENTES. Aquí lo cuantificamos construyendo explícitamente el panel.
 #
 # ENTRADA : datos/<AÑO>/participacion_A19b.rds  +  Serie A (solo columnas de ID)
-# SALIDA  : salidas/ (tablas .csv y figuras .png) — carpeta ignorada por Git
+# SALIDA  : salidas/ (tablas .csv y figuras .png), carpeta ignorada por Git
 # =============================================================================
 
 # ---- 0. Paquetes -----------------------------------------------------------

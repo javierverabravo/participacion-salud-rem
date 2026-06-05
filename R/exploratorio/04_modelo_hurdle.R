@@ -11,7 +11,7 @@
 #   un atajo: en un modelo hurdle la verosimilitud se factoriza en esas dos
 #   partes independientes, así que estimarlas por separado es equivalente y, en
 #   este caso, mucho más estable que forzar una Binomial Negativa truncada (los
-#   conteos tienen una cola extrema —máx 5.494, mediana 4— que hacía colapsar
+#   conteos tienen una cola extrema , máx 5.494, mediana 4,  que hacía colapsar
 #   esa familia). Para la intensidad usamos la escala logarítmica, estándar
 #   para datos positivos muy asimétricos.
 #

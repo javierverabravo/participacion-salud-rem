@@ -4,7 +4,7 @@
 # ¿Existen "estilos" de participación entre establecimientos? Agrupamos los
 # establecimientos según la COMPOSICIÓN de su actividad entre los tres temas
 # (OIRS/reclamos, participación social, satisfacción) usando k-means. El
-# resultado son perfiles latentes —no etiquetados en los datos— que describen
+# resultado son perfiles latentes , no etiquetados en los datos,  que describen
 # distintas formas de relacionarse con la comunidad.
 #
 # SALIDA: productos/tipologias_perfil.csv (descripción de cada perfil)

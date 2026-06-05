@@ -1,4 +1,4 @@
-# Material para LinkedIn — Participación ciudadana en salud (REM 2025)
+# Material para LinkedIn, Participación ciudadana en salud (REM 2025)
 
 Acompañar con la imagen **`linkedin_grafico.png`** (cuadrada, 1080×1080) o una
 captura del dashboard. Texto principal abajo; al final, una versión corta.
@@ -16,14 +16,14 @@ participan menos. Los datos dicen otra cosa.
 
 Tres hallazgos:
 
-→ El 63% de los establecimientos registra alguna participación, pero hay un 54% de
+, El 63% de los establecimientos registra alguna participación, pero hay un 54% de
 subregistro a nivel establecimiento-mes. Buena parte del "no participa" es en
 realidad "no se registra".
 
-→ Casi la mitad de la variación (49%) nace en el propio establecimiento; la región
+, Casi la mitad de la variación (49%) nace en el propio establecimiento; la región
 explica apenas ~1%. La participación no forma clústeres territoriales.
 
-→ La pobreza comunal NO predice la participación de forma significativa. Lo
+, La pobreza comunal NO predice la participación de forma significativa. Lo
 decisivo no es la geografía ni el nivel socioeconómico, sino el establecimiento y
 su gestión local.
 

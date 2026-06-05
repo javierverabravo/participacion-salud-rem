@@ -1,5 +1,5 @@
 # =============================================================================
-# 06_analisis_A.R  ·  BLOQUE A — Atención OIRS (Sistema Integral de Atención
+# 06_analisis_A.R  ·  BLOQUE A, Atención OIRS (Sistema Integral de Atención
 #                      a Usuarios): reclamos, consultas, sugerencias, solicitudes
 # -----------------------------------------------------------------------------
 # Análisis independiente de la sección A del REM-A19b. Aplica el flujo completo

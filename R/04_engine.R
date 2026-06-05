@@ -329,6 +329,19 @@ familia_reclamo <- function(desc) {
   inst
 }
 
+# Clasifica las instancias de participacion social (B) por su caracter:
+# deliberativa/organica (nucleo del derecho: consejos, cabildos, CDL, COSOC,
+# indigena, jovenes, CIRA, comites), informativa (TICs/redes, un canal de
+# comunicacion, NO deliberacion) e inespecifica (el cajon "Otras"). Separar TICs
+# y "Otras" evita inflar la participacion deliberativa real.
+clase_instancia <- function(et) {
+  e <- tolower(et)
+  fcase(
+    grepl("tics|redes sociales", e),      "Informativa (TICs)",
+    grepl("otras instancias|^otras", e),  "Inespecifica (Otras)",
+    default = "Deliberativa")
+}
+
 subsecciones_bloque <- function(largo, part, blq, dirb) {
   n_estab_total <- uniqueN(part[bloque == blq]$IdEstablecimiento)
   if (blq == "A") {
@@ -362,7 +375,32 @@ subsecciones_bloque <- function(largo, part, blq, dirb) {
 
   } else if (blq == "B") {
     inst <- .instancias_intensidad(largo[seccion_key == "B.1"], n_estab_total)
+    inst[, clase := clase_instancia(etiqueta)]
     fwrite(inst, file.path(dirb, "sub_b1_instancias.csv"), sep = ";", bom = TRUE)
+    # Reparto de la actividad por clase (deliberativa / TICs / Otras).
+    clase_tot <- inst[, .(actividades = sum(actividades), n_estab = sum(n_estab)),
+                      by = clase][order(-actividades)]
+    clase_tot[, pct_actividades := round(100 * actividades / sum(actividades), 1)]
+    fwrite(clase_tot, file.path(dirb, "sub_b1_clase.csv"), sep = ";", bom = TRUE)
+    # KPIs del NUCLEO DELIBERATIVO (excluye TICs y "Otras"), para no inflar la cifra.
+    lg1 <- largo[seccion_key == "B.1" & dimension == "instancia" & valor > 0]
+    lg1[, clase := clase_instancia(etiqueta)]
+    estab_del <- lg1[clase == "Deliberativa", uniqueN(IdEstablecimiento)]
+    act_del   <- lg1[clase == "Deliberativa", sum(valor, na.rm = TRUE)]
+    act_tot   <- max(lg1[, sum(valor, na.rm = TRUE)], 1)
+    act_tics  <- lg1[clase == "Informativa (TICs)", sum(valor, na.rm = TRUE)]
+    act_otr   <- lg1[clase == "Inespecifica (Otras)", sum(valor, na.rm = TRUE)]
+    fwrite(data.table(
+      indicador = c("cobertura_deliberativa_pct", "establecimientos_deliberativos",
+                    "actividades_deliberativas", "intensidad_deliberativa",
+                    "pct_actividades_deliberativas", "pct_actividades_tics",
+                    "pct_actividades_otras"),
+      valor = c(round(100 * estab_del / max(n_estab_total, 1), 1), estab_del,
+                act_del, round(act_del / max(estab_del, 1), 1),
+                round(100 * act_del / act_tot, 1),
+                round(100 * act_tics / act_tot, 1),
+                round(100 * act_otr / act_tot, 1))),
+      file.path(dirb, "kpis_B_nucleo.csv"), sep = ";", bom = TRUE)
     lineas <- part[seccion_key == "B.2",
                    .(sesiones = sum(valor_total, na.rm = TRUE),
                      n_estab = uniqueN(IdEstablecimiento[valor_total > 0])),
@@ -414,9 +452,12 @@ modelo_hurdle <- function(panel, blq, dirb) {
     icc_i <- vci[vci$grp == "IdEstablecimiento", "vcov"] /
       (vci[vci$grp == "IdEstablecimiento", "vcov"] + vci[vci$grp == "Residual", "vcov"])
   }
-  fwrite(data.table(indicador = c("icc_barrera_pct", "icc_intensidad_pct"),
-                    valor = round(100 * c(icc_b, icc_i), 1)),
-         file.path(dirb, "modelo_icc.csv"), sep = ";", bom = TRUE)
+  # MOR (median odds ratio): traduce la varianza de establecimiento a escala OR.
+  mor <- exp(sqrt(2 * vb) * qnorm(0.75))
+  fwrite(data.table(
+    indicador = c("icc_barrera_pct", "icc_intensidad_pct", "MOR_establecimiento"),
+    valor = c(round(100 * icc_b, 1), round(100 * icc_i, 1), round(mor, 2))),
+    file.path(dirb, "modelo_icc.csv"), sep = ";", bom = TRUE)
   d[, p := predict(m_b, newdata = d, re.form = NA, type = "response")]
   fwrite(d[, .(prob_registra = round(mean(p), 3)), by = IdRegion][order(-prob_registra)],
          file.path(dirb, "modelo_region.csv"), sep = ";", bom = TRUE)
@@ -750,9 +791,22 @@ tipologias_bloque <- function(part, largo, est, blq, dirb, k = 4) {
   cats <- setdiff(names(w), "IdEstablecimiento")
   M <- as.matrix(w[, ..cats]); M <- M / pmax(rowSums(M), 1)   # shares por establecimiento
   S <- as.data.table(M); S[, IdEstablecimiento := w$IdEstablecimiento]
+  # Transformacion clr (centered log-ratio) para datos composicionales (Aitchison
+  # 1986): pseudoconteo para ceros, log y centrado por fila. Respeta la geometria
+  # del simplex, a diferencia de la distancia euclidiana sobre shares crudas.
+  L <- log(M + 1e-6); clr <- L - rowMeans(L)
   res <- tryCatch({
-    Z <- scale(M); Z[is.nan(Z)] <- 0
     set.seed(123)
+    Z <- clr; Z[!is.finite(Z)] <- 0
+    # Silueta media para k=2..6: justifica el k elegido (diagnostico, muestreado).
+    if (requireNamespace("cluster", quietly = TRUE)) {
+      idx <- if (nrow(Z) > 600) sample(nrow(Z), 600) else seq_len(nrow(Z))
+      Zs <- Z[idx, , drop = FALSE]; ds <- dist(Zs)
+      sil <- sapply(2:6, function(kk)
+        mean(cluster::silhouette(kmeans(Zs, centers = kk, nstart = 10)$cluster, ds)[, 3]))
+      fwrite(data.table(k = 2:6, silueta_media = round(sil, 3)),
+             file.path(dirb, "tipologias_silueta.csv"), sep = ";", bom = TRUE)
+    }
     km <- kmeans(Z, centers = k, nstart = 25)
     S[, perfil := km$cluster]
     perfil <- S[, c(list(n_establecimientos = .N),

@@ -134,6 +134,14 @@ chilenos con datos administrativos.
 - **Hartigan JA, Wong MA (1979).** *Algorithm AS 136: a k-means clustering algorithm.*
   J R Stat Soc C 28(1):100-108.
 
+## 12. Machine learning interpretable (complemento predictivo)
+
+- **Chen T, Guestrin C (2016).** *XGBoost: a scalable tree boosting system.* Proc. 22nd ACM
+  SIGKDD, 785-794. Gradient boosting de árboles; modelo predictivo del módulo de ML.
+- **Lundberg SM, Lee SI (2017).** *A unified approach to interpreting model predictions.*
+  NeurIPS 30, 4765-4774. Valores SHAP (Shapley) para importancia interpretable; base de la
+  lectura de variables del modelo. Se usa como complemento, no como reemplazo del inferencial.
+
 > Ver **FUNDAMENTACION_ESTADISTICA.md** para la auditoría completa concepto por concepto
 > (definición, justificación, supuestos, límites y veredicto de cada método), con la lista de
 > referencias verificada en junio de 2026.

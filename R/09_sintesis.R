@@ -1,5 +1,5 @@
 # =============================================================================
-# 09_sintesis.R  ·  SINTESIS — comparacion de los tres bloques (A, B, C)
+# 09_sintesis.R  ·  SINTESIS, comparacion de los tres bloques (A, B, C)
 # -----------------------------------------------------------------------------
 # Entregable transversal que resume y compara las tres secciones. Reutiliza los
 # productos ya calculados por 20/21/22 (productos/A, /B, /C) y agrega analisis

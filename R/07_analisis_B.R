@@ -1,5 +1,5 @@
 # =============================================================================
-# 07_analisis_B.R  ·  BLOQUE B — Actividades de Participacion Social
+# 07_analisis_B.R  ·  BLOQUE B, Actividades de Participacion Social
 #                      (B.1 instancias + B.2 lineas de accion y participantes)
 # -----------------------------------------------------------------------------
 # Analisis independiente de la seccion B del REM-A19b (el nucleo deliberativo:

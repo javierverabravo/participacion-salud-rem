@@ -1,5 +1,5 @@
 # =============================================================================
-# 08_analisis_C.R  ·  BLOQUE C — Satisfaccion Usuaria y Humanizacion
+# 08_analisis_C.R  ·  BLOQUE C, Satisfaccion Usuaria y Humanizacion
 #                      (C.1 gestion + C.2 lineas de accion y participantes)
 # -----------------------------------------------------------------------------
 # Analisis independiente de la seccion C del REM-A19b. Aplica el flujo completo

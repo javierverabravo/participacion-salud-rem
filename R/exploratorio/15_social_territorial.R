@@ -4,7 +4,7 @@
 # Caracteriza la COMPOSICIÓN de la participación social (sus tipologías/instancias)
 # en cada región: qué % de la actividad social de la región corresponde a cada
 # instancia (COSOC, CDL, cabildos, indígena, jóvenes, TICs, etc.). Revela patrones
-# territoriales —p. ej. instancias indígenas concentradas en el sur.
+# territoriales , p. ej. instancias indígenas concentradas en el sur.
 #
 # ENTRADA : datos/<AÑO>/participacion_largo.rds
 # SALIDA  : productos/social_region_instancia.csv  (IdRegion x instancia, % y total)
