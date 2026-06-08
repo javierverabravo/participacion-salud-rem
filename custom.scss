@@ -71,3 +71,83 @@ $h1-font-size: 1.55rem;
 
 // Tablas DT un poco más legibles.
 table.dataTable td, table.dataTable th { font-size: .85rem; }
+
+// ---- Separador lectura rápida / detalles técnicos ---------------------------
+.sidebar-sep {
+  border: none;
+  border-top: 1px solid rgba(15,110,140,.20);
+  margin: .85rem 0 .7rem 0;
+}
+.sidebar-section-label {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .65;
+  margin-bottom: .35rem;
+}
+
+// ---- Semáforo regional ------------------------------------------------------
+.semaforo-verde  { background-color: #c8e6c9 !important; }
+.semaforo-amarillo { background-color: #fff9c4 !important; }
+.semaforo-rojo   { background-color: #ffcdd2 !important; }
+
+// ---- Callout equidad (OR pobreza C) ----------------------------------------
+.callout-equidad {
+  border-left: 4px solid #c1495b;
+  background: #fff5f5;
+  padding: .65rem .9rem;
+  border-radius: .35rem;
+  margin: .5rem 0;
+  font-size: .9rem;
+}
+.callout-equidad strong { color: #c1495b; }
+
+// ---- Responsive: móvil y tablet (max 991px) --------------------------------
+
+// Sidebar colapsable en pantallas medianas y pequeñas.
+@media (max-width: 991px) {
+  .bslib-sidebar-layout {
+    flex-direction: column !important;
+  }
+  .bslib-sidebar-layout > .bslib-sidebar {
+    width: 100% !important;
+    max-height: 220px;
+    overflow-y: auto;
+    font-size: .82rem;
+    border-bottom: 1px solid rgba(15,110,140,.15);
+    border-right: none !important;
+    padding: .6rem 1rem;
+  }
+}
+
+// Value boxes: 2 × 2 en pantallas pequeñas en lugar de 4 en fila.
+@media (max-width: 767px) {
+  .bslib-value-box {
+    min-width: 48% !important;
+    flex: 1 1 48% !important;
+  }
+  .value-box .value-box-value {
+    font-size: 1.3rem !important;
+  }
+  // Ocultar el ícono decorativo para ganar espacio vertical.
+  .value-box .value-box-showcase {
+    display: none !important;
+  }
+  .value-box .value-box-area {
+    padding: .4rem .6rem !important;
+  }
+}
+
+// Navbar más compacto en móvil.
+@media (max-width: 767px) {
+  .navbar-brand { font-size: .9rem !important; }
+  .navbar { padding: .3rem .8rem !important; }
+}
+
+// Selector de Servicio de Salud en el mapa: evitar zoom automático en iOS.
+#sel_ss {
+  font-size: 16px;
+  max-width: 100%;
+  width: 100%;
+}
