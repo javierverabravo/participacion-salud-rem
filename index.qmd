@@ -437,17 +437,7 @@ if (requireNamespace("DT", quietly = TRUE)) {
 **Volumen mensual de eventos** muestra estacionalidad por sección con ejes propios. Notarás la baja administrativa de enero-febrero.
 
 
-## Row {height="14%"}
-
-::: {.card .hero}
-::: {.hero-box}
-[Participación ciudadana en salud · REM-A19b Chile 2025]{.hero-kicker}
-
-[Registrar participación es un rasgo **institucional del establecimiento** en las tres secciones del A19b, pero el peso del **territorio y de la pobreza no es uniforme**: casi nulo en participación social, real en OIRS y decisivo en satisfacción usuaria. Por eso se analizan **sección por sección**.]{.hero-thesis}
-:::
-:::
-
-## Row {height="22%"}
+## Row {height="18%"}
 
 ```{r}
 vb(fmt(kget("A","establecimientos_activos")),
@@ -473,6 +463,16 @@ vb(pct(kget("C","pct_cobertura")), "registra gestión de satisfacción usuaria",
    def_de("Satisfacción usuaria"), icon = "emoji-smile", color = "warning",
    title = "C · Satisfacción usuaria")
 ```
+
+## Row {height="10%"}
+
+::: {.card .hero}
+::: {.hero-box}
+[Participación ciudadana en salud · REM-A19b Chile 2025]{.hero-kicker}
+
+[Registrar participación es un rasgo **institucional del establecimiento** en las tres secciones del A19b, pero el peso del **territorio y de la pobreza no es uniforme**: casi nulo en participación social, real en OIRS y decisivo en satisfacción usuaria.]{.hero-thesis}
+:::
+:::
 
 ## Row {height="42%"}
 
@@ -500,7 +500,7 @@ res_comp <- tryCatch({
 res_comp
 ```
 
-## Row {height="22%"}
+## Row {height="30%"}
 
 ```{r}
 #| title: "Volumen mensual de eventos registrados, por sección"
@@ -630,7 +630,7 @@ interactivo(tryCatch(plot_terr_incl(), error = function(e) NULL))
 **Composición por sexo e identidad** ahora muestra en dos paneles: Sexo binario (Hombres y Mujeres) y Identidades de género diversas. **Grupos prioritarios** muestra NNA y gestantes en absolutos.
 
 
-## Row {height="20%"}
+## Row {height="16%"}
 
 ```{r}
 vb(pct(kget("A","pct_cobertura")), "% de establecimientos que registra OIRS",
@@ -655,7 +655,7 @@ vb(fmt(kget("A","total_felicitaciones","kpis_A_tipos")),
    icon = "emoji-smile", color = "success", title = "Felicitaciones")
 ```
 
-## Row {height="44%"}
+## Row {height="32%"}
 
 ### Column
 ```{r}
@@ -678,7 +678,7 @@ res_a_tipos
 interactivo(plot_cob_tipo("A"))
 ```
 
-## Row {height="36%"}
+## Row {height="26%"}
 
 ### Column
 ```{r}
@@ -691,7 +691,7 @@ interactivo(plot_serie("A"))
 interactivo(plot_var("A"))
 ```
 
-## Row {height="30%"}
+## Row {height="26%"}
 
 ### Column
 ```{r}
@@ -722,7 +722,7 @@ interactivo(tryCatch(plot_grupos("A"), error = function(e) NULL))
 **"¿Dónde vive la variación?"**: establecimiento ~`r comp[bloque=="B", var_establecimiento_pct]` %, comuna ~`r comp[bloque=="B", var_comuna_pct]` %. B es la sección más **institucional pura**: la pobreza comunal NO predice (OR `r round(comp[bloque=="B", OR_pobreza_x10pp],2)`, p=`r signif(comp[bloque=="B", pobreza_p_valor],2)`).
 
 
-## Row {height="20%"}
+## Row {height="16%"}
 
 ```{r}
 vb(pct(kget("B","pct_cobertura")), "% de establecimientos que la registra",
@@ -744,7 +744,7 @@ vb(pct(kget("B","cobertura_deliberativa_pct","kpis_B_nucleo")),
    icon = "people", color = "danger", title = "Núcleo deliberativo")
 ```
 
-## Row {height="44%"}
+## Row {height="32%"}
 
 ### Column
 ```{r}
@@ -757,7 +757,7 @@ interactivo(tryCatch(plot_eq_subseccion("B"), error = function(e) NULL))
 interactivo(plot_eq_region("B"))
 ```
 
-## Row {height="36%"}
+## Row {height="26%"}
 
 ### Column
 ```{r}
@@ -770,7 +770,7 @@ interactivo(plot_cob_tipo("B"))
 interactivo(plot_var("B"))
 ```
 
-## Row {height="30%"}
+## Row {height="26%"}
 
 ### Column
 
@@ -804,7 +804,7 @@ interactivo(tryCatch(plot_b_clase(), error = function(e) NULL))
 **"¿Dónde vive la variación?"**: establecimiento `r comp[bloque=="C", var_establecimiento_pct]` %, comuna `r comp[bloque=="C", var_comuna_pct]` %. Sobre la base institucional se monta el **único efecto pobreza** del A19b.
 
 
-## Row {height="20%"}
+## Row {height="16%"}
 
 ```{r}
 vb(pct(kget("C","pct_cobertura")), "% de establecimientos que la registra",
@@ -827,7 +827,7 @@ vb(paste0("M ", kget("C","pct_mujeres","equidad_kpis"), "% · H ",
    icon = "people", color = "success", title = "Sexo registrado")
 ```
 
-## Row {height="44%"}
+## Row {height="32%"}
 
 ### Column
 ```{r}
@@ -840,7 +840,7 @@ interactivo(tryCatch(plot_eq_subseccion("C"), error = function(e) NULL))
 interactivo(plot_cob_pobreza("C"))
 ```
 
-## Row {height="36%"}
+## Row {height="26%"}
 
 ### Column
 ```{r}
@@ -853,7 +853,7 @@ interactivo(plot_cob_region("C"))
 interactivo(plot_var("C"))
 ```
 
-## Row {height="30%"}
+## Row {height="26%"}
 
 ```{r}
 #| title: "Composición por sexo e identidad de género (incluye identidades diversas)"
@@ -883,31 +883,7 @@ interactivo(tryCatch(plot_sexo_genero("C"), error = function(e) NULL))
 **Qué sección domina cada región**: en algunas la actividad es casi pura OIRS, en otras participación social tiene más peso.
 
 
-## Row {height="34%"}
-
-```{r}
-#| title: "Comparativo completo de las tres secciones"
-res_comp2 <- tryCatch({
-  d <- copy(comp)
-  tab <- data.table(
-    Sección = paste0(d$bloque, " · ", d$tema),
-    `Cobertura %` = d$cobertura_pct, `Eventos` = fmt(d$total_eventos),
-    `Subregistro %` = d$pct_subregistro_estab_mes,
-    `ICC barrera %` = d$icc_barrera_pct,
-    `Var. estab %` = d$var_establecimiento_pct,
-    `Var. comuna %` = d$var_comuna_pct,
-    `OR pobreza` = round(d$OR_pobreza_x10pp, 2),
-    `p` = signif(d$pobreza_p_valor, 2),
-    `% mujeres` = d$pct_mujeres)
-  if (requireNamespace("DT", quietly = TRUE))
-    DT::datatable(tab, rownames = FALSE,
-      options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact")
-  else knitr::kable(tab)
-}, error = function(e) htmltools::HTML("Corre R/10_run_all.R."))
-res_comp2
-```
-
-## Row {height="20%"}
+## Row {height="18%"}
 
 ```{r}
 res_aud <- tryCatch(gs("indicadores_auditoria_nacional"), error = function(e) NULL)
@@ -937,6 +913,30 @@ vb(formatC(as.numeric(av("I_dd_partic_x100")), format="f", digits=1),
    "participantes en participación social por 100 inscritos",
    "Densidad democrática (I_dd): intensidad de la participación social por población.",
    icon = "people", color = "success", title = "Densidad democrática")
+```
+
+## Row {height="36%"}
+
+```{r}
+#| title: "Comparativo completo de las tres secciones"
+res_comp2 <- tryCatch({
+  d <- copy(comp)
+  tab <- data.table(
+    Sección = paste0(d$bloque, " · ", d$tema),
+    `Cobertura %` = d$cobertura_pct, `Eventos` = fmt(d$total_eventos),
+    `Subregistro %` = d$pct_subregistro_estab_mes,
+    `ICC barrera %` = d$icc_barrera_pct,
+    `Var. estab %` = d$var_establecimiento_pct,
+    `Var. comuna %` = d$var_comuna_pct,
+    `OR pobreza` = round(d$OR_pobreza_x10pp, 2),
+    `p` = signif(d$pobreza_p_valor, 2),
+    `% mujeres` = d$pct_mujeres)
+  if (requireNamespace("DT", quietly = TRUE))
+    DT::datatable(tab, rownames = FALSE,
+      options = list(dom = "t", ordering = FALSE, scrollX = TRUE), class = "stripe compact")
+  else knitr::kable(tab)
+}, error = function(e) htmltools::HTML("Corre R/10_run_all.R."))
+res_comp2
 ```
 
 ## Row {height="46%"}

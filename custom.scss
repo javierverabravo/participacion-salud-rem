@@ -37,15 +37,16 @@ $h1-font-size: 1.55rem;
   border: none;
   color: #fff;
 }
-.card.hero .card-body { padding: .6rem 1.1rem; }
+// Banner compacto: padding chico para que ocupe poca altura (10% del Resumen).
+.card.hero .card-body { padding: .35rem 1rem; }
 .hero-box { display: flex; flex-direction: column; justify-content: center;
   height: 100%; }
 .hero-kicker {
-  text-transform: uppercase; letter-spacing: .09em; font-size: .72rem;
-  font-weight: 600; opacity: .85; margin-bottom: .2rem;
+  text-transform: uppercase; letter-spacing: .09em; font-size: .65rem;
+  font-weight: 600; opacity: .85; margin-bottom: .12rem;
 }
 .hero-thesis {
-  font-size: clamp(1.05rem, 1.7vw, 1.5rem); font-weight: 600; line-height: 1.25;
+  font-size: clamp(.86rem, 1.15vw, 1.05rem); font-weight: 600; line-height: 1.2;
 }
 .hero-thesis strong { color: #ffe9b8; font-weight: 700; }
 
