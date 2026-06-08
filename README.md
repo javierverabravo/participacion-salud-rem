@@ -126,7 +126,7 @@ El primer entregable fue un **dashboard Quarto** estático (publicable gratis en
 - **Nueva página Territorio** con la mirada región por región (cobertura, pueblos originarios y migrantes por bloque), insumo de un futuro mapa interactivo.
 - Correcciones de presentación (superposición en móvil, ejes encimados) y verificación de convergencia visible en `modelo_estado.csv`.
 
-El dashboard incorpora además un **mapa interactivo** (leaflet con crosstalk, sin servidor) con filtros por región y por Servicio de Salud, y una página de **machine learning**: un gradient boosting (xgboost) con interpretación SHAP que, como complemento predictivo del análisis inferencial, confirma desde otro método el peso del tipo de establecimiento y produce un score de riesgo de subregistro para focalizar intervenciones.
+El dashboard incorpora un **mapa interactivo** (leaflet, sin servidor) con selector de Servicio de Salud: en vista nacional muestra todas las comunas coloreadas según cobertura de OIRS y al elegir un servicio apaga el resto y hace zoom a esa red.
 
 ---
 

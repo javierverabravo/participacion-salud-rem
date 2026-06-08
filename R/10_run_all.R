@@ -16,22 +16,21 @@
 #       REM_SENS = "1" corre la sensibilidad participativa (def) | "0" la omite
 #       REM_DEP  = "0" omite dependencia en la descomposicion (def) | "1" la incluye
 #       REM_FAST = "0" glmer exacto nAGQ=1 (def, ~30-40 min) | "1" rapido nAGQ=0 (~4 min, ICC algo menor)
-#       REM_ML   = "1" corre el modulo de machine learning (def) | "0" lo omite
 # =============================================================================
 library(here)
 t0 <- Sys.time()
 
-message("== 1/10  Descarga REM + establecimientos ==")
+message("== 1/9  Descarga REM + establecimientos ==")
 source(here("R", "00_descarga.R"))
-message("== 2/10  Procesamiento + crosswalk A19b (bloques A/B/C) ==")
+message("== 2/9  Procesamiento + crosswalk A19b (bloques A/B/C) ==")
 source(here("R", "01_procesamiento.R"))
-message("== 3/10  Determinantes comunales (CASEN 2024) ==")
+message("== 3/9  Determinantes comunales (CASEN 2024) ==")
 source(here("R", "02_datos_comunales.R"))
-message("== 4/10  Denominador FONASA (inscritos validados) ==")
+message("== 4/9  Denominador FONASA (inscritos validados) ==")
 source(here("R", "03_fonasa_inscritos.R"))
-message("== 5/10  Motor de analisis (funciones) ==")
+message("== 5/9  Motor de analisis (funciones) ==")
 source(here("R", "04_engine.R"))
-message("== 6-8/10  Bloques A / B / C ==")
+message("== 6-8/9  Bloques A / B / C ==")
 .runners <- c(here("R", "06_analisis_A.R"),
               here("R", "07_analisis_B.R"),
               here("R", "08_analisis_C.R"))
@@ -68,13 +67,8 @@ if (!isTRUE(.paralelo_ok)) {
   message("  -> bloques en secuencia")
   .correr_secuencial()
 }
-message("== 9/10  Sintesis A/B/C + indicadores de auditoria social ==")
+message("== 9/9  Sintesis A/B/C + indicadores de auditoria social ==")
 source(here("R", "09_sintesis.R"))
-
-message("== 10/10  Machine learning (xgboost + SHAP) ==")
-if (Sys.getenv("REM_ML", unset = "1") == "1") {
-  source(here("R", "11_ml.R"))
-} else message("  omitido (REM_ML=0)")
 
 message(sprintf("\nPipeline completo en %.1f min. Productos en productos/{A,B,C,sintesis}/.",
                 as.numeric(difftime(Sys.time(), t0, units = "mins"))))

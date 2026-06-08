@@ -50,9 +50,19 @@ $h1-font-size: 1.55rem;
 .hero-thesis strong { color: #ffe9b8; font-weight: 700; }
 
 // ---- Value boxes (KPIs) -----------------------------------------------------
+// Compactos: bajar font-size para que el valor no domine la pantalla y queden
+// más respiro para los gráficos. Ajustes finos en padding también.
 .value-box { box-shadow: 0 1px 3px rgba(15,23,42,.10); }
-.value-box .value-box-value { font-weight: 700; }
+.value-box .value-box-area { padding: .55rem .8rem; }
+.value-box .value-box-title { font-size: .78rem; opacity: .88; }
+.value-box .value-box-value {
+  font-weight: 700;
+  font-size: clamp(1.4rem, 2.3vw, 2.1rem) !important;
+  line-height: 1.05;
+}
+.value-box .value-box-showcase { font-size: 1.5rem; padding: .2rem .5rem; }
 .value-box-showcase i { opacity: .85; }
+.value-box small { font-size: .72rem; line-height: 1.2; }
 
 // ---- Tarjetas y narrativas --------------------------------------------------
 .card { box-shadow: 0 1px 3px rgba(15,23,42,.06); }

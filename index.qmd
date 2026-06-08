@@ -172,11 +172,6 @@ plot_grupos <- function(blq) {
     geom_col(fill = "#7a5195") + coord_flip() +
     labs(x = NULL, y = "Personas registradas") + tg
 }
-# Lector de productos de machine learning (productos/ml/).
-gp_ml <- function(name) {
-  f <- file.path("productos", "ml", paste0(name, ".csv"))
-  if (file.exists(f)) data.table::fread(f, sep = ";", encoding = "UTF-8") else NULL
-}
 # Participación social por clase: deliberativa / TICs / Otras.
 plot_b_clase <- function() {
   d <- gp("B", "sub_b1_clase"); if (is.null(d) || !nrow(d)) return(NULL)
@@ -185,15 +180,6 @@ plot_b_clase <- function() {
     geom_col(fill = col_blq[["B"]]) + coord_flip() +
     scale_y_continuous(labels = function(x) format(x, big.mark = ".", scientific = FALSE)) +
     labs(x = NULL, y = "Actividades registradas") + tg
-}
-# Importancia (SHAP) de las características en el modelo de machine learning.
-plot_ml_imp <- function(blq) {
-  d <- gp_ml(sprintf("shap_%s", blq)); if (is.null(d) || !nrow(d)) return(NULL)
-  d <- utils::head(d[order(-shap_abs_medio)], 12)
-  ggplot(d, aes(x = reorder(feature, shap_abs_medio), y = shap_abs_medio,
-        text = paste0(feature, ": ", shap_abs_medio))) +
-    geom_col(fill = col_blq[[blq]]) + coord_flip() +
-    labs(x = NULL, y = "Importancia media (|SHAP|)") + tg
 }
 # Mapa coroplético nacional de cobertura comunal (vista nacional de Territorio).
 plot_mapa_cob <- function(blq) {
@@ -383,19 +369,16 @@ tablero**. El sitio se regenera corriendo el pipeline y `quarto render`.
 metodos <- data.table(
   `Método` = c("Modelo de barrera (hurdle) con efectos aleatorios",
                "Multinivel de 3 niveles", "I de Moran / LISA",
-               "k-means (tipologías)",
-               "Machine learning complementario (xgboost + SHAP)"),
+               "k-means (tipologías)"),
   `Pregunta` = c("¿Qué condiciona registrar o no, y cuánto?",
     "¿La variación vive en el establecimiento, la comuna o la región?",
     "¿Las comunas vecinas se parecen (clústeres) o es azar?",
-    "¿Qué perfiles de participación existen sin etiquetar?",
-    "¿Predicen las características institucionales que un centro registre y cuáles son las más importantes (no lineal)?"),
+    "¿Qué perfiles de participación existen sin etiquetar?"),
   `Por qué no lo convencional` = c(
     "Muchos ceros y cola extrema sesgan la media; hay que separar 'si registra' de 'cuánto'. El glmmTMB de NB-truncada no converge, descomposición glmer + lmer.",
     "Promediar por región subestima el error e infla diferencias que son composición de comunas.",
     "Comparar mapas a ojo no cuantifica ni da significancia.",
-    "Clasificar por volumen total oculta que 'participar' significa cosas distintas.",
-    "Triangula el ICC del multinivel desde un método no lineal y sin supuestos paramétricos; produce un score operativo de riesgo de subregistro por establecimiento. Importancia interpretada con SHAP."))
+    "Clasificar por volumen total oculta que 'participar' significa cosas distintas."))
 if (requireNamespace("DT", quietly = TRUE))
   DT::datatable(metodos, rownames = FALSE,
     options = list(dom = "t", ordering = FALSE), class = "stripe compact")
@@ -416,13 +399,6 @@ es la **descomposición en dos partes** (barrera logística + intensidad log-lin
 siempre verificando convergencia. Se usa **aproximación de Laplace** y se reporta el ICC
 en la escala de la variable latente (pi²/3), con el MOR como complemento en escala de
 odds ratios.
-
-**Machine learning complementario.** Un *gradient boosting* (xgboost) entrenado sobre las
-características del establecimiento (tipo, nivel, dependencia, Servicio de Salud, región,
-pobreza comunal, población) sin usar la identidad del centro. Es **predictivo, no
-causal**: triangula la importancia del tipo y el nivel desde un método no lineal y
-produce un score de riesgo de subregistro para focalización operativa. Importancia
-interpretada con **SHAP**; AUC por validación cruzada de 5 pliegues.
 :::
 
 # Glosario
@@ -598,7 +574,7 @@ res_mapa_int <- tryCatch({
                                                     bringToFront = TRUE)) |>
     leaflet::addLegend("bottomright", pal = pal, values = c(0, 100),
                        title = "Cobertura %", opacity = 0.9)
-  js <- sprintf("\nfunction(el, x) {\n  var map = this;\n  var ssMap = %s;\n  var covMap = %s;\n  var ssList = %s;\n  var greenScale = function(c) {\n    if (c === null || isNaN(c) || c === undefined) return '#e8e8e8';\n    var t = Math.max(0, Math.min(1, c/100));\n    var stops = [[247,252,245],[116,196,118],[0,90,50]];\n    var i = t < 0.5 ? 0 : 1; var u = (t - i*0.5) / 0.5;\n    var r = Math.round(stops[i][0]*(1-u) + stops[i+1][0]*u);\n    var g = Math.round(stops[i][1]*(1-u) + stops[i+1][1]*u);\n    var b = Math.round(stops[i][2]*(1-u) + stops[i+1][2]*u);\n    return 'rgb('+r+','+g+','+b+')';\n  };\n  var wrap = document.createElement('div');\n  wrap.style.cssText = 'padding:6px 4px;background:#fff;border-bottom:1px solid #eee;font-size:13px;';\n  var lbl = document.createElement('label');\n  lbl.textContent = 'Servicio de Salud: ';\n  lbl.style.fontWeight = '600';\n  var sel = document.createElement('select');\n  sel.style.cssText = 'margin-left:6px;padding:3px 6px;min-width:280px;';\n  var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = 'Todos (vista nacional)'; sel.appendChild(opt0);\n  ssList.forEach(function(s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });\n  wrap.appendChild(lbl); wrap.appendChild(sel);\n  el.parentNode.insertBefore(wrap, el);\n  var apply = function(selectedSS) {\n    var b = L.latLngBounds([]);\n    map.eachLayer(function(layer) {\n      if (layer.options && layer.options.layerId && layer.feature) {\n        var ccode = layer.options.layerId;\n        var ss = ssMap[ccode];\n        var cov = covMap[ccode];\n        var inSel = !selectedSS || ss === selectedSS;\n        if (inSel) {\n          layer.setStyle({ fillColor: greenScale(cov), fillOpacity: 0.9, color: 'white', weight: 0.5 });\n          if (selectedSS) { try { b.extend(layer.getBounds()); } catch(e) {} }\n        } else {\n          layer.setStyle({ fillColor: '#dddddd', fillOpacity: 0.25, color: 'white', weight: 0.3 });\n        }\n      }\n    });\n    if (selectedSS && b.isValid()) { map.flyToBounds(b, { padding: [25,25], maxZoom: 9, duration: 0.6 }); }\n    else { map.flyTo([-37, -71], 4.5, { duration: 0.6 }); }\n  };\n  sel.addEventListener('change', function() { apply(sel.value); });\n}\n",
+  js <- sprintf("\nfunction(el, x) {\n  var map = this;\n  var ssMap = %s;\n  var covMap = %s;\n  var ssList = %s;\n  var greenScale = function(c) {\n    if (c === null || isNaN(c) || c === undefined) return '#e8e8e8';\n    var t = Math.max(0, Math.min(1, c/100));\n    var stops = [[247,252,245],[116,196,118],[0,90,50]];\n    var i = t < 0.5 ? 0 : 1; var u = (t - i*0.5) / 0.5;\n    var r = Math.round(stops[i][0]*(1-u) + stops[i+1][0]*u);\n    var g = Math.round(stops[i][1]*(1-u) + stops[i+1][1]*u);\n    var b = Math.round(stops[i][2]*(1-u) + stops[i+1][2]*u);\n    return 'rgb('+r+','+g+','+b+')';\n  };\n  var wrap = document.createElement('div');\n  wrap.style.cssText = 'padding:6px 4px;background:#fff;border-bottom:1px solid #eee;font-size:13px;';\n  var lbl = document.createElement('label');\n  lbl.textContent = 'Servicio de Salud: ';\n  lbl.style.fontWeight = '600';\n  var sel = document.createElement('select');\n  sel.style.cssText = 'margin-left:6px;padding:3px 6px;min-width:280px;';\n  var opt0 = document.createElement('option'); opt0.value = ''; opt0.textContent = 'Todos (vista nacional)'; sel.appendChild(opt0);\n  ssList.forEach(function(s) { var o = document.createElement('option'); o.value = s; o.textContent = s; sel.appendChild(o); });\n  wrap.appendChild(lbl); wrap.appendChild(sel);\n  el.parentNode.insertBefore(wrap, el);\n  var apply = function(selectedSS) {\n    var b = L.latLngBounds([]);\n    map.eachLayer(function(layer) {\n      if (layer.options && layer.options.layerId) {\n        var ccode = layer.options.layerId;\n        var ss = ssMap[ccode];\n        var cov = covMap[ccode];\n        var inSel = !selectedSS || ss === selectedSS;\n        if (inSel) {\n          layer.setStyle({ fillColor: greenScale(cov), fillOpacity: 0.9, color: 'white', weight: 0.5 });\n          if (selectedSS) { try { b.extend(layer.getBounds()); } catch(e) {} }\n        } else {\n          layer.setStyle({ fillColor: '#dddddd', fillOpacity: 0.25, color: 'white', weight: 0.3 });\n        }\n      }\n    });\n    if (selectedSS && b.isValid()) { map.flyToBounds(b, { padding: [25,25], maxZoom: 9, duration: 0.6 }); }\n    else { map.flyTo([-37, -71], 4.5, { duration: 0.6 }); }\n  };\n  sel.addEventListener('change', function() { apply(sel.value); });\n}\n",
                 jsonlite::toJSON(ss_per_comuna,  auto_unbox = TRUE),
                 jsonlite::toJSON(cov_per_comuna, auto_unbox = TRUE),
                 jsonlite::toJSON(ss_list))
@@ -1089,97 +1065,3 @@ res_desc <- tryCatch({
 }, error = function(e) htmltools::HTML("Corre el pipeline."))
 res_desc
 ```
-
-# Machine learning
-## {.sidebar width="340px" .scrollable}
-
-**Cómo leer Machine learning**
-
-**Qué hace y qué dicen los números.** Un *gradient boosting* (xgboost) por sección predice si un centro registra a partir de sus características (tipo, nivel, dependencia, Servicio de Salud, región, pobreza comunal, población), **sin usar la identidad del centro**. Validación cruzada de 5 pliegues da AUC altos: **A `r round(as.numeric(gp_ml("ml_metricas")[bloque=="A", auc_cv]),2)`**, **B `r round(as.numeric(gp_ml("ml_metricas")[bloque=="B", auc_cv]),2)`**, **C `r round(as.numeric(gp_ml("ml_metricas")[bloque=="C", auc_cv]),2)`**. Las características institucionales bastan para separar con alta confianza quién registra. Confirma el peso del establecimiento que mostró el multinivel, desde un método no lineal.
-
-**Importancia (SHAP, los 3 gráficos).** El **tipo** domina en las tres secciones. **Nivel** y **dependencia** aportan en B y C; **Servicio de Salud** y **región** quedan detrás. Las variables comunales (pobreza, población) pesan poco salvo en C, donde la pobreza ya había emergido en el modelo paramétrico: el ML la confirma.
-
-**Score de riesgo (tabla de arriba).** Para cada centro, **1 menos la probabilidad estimada de registrar**. Ordenamos los 15 más riesgosos por sección. La columna "Participó realmente" muestra que el modelo concentra el riesgo en centros que efectivamente NO registraron (urgencias y postas pequeñas). Confirma utilidad operativa y también el límite: el ML aprende lo mismo que sabemos del tipo. Como herramienta de **focalización** sirve: dice qué centros mirar primero.
-
-El módulo es **predictivo, no causal**: triangula el multinivel, no lo reemplaza.
-
-
-## Row {height="16%"}
-
-```{r}
-#| title: "Calidad predictiva del modelo (AUC por validación cruzada)"
-res_ml_met <- tryCatch({
-  m <- gp_ml("ml_metricas"); if (is.null(m)) stop("falta")
-  m[, tema := tema_blq[bloque]]
-  tab <- m[, .(Sección = tema, `AUC (validación cruzada)` = auc_cv,
-               `Centros` = n_establecimientos, `% que participa` = pct_participa)]
-  if (requireNamespace("DT", quietly = TRUE))
-    DT::datatable(tab, rownames = FALSE, options = list(dom = "t", ordering = FALSE),
-                  class = "stripe compact")
-  else knitr::kable(tab)
-}, error = function(e) htmltools::HTML(paste0(
-  "<div style='padding:1rem;opacity:.8'>Instala <code>xgboost</code> ",
-  "(<code>install.packages('xgboost')</code>) y corre el pipeline para ver el módulo de ",
-  "machine learning.</div>")))
-res_ml_met
-```
-
-## Row {height="50%"}
-
-### Column
-
-```{r}
-#| title: "A · OIRS: qué características predicen registrar (SHAP)"
-interactivo(tryCatch(plot_ml_imp("A"), error = function(e) NULL))
-```
-
-### Column
-
-```{r}
-#| title: "B · Participación: importancia de características (SHAP)"
-interactivo(tryCatch(plot_ml_imp("B"), error = function(e) NULL))
-```
-
-### Column
-
-```{r}
-#| title: "C · Satisfacción: importancia de características (SHAP)"
-interactivo(tryCatch(plot_ml_imp("C"), error = function(e) NULL))
-```
-
-## Row {height="32%"}
-
-```{r}
-#| title: "Top 15 establecimientos con mayor riesgo de subregistro (por sección)"
-res_riesgo <- tryCatch({
-  est_l <- if (file.exists(here::here("datos","establecimientos_lookup.rds")))
-            setDT(readRDS(here::here("datos","establecimientos_lookup.rds"))) else NULL
-  filas <- lapply(c("A","B","C"), function(b){
-    r <- gp_ml(sprintf("riesgo_%s", b)); if (is.null(r) || !nrow(r)) return(NULL)
-    r <- r[order(-riesgo_subregistro)][1:15]
-    if (!is.null(est_l) && "Establecimiento" %in% names(est_l))
-      r <- merge(r, est_l[, .(IdEstablecimiento,
-                              Establecimiento = get("Establecimiento"))],
-                 by = "IdEstablecimiento", all.x = TRUE)
-    r[, Sección := paste0(b, " · ", tema_blq[b])]
-    r[]
-  })
-  d <- rbindlist(filas, fill = TRUE)
-  if (is.null(d) || !nrow(d)) stop("falta")
-  tab <- d[, .(Sección,
-               Establecimiento = if ("Establecimiento" %in% names(d)) Establecimiento else NA_character_,
-               Tipo = tipo, IdEstab = IdEstablecimiento, IdComuna,
-               `Riesgo (1 − p)` = riesgo_subregistro,
-               `Participó realmente` = participa_real)]
-  if (requireNamespace("DT", quietly = TRUE))
-    DT::datatable(tab, rownames = FALSE,
-      options = list(dom = "ftp", pageLength = 15, scrollX = TRUE,
-                     order = list(list(5, "desc"))),
-      class = "stripe hover compact")
-  else knitr::kable(tab)
-}, error = function(e) htmltools::HTML(paste0(
-  "<div style='padding:1rem;opacity:.8'>Para la tabla de riesgo corre el módulo ML ",
-  "(<code>source('R/11_ml.R')</code>). Detalle: ", conditionMessage(e), "</div>")))
-res_riesgo
-```
-
