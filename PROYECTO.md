@@ -13,8 +13,8 @@ El A19b tiene tres familias de actividad distintas; se analizan **sección por
 sección** (bloques A, B y C) con un motor reutilizable, y se sintetizan en
 indicadores de **auditoría social** con denominador poblacional.
 
-- Repo: https://github.com/Arleq89/participacion-salud-rem
-- Dashboard: https://arleq89.github.io/participacion-salud-rem/
+- Repo: https://github.com/javierverabravo/participacion-salud-rem
+- Dashboard: https://javierverabravo.github.io/participacion-salud-rem/
 
 **Tesis:** la decisión de registrar es un rasgo **institucional** (del
 establecimiento) en las tres secciones, pero el **territorio y la pobreza no

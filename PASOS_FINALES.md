@@ -36,7 +36,7 @@ git push
 
 GitHub Pages sirve `docs/` de la rama main (Settings > Pages > main > /docs;
 activarlo una sola vez). El sitio queda en
-https://arleq89.github.io/participacion-salud-rem/
+https://javierverabravo.github.io/participacion-salud-rem/
 
 ## 4. Si el mapa de Territorio falla
 

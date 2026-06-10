@@ -1,13 +1,13 @@
 ---
 title: "Participación Ciudadana en Salud · REM-A19b Chile 2025"
-author: "Javier Vera Bravo · @Arleq89"
+author: "Javier Vera Bravo · @javierverabravo"
 format:
   dashboard:
     theme: [cosmo, custom.scss]
     scrolling: true
     nav-buttons:
       - icon: github
-        href: https://github.com/Arleq89/participacion-salud-rem
+        href: https://github.com/javierverabravo/participacion-salud-rem
 execute:
   echo: false
   warning: false
@@ -382,6 +382,8 @@ Las pestañas inferiores muestran la **estacionalidad** (baja en enero y febrero
 **Var. comuna %**: qué parte de las diferencias se explica por la comuna donde está el centro: `r comp[bloque=="A", var_comuna_pct]`% en A, `r comp[bloque=="B", var_comuna_pct]`% en B, `r comp[bloque=="C", var_comuna_pct]`% en C.
 
 **OR pobreza**: mide si la pobreza de la comuna cambia la probabilidad de registrar. Solo importa en C (OR `r round(comp[bloque=="C", OR_pobreza_x10pp],2)`): por cada 10 puntos más de pobreza, la probabilidad cae un 42%. Los asteriscos *** marcan resultados estadísticamente sólidos (p<0,001); "(n.s.)" indica que la diferencia podría ser azar.
+
+**Fuente y vigencia**: datos abiertos del DEIS-MINSAL. Las series REM 2025 y 2026 son **preliminares**: el DEIS las actualiza en fechas no determinadas, por lo que las cifras pueden variar entre versiones. Este tablero usa la versión descargada al momento del análisis y se regenera completo al re-correr el pipeline.
 
 ## Row
 
@@ -1232,6 +1234,10 @@ Cada cifra proviene de un **pipeline reproducible** que cualquiera puede correr 
 
 Las tablas quedan en `productos/{A,B,C,sintesis}/` y son **lo único que lee este
 tablero**. El sitio se regenera corriendo el pipeline y `quarto render`.
+
+**Vigencia de los datos**: las series REM 2025 y 2026 que publica el DEIS son
+**preliminares** y se actualizan en fechas no determinadas; las cifras pueden
+variar entre versiones. El pipeline regenera todo el análisis con una corrida.
 :::
 
 ### Column {width="50%"}

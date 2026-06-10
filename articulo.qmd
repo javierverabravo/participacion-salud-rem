@@ -1,7 +1,7 @@
 ---
 title: "Participación ciudadana en salud en Chile: un análisis por secciones del REM-A19b (2025)"
 subtitle: "Informe técnico con énfasis en la fundamentación metodológica"
-author: "Javier Vera Bravo · Salud Pública, Chile · @Arleq89"
+author: "Javier Vera Bravo · Salud Pública, Chile · @javierverabravo"
 date: 2026-06-02
 lang: es
 format:
@@ -76,7 +76,9 @@ de **auditoría social** con denominador poblacional.
 # Datos y materiales
 
 **Fuente primaria.** Resúmenes Estadísticos Mensuales (REM) 2025 del DEIS-MINSAL, serie A,
-sección A19b. Tras el procesamiento se obtienen 140.507 registros de participación y una
+sección A19b. Las series 2025 y 2026 se publican con carácter **preliminar** y el DEIS las
+actualiza en fechas no determinadas; este informe usa la versión vigente al momento de la
+descarga y el pipeline permite regenerar todas las cifras ante una actualización. Tras el procesamiento se obtienen 140.507 registros de participación y una
 tabla larga de 1.884.628 filas. El crosswalk de prestaciones identifica **93 códigos A19b
 activos**, repartidos en cinco sub-secciones con layout propio: A (45 códigos), B.1 (12),
 B.2 (14), C.1 (12) y C.2 (10).
@@ -331,7 +333,8 @@ El dato no permite distinguir **ausencia real de actividad** de **omisión admin
 un cero puede ser cualquiera de las dos. El A19b reporta **instancias y demografía por
 separado**, de modo que no es posible cruzar "qué instancia" con "perfil de participante".
 El denominador FONASA es un **corte de diciembre 2025** y se mapea por nombre de comuna al
-98 % (quedan fuera algunas comunas menores). Finalmente, este es un documento técnico que
+98 % (quedan fuera algunas comunas menores). Las series REM 2025 y 2026 son **preliminares**:
+el DEIS las actualiza en fechas no determinadas y las cifras pueden variar entre versiones. Finalmente, este es un documento técnico que
 acompaña al repositorio y **no constituye una publicación revisada por pares**.
 
 # Reproducibilidad
@@ -341,7 +344,7 @@ Todo el pipeline se ejecuta con `source("R/10_run_all.R")` y deja las tablas en
 `00` descarga REM y establecimientos · `01` crosswalk A19b y panel · `02` CASEN 2024 ·
 `03` denominador FONASA (subida manual) · `04` motor · `05` indicadores · `06/07/08` bloques
 A/B/C · `09` síntesis · `10` maestro. El REM se descarga automáticamente; el archivo FONASA
-se coloca a mano. Dashboard en vivo: <https://arleq89.github.io/participacion-salud-rem/>.
+se coloca a mano. Dashboard en vivo: <https://javierverabravo.github.io/participacion-salud-rem/>.
 
 # Referencias {.unnumbered}
 

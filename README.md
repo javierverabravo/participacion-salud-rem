@@ -2,9 +2,9 @@
 
 > Análisis reproducible de la participación ciudadana en la red pública de salud de Chile, a partir de los Resúmenes Estadísticos Mensuales (REM) del DEIS-MINSAL. Todo el procesamiento está en R; el resultado es un tablero web y un informe técnico.
 >
-> **Autor:** Javier Vera Bravo · [@Arleq89](https://github.com/Arleq89) · **Datos:** REM 2025 (DEIS-MINSAL).
+> **Autor:** Javier Vera Bravo · [@javierverabravo](https://github.com/javierverabravo) · **Datos:** REM 2025 (DEIS-MINSAL).
 >
-> 📊 **Dashboard en vivo:** <https://arleq89.github.io/participacion-salud-rem/>
+> 📊 **Dashboard en vivo:** <https://javierverabravo.github.io/participacion-salud-rem/>
 
 Este documento no es solo una guía de instalación. Está escrito para que **otra persona pueda entender cómo se construyó el proyecto de principio a fin**: qué preguntas lo motivaron, qué encontramos al abrir los datos, qué decisiones cambiaron las conclusiones, qué caminos probamos y descartamos, y qué aprendimos en el camino. Si vienes llegando, léelo como una historia; si vienes a reproducirlo, salta a [Cómo reproducir todo](#cómo-reproducir-todo).
 
@@ -41,6 +41,8 @@ Para responderla había que pasar de un formulario administrativo de millones de
 ## Capítulo 1 · Abrir los datos (y la primera sorpresa)
 
 El REM se descarga del [repositorio de datos abiertos del DEIS](https://repositoriodeis.minsal.cl/) (el listado de carpetas está deshabilitado, pero los ZIP se bajan directo, p. ej. `https://repositoriodeis.minsal.cl/DatosAbiertos/REM/SERIE_REM_2025.zip`) como un ZIP anual (~153 MB) con cinco series CSV (A, BS, BM, P, D) y los diccionarios. La participación vive casi toda en la **Serie A** (~7,1 millones de filas, 738 MB), donde cada fila es un establecimiento × mes × prestación, con 50 columnas de valores (`Col01`…`Col50`).
+
+**Una salvedad sobre la vigencia de los datos:** el DEIS publica las series 2025 y 2026 con carácter **preliminar** y las actualiza en fechas no determinadas. Las cifras de este análisis corresponden a la versión descargada al momento de correr el pipeline y pueden variar con futuras actualizaciones; por lo mismo, todo el flujo es regenerable con una sola corrida.
 
 Lo que descubrimos al caracterizar las celdas también marcó el rumbo: en las columnas de la Serie A, **~39 % están vacías (NA), ~24 % son ceros y ~37 % son positivas**. Esa mezcla de NA, cero real y positivo es justamente el corazón del problema del subregistro (Capítulo 3).
 

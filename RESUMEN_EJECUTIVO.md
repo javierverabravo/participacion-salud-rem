@@ -1,7 +1,7 @@
 # Participación ciudadana en salud (REM-A19b 2025), Resumen ejecutivo
 
-**Autor:** Javier Vera Bravo · Salud Pública, Chile ([@Arleq89](https://github.com/Arleq89))
-**Dashboard:** https://arleq89.github.io/participacion-salud-rem/ · **Repo:** https://github.com/Arleq89/participacion-salud-rem
+**Autor:** Javier Vera Bravo · Salud Pública, Chile ([@javierverabravo](https://github.com/javierverabravo))
+**Dashboard:** https://javierverabravo.github.io/participacion-salud-rem/ · **Repo:** https://github.com/javierverabravo/participacion-salud-rem
 **Datos:** Resúmenes Estadísticos Mensuales (REM) 2025, DEIS-MINSAL · 2.982 establecimientos de la red pública.
 
 ---
