@@ -378,8 +378,13 @@ subsecciones_bloque <- function(largo, part, blq, dirb) {
     inst[, clase := clase_instancia(etiqueta)]
     fwrite(inst, file.path(dirb, "sub_b1_instancias.csv"), sep = ";", bom = TRUE)
     # Reparto de la actividad por clase (deliberativa / TICs / Otras).
-    clase_tot <- inst[, .(actividades = sum(actividades), n_estab = sum(n_estab)),
-                      by = clase][order(-actividades)]
+    # n_estab por clase = establecimientos UNICOS (sumar por instancia los
+    # contaria varias veces y puede superar el total de la red).
+    lg_cl <- largo[seccion_key == "B.1" & dimension == "instancia" & valor > 0]
+    lg_cl[, clase := clase_instancia(etiqueta)]
+    cl_estab <- lg_cl[, .(n_estab = uniqueN(IdEstablecimiento)), by = clase]
+    clase_tot <- inst[, .(actividades = sum(actividades)), by = clase]
+    clase_tot <- merge(clase_tot, cl_estab, by = "clase", all.x = TRUE)[order(-actividades)]
     clase_tot[, pct_actividades := round(100 * actividades / sum(actividades), 1)]
     fwrite(clase_tot, file.path(dirb, "sub_b1_clase.csv"), sep = ";", bom = TRUE)
     # KPIs del NUCLEO DELIBERATIVO (excluye TICs y "Otras"), para no inflar la cifra.
@@ -390,12 +395,25 @@ subsecciones_bloque <- function(largo, part, blq, dirb) {
     act_tot   <- max(lg1[, sum(valor, na.rm = TRUE)], 1)
     act_tics  <- lg1[clase == "Informativa (TICs)", sum(valor, na.rm = TRUE)]
     act_otr   <- lg1[clase == "Inespecifica (Otras)", sum(valor, na.rm = TRUE)]
+    # Denominador de RED COMPLETA (establecimientos_activos de kpis.csv, ya
+    # escrito por kpis_bloque). El denominador "solo participantes" sobreestima
+    # la cobertura deliberativa; se reportan ambos, etiquetados sin ambiguedad.
+    estab_red <- {
+      kf <- file.path(dirb, "kpis.csv")
+      if (file.exists(kf)) {
+        kk <- fread(kf, sep = ";", encoding = "UTF-8")
+        as.numeric(kk[indicador == "establecimientos_activos", valor][1])
+      } else NA_real_
+    }
     fwrite(data.table(
-      indicador = c("cobertura_deliberativa_pct", "establecimientos_deliberativos",
+      indicador = c("cobertura_deliberativa_pct",
+                    "cobertura_deliberativa_entre_participantes_pct",
+                    "establecimientos_deliberativos",
                     "actividades_deliberativas", "intensidad_deliberativa",
                     "pct_actividades_deliberativas", "pct_actividades_tics",
                     "pct_actividades_otras"),
-      valor = c(round(100 * estab_del / max(n_estab_total, 1), 1), estab_del,
+      valor = c(round(100 * estab_del / max(estab_red, 1, na.rm = TRUE), 1),
+                round(100 * estab_del / max(n_estab_total, 1), 1), estab_del,
                 act_del, round(act_del / max(estab_del, 1), 1),
                 round(100 * act_del / act_tot, 1),
                 round(100 * act_tics / act_tot, 1),

@@ -5,13 +5,12 @@
     - "scss:defaults": variables que se definen ANTES de Bootstrap (colores,
       tipografías). Cambiarlas reestiliza todo de forma coherente.
     - "scss:rules": CSS propio que se aplica DESPUÉS (ajustes finos).
-  No requiere conocer SCSS a fondo: basta cambiar los valores de color.
 -----------------------------------------------------------------------------*/
 
 /*-- scss:defaults --*/
 
 // Paleta institucional (azul-verde sobrio, tono salud pública).
-$primary:   #0f6e8c;   // color principal (KPIs, enlaces, barra superior)
+$primary:   #0f6e8c;
 $info:      #2a9d8f;
 $secondary: #6c7a89;
 $success:   #2a9d8f;
@@ -22,7 +21,6 @@ $body-color:       #1f2933;
 $link-color:       $primary;
 $border-radius:    .55rem;
 
-// Tipografía: Inter para texto, con respaldo del sistema.
 $font-family-sans-serif: "Inter", "Source Sans Pro", system-ui, -apple-system,
   "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 $h1-font-size: 1.55rem;
@@ -31,13 +29,12 @@ $h1-font-size: 1.55rem;
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-// ---- Portada / hero (tesis del proyecto, arriba del todo) -------------------
+// ---- Portada / hero ---------------------------------------------------------
 .card.hero {
   background: linear-gradient(100deg, #0f6e8c 0%, #11808a 55%, #2a9d8f 100%);
   border: none;
   color: #fff;
 }
-// Banner compacto: padding chico para que ocupe poca altura (10% del Resumen).
 .card.hero .card-body { padding: .35rem 1rem; }
 .hero-box { display: flex; flex-direction: column; justify-content: center;
   height: 100%; }
@@ -51,8 +48,6 @@ $h1-font-size: 1.55rem;
 .hero-thesis strong { color: #ffe9b8; font-weight: 700; }
 
 // ---- Value boxes (KPIs) -----------------------------------------------------
-// Compactos: bajar font-size para que el valor no domine la pantalla y queden
-// más respiro para los gráficos. Ajustes finos en padding también.
 .value-box { box-shadow: 0 1px 3px rgba(15,23,42,.10); }
 .value-box .value-box-area { padding: .55rem .8rem; }
 .value-box .value-box-title { font-size: .78rem; opacity: .88; }
@@ -60,6 +55,9 @@ $h1-font-size: 1.55rem;
   font-weight: 700;
   font-size: clamp(1.4rem, 2.3vw, 2.1rem) !important;
   line-height: 1.05;
+  white-space: nowrap;          // nunca cortar un número en dos líneas
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .value-box .value-box-showcase { font-size: 1.5rem; padding: .2rem .5rem; }
 .value-box-showcase i { opacity: .85; }
@@ -69,8 +67,27 @@ $h1-font-size: 1.55rem;
 .card { box-shadow: 0 1px 3px rgba(15,23,42,.06); }
 .card-header { font-weight: 600; }
 
+// Pestañas dentro de tarjetas: compactas y con scroll horizontal si no caben.
+.card .nav-tabs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+}
+.card .nav-tabs .nav-link {
+  font-size: .82rem;
+  padding: .4rem .7rem;
+  white-space: nowrap;
+}
+
 // Tablas DT un poco más legibles.
 table.dataTable td, table.dataTable th { font-size: .85rem; }
+
+// ---- Términos con definición al pasar el mouse ------------------------------
+.gl {
+  border-bottom: 1px dotted rgba(15,110,140,.55);
+  cursor: help;
+}
 
 // ---- Separador lectura rápida / detalles técnicos ---------------------------
 .sidebar-sep {
@@ -87,11 +104,6 @@ table.dataTable td, table.dataTable th { font-size: .85rem; }
   margin-bottom: .35rem;
 }
 
-// ---- Semáforo regional ------------------------------------------------------
-.semaforo-verde  { background-color: #c8e6c9 !important; }
-.semaforo-amarillo { background-color: #fff9c4 !important; }
-.semaforo-rojo   { background-color: #ffcdd2 !important; }
-
 // ---- Callout equidad (OR pobreza C) ----------------------------------------
 .callout-equidad {
   border-left: 4px solid #c1495b;
@@ -105,14 +117,13 @@ table.dataTable td, table.dataTable th { font-size: .85rem; }
 
 // ---- Responsive: móvil y tablet (max 991px) --------------------------------
 
-// Sidebar colapsable en pantallas medianas y pequeñas.
 @media (max-width: 991px) {
   .bslib-sidebar-layout {
     flex-direction: column !important;
   }
   .bslib-sidebar-layout > .bslib-sidebar {
     width: 100% !important;
-    max-height: 220px;
+    max-height: 35vh;
     overflow-y: auto;
     font-size: .82rem;
     border-bottom: 1px solid rgba(15,110,140,.15);
@@ -128,15 +139,19 @@ table.dataTable td, table.dataTable th { font-size: .85rem; }
     flex: 1 1 48% !important;
   }
   .value-box .value-box-value {
-    font-size: 1.3rem !important;
+    font-size: 1.25rem !important;
   }
-  // Ocultar el ícono decorativo para ganar espacio vertical.
   .value-box .value-box-showcase {
     display: none !important;
   }
   .value-box .value-box-area {
     padding: .4rem .6rem !important;
   }
+  // Tarjetas y márgenes más compactos.
+  .card .card-body { padding: .5rem !important; }
+  .callout-equidad { font-size: .82rem; }
+  // El hero no necesita tanto aire en móvil.
+  .card.hero .card-body { padding: .3rem .7rem; }
 }
 
 // Navbar más compacto en móvil.
@@ -149,5 +164,7 @@ table.dataTable td, table.dataTable th { font-size: .85rem; }
 #sel_ss {
   font-size: 16px;
   max-width: 100%;
-  width: 100%;
+}
+@media (max-width: 767px) {
+  #sel_ss { width: 100%; }
 }

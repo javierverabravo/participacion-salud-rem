@@ -1,63 +1,45 @@
-# Runbook, probar el flujo y publicar
+# Runbook vigente
 
-Ejecuta en orden. Terminal de Positron (PowerShell) salvo donde diga consola de R.
+Pasos habituales del proyecto, en orden. Terminal de Positron salvo donde diga
+consola de R.
 
-## 1. Arreglar el índice de git (está corrupto)
+## 1. Re-correr el pipeline (solo si cambiaron datos o scripts de R/)
 
-```powershell
-Remove-Item .git\index
-git reset
-git status
-```
+En la consola de R, desde la raíz:
 
-## 2. Renumerar los scripts a consecutivo (git mv conserva el historial)
-
-El contenido (llamadas `source()`, workflow, docs) ya quedó apuntando a los nombres
-nuevos; falta renombrar los archivos. Hazlo en este orden:
-
-```powershell
-git mv R/10_engine.R     R/04_engine.R
-git mv R/11_indicadores.R R/05_indicadores.R
-git mv R/20_analisis_A.R R/06_analisis_A.R
-git mv R/21_analisis_B.R R/07_analisis_B.R
-git mv R/22_analisis_C.R R/08_analisis_C.R
-git mv R/30_sintesis.R   R/09_sintesis.R
-git mv R/99_run_all.R    R/10_run_all.R
-```
-
-Esquema final: `00`-`03` datos · `04` motor · `05` indicadores · `06/07/08` bloques
-A/B/C · `09` síntesis · `10` maestro.
-
-## 3. Limpiar temporales
-
-```powershell
-Remove-Item R\_probe.txt, _idx_clean.qmd, _testwrite.txt -ErrorAction SilentlyContinue
-```
-
-## 4. Probar el flujo
-
-Humo rápido (que cargue sin error, sin re-correr 70 min) en la **consola de R**:
 ```r
-library(here)
-for (f in c("04_engine.R","05_indicadores.R")) source(here("R", f))  # deben cargar sin error
+source("R/10_run_all.R")   # exacto por defecto, ~60 a 70 min con paralelo
 ```
 
-Corrida completa (cuando avisemos que el modelo nuevo está listo), en consola de R:
-```r
-source("R/10_run_all.R")   # ~70 min; regenera productos/{A,B,C,sintesis}/
-```
+Flags opcionales antes del source: `REM_FAST="1"` (rápido ~4 min, solo para
+iterar; los ICC salen algo menores), `REM_SENS="0"` (omite sensibilidad),
+`REM_PAR="0"` (secuencial), `REM_DEP="1"` (incluye dependencia en la
+descomposición).
 
-## 5. Renderizar el dashboard
+Sanity check tras una corrida exacta: ICC barrera A ~93,9 / B ~65,8 / C ~74,3
+en `productos/{A,B,C}/modelo_icc.csv`.
+
+## 2. Renderizar
 
 ```powershell
-quarto render
+quarto render                  # dashboard -> docs/
+quarto render articulo.qmd     # informe tecnico -> articulo.pdf
 ```
-Abre `docs/index.html`: pestañas Resumen · A · B · C · Síntesis · Metodología · Glosario.
 
-## 6. Subir a GitHub
+## 3. Publicar
 
 ```powershell
 git add -A
-git commit -m "Renumeración consecutiva de scripts (00-10); refs y docs actualizadas"
+git commit -m "mensaje"
 git push
+```
+
+GitHub Pages sirve `docs/` de la rama main (Settings > Pages > main > /docs;
+activarlo una sola vez). El sitio queda en
+https://arleq89.github.io/participacion-salud-rem/
+
+## 4. Si el mapa de Territorio falla
+
+```r
+source("R/diag_mapa.R")   # imprime PASO a PASO; el ultimo paso indica la falla
 ```

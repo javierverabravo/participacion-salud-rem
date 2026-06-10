@@ -16,16 +16,17 @@ participan menos. Los datos dicen otra cosa.
 
 Tres hallazgos:
 
-, El 63% de los establecimientos registra alguna participación, pero hay un 54% de
-subregistro a nivel establecimiento-mes. Buena parte del "no participa" es en
-realidad "no se registra".
+1. La cobertura difiere por sección: 49,9% de los establecimientos registra OIRS,
+51,1% participación social y solo 24,4% satisfacción usuaria, con subregistro
+establecimiento-mes de 60%, 72% y 92% respectivamente. Buena parte del "no
+participa" es en realidad "no se registra".
 
-, Casi la mitad de la variación (49%) nace en el propio establecimiento; la región
-explica apenas ~1%. La participación no forma clústeres territoriales.
+2. La variación nace en el propio establecimiento (ICC de la barrera 66 a 94%
+según sección); la región explica ~1%.
 
-, La pobreza comunal NO predice la participación de forma significativa. Lo
-decisivo no es la geografía ni el nivel socioeconómico, sino el establecimiento y
-su gestión local.
+3. La pobreza comunal NO predice el registro, salvo en satisfacción usuaria: en
+comunas con 10 puntos más de pobreza la probabilidad de registrar satisfacción
+cae un 42%. Lo decisivo es el establecimiento y su gestión local.
 
 Conclusión: la participación ciudadana en salud es un fenómeno **institucional**,
 no territorial. Eso cambia dónde conviene intervenir para reducir el subregistro:
@@ -33,7 +34,7 @@ en establecimientos y tipos concretos (urgencias y postas quedan muy por debajo
 por diseño), no en regiones tratadas como un todo.
 
 Todo es reproducible y abierto: datos oficiales, código en R y un dashboard
-interactivo que se actualiza solo cada mes.
+interactivo.
 
 Dashboard en vivo 👉 https://arleq89.github.io/participacion-salud-rem/
 
@@ -48,9 +49,9 @@ comentarios.
 ## Versión corta (para reposts o comentario)
 
 La participación ciudadana en salud en Chile es un fenómeno institucional, no
-territorial: el establecimiento explica ~49% de la variación y la región solo ~1%,
-y la pobreza comunal no la predice. 140.507 registros de los REM 2025, análisis
-reproducible y dashboard que se actualiza solo.
+territorial: el establecimiento domina la variación (ICC 66 a 94%) y la región explica ~1%;
+la pobreza comunal solo predice el registro de satisfacción usuaria. 140.507
+registros de los REM 2025, análisis reproducible y dashboard interactivo.
 👉 https://arleq89.github.io/participacion-salud-rem/
 
 ---

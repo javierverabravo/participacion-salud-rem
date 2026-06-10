@@ -67,9 +67,9 @@ Para pasar de códigos a significado hubo que **construir dos crosswalks a mano*
 
 ## Capítulo 3 · El hallazgo que cambió todo: dónde está el subregistro
 
-La intuición inicial era que el subregistro estaría en las **celdas vacías** (NA) dentro de las filas. Al revisarlo, resultó falso: solo ~0,7 % de los valores totales son NA. **El subregistro está en las filas que no existen**: de 2.983 establecimientos, solo ~1.882 registran alguna participación y ~1.100 **nunca** aparecen.
+La intuición inicial era que el subregistro estaría en las **celdas vacías** (NA) dentro de las filas. Al revisarlo, resultó falso: solo ~0,7 % de los valores totales son NA. **El subregistro está en las filas que no existen**: de 2.982 establecimientos, solo ~1.882 registran alguna participación y ~1.100 **nunca** aparecen.
 
-Esto obligó a un cambio metodológico de fondo: no basta con leer las filas que están; hay que **reconstruir el panel completo establecimiento × mes** y comparar contra lo efectivamente reportado. Un *panel* es, simplemente, una tabla con **una fila por cada combinación posible de establecimiento y mes** del año (los 2.983 establecimientos por los 12 meses): es el "universo" de quién pudo haber registrado en cada mes, e incluye también las filas que deberían existir y no están. Y una regla de oro que se mantuvo en todo el pipeline: **nunca colapsar NA a 0**, porque "no sabemos" y "fue cero" son cosas distintas que el modelo debe tratar aparte.
+Esto obligó a un cambio metodológico de fondo: no basta con leer las filas que están; hay que **reconstruir el panel completo establecimiento × mes** y comparar contra lo efectivamente reportado. Un *panel* es, simplemente, una tabla con **una fila por cada combinación posible de establecimiento y mes** del año (los 2.982 establecimientos por los 12 meses): es el "universo" de quién pudo haber registrado en cada mes, e incluye también las filas que deberían existir y no están. Y una regla de oro que se mantuvo en todo el pipeline: **nunca colapsar NA a 0**, porque "no sabemos" y "fue cero" son cosas distintas que el modelo debe tratar aparte.
 
 Resultado del panel: ~60 % de las combinaciones establecimiento-mes están ausentes en OIRS, ~72 % en participación social y ~92 % en satisfacción. Con intermitencia alta (mediana de 3 de 12 meses registrados por par establecimiento-prestación).
 
@@ -110,7 +110,7 @@ Las piezas encajan en una conclusión coherente: **la participación es un fenó
 - **La dependencia administrativa NO marca diferencia.** Probamos explícitamente si quién administra el establecimiento (municipal vs. servicio de salud) explica la varianza: una vez conocidos tipo y nivel, la dependencia añade prácticamente nada (≤ 0,7 pp) y sus coeficientes salen no significativos. Era una hipótesis razonable, y el dato la rechaza.
 - **OIRS no es "reclamos".** Dominan abrumadoramente las **consultas** (16,8 millones) frente a reclamos (138 mil) y felicitaciones (142 mil). La razón felicitaciones/reclamos real es ≈ 1,03. Presentar A como "reclamos" distorsiona; cada tipo de solicitud se entiende en su propia escala.
 - **Las líneas de acción son más inclusivas que las instancias.** En equidad por subsección, B.2 y C.2 registran mucha más participación de pueblos originarios y migrantes (8 % y ~5 %) que B.1 y C.1 (~2 % y ~1 %). La inclusión étnica/migrante vive en una subsección concreta.
-- **La participación social está inflada por TICs y un cajón de sastre.** Dos categorías que no son deliberación, "Uso de TICs y/o Redes Sociales" (un canal de comunicación) y "Otras Instancias" (inespecífica), suman cerca del **74 %** de las actividades de B.1. El núcleo deliberativo real (consejos, cabildos, CDL, COSOC, indígena, jóvenes) es la minoría, de modo que la cobertura de cabecera sobreestima la deliberación efectiva. El análisis separa ambas: cobertura total frente a cobertura del núcleo deliberativo.
+- **La participación social está inflada por TICs y un cajón de sastre.** Dos categorías que no son deliberación, "Uso de TICs y/o Redes Sociales" (un canal de comunicación) y "Otras Instancias" (inespecífica), suman cerca del **74 %** de las actividades de B.1. El núcleo deliberativo real (consejos, cabildos, CDL, COSOC, indígena, jóvenes) es la minoría, de modo que la cobertura de cabecera sobreestima la deliberación efectiva. El análisis separa ambas: cobertura total (51,1 %) frente a cobertura del núcleo deliberativo, que alcanza 1.331 establecimientos (44,6 % de la red).
 
 **Implicancias de política:** fijar metas de registro **por establecimiento y tipo**, no por región; usar los **Servicios de Salud** como unidad de mejora; **validar la sección de participación social** en el instrumento (hoy sin regla de consistencia, lo que habilita subregistro); **separar el registro deliberativo del canal informativo (TICs)** para no sobreestimar la participación; y atender el **sesgo socioeconómico específico de satisfacción usuaria**.
 
@@ -139,7 +139,7 @@ Requisitos: **R ≥ 4.3** y, para publicar el tablero, **Quarto**. Paquetes: `he
 source("R/10_run_all.R") # pipeline completo: datos -> productos/
 ```
 
-Los bloques A/B/C corren **en paralelo** (con respaldo secuencial automático si el cluster falla) y los modelos mixtos usan `nAGQ = 0`, lo que baja el tiempo de ~110 min a ~30 a 40 min en un equipo de varios núcleos. Se puede ajustar con variables de entorno antes del `source`:
+Los bloques A/B/C corren **en paralelo** (con respaldo secuencial automático si el cluster falla), lo que baja la corrida exacta de ~110 a ~60 a 70 min en un equipo de varios núcleos. Por defecto los modelos mixtos se ajustan en modo **exacto** (`nAGQ = 1`, cifras publicables); el modo rápido (`nAGQ = 0`, ~4 min) es solo para iterar durante el desarrollo. Se ajusta con variables de entorno antes del `source`:
 
 ```r
 Sys.setenv(REM_PAR = "0") # "1" paralelo (def) | "0" secuencial
@@ -217,4 +217,5 @@ El orden mental es: **datos** (`00` a `03`) alimentan el **motor** (`04` a `05`)
 3. **Un modelo que no converge no es un modelo.** Revisa dispersión, errores estándar y Hessiana; ten lista una alternativa estable (aquí, descomponer el hurdle en barrera + intensidad).
 4. **Separa ceros estructurales de subregistro.** No es lo mismo "una urgencia que por diseño no participa" que "un CESFAM que dejó de registrar".
 5. **Prueba tus hipótesis y acepta cuando el dato las rechaza** (la dependencia administrativa no explicaba nada: bien saberlo).
-6. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia
+6. **Diseña el tablero para quien no es experto.** Doble glosario, tooltips, una sección por lógica propia y guías de lectura al lado de cada página. Si el lector necesita el glosario para entender un gráfico, el gráfico estaba mal explicado.
+7. **Documenta también los resultados nulos.** Que la dependencia administrativa y el Servicio de Salud no expliquen varianza es un hallazgo, no un fracaso: acota dónde intervenir.
