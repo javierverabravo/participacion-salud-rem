@@ -28,6 +28,8 @@ Para que cada número se entienda al aparecer, un mini glosario:
 
 ## La pregunta que originó el proyecto
 
+Este proyecto nació de mi tesis del **Magíster en Bioestadística** (Universidad de Chile): un diseño muestral para evaluar a nivel nacional la participación ciudadana en salud usando las series REM del DEIS. Trabajando esos datos aparecieron las dificultades que definen a este instrumento, una multitud de prestaciones heterogéneas y un subregistro que vive en las filas que no existen, y que en su momento parecían solo obstáculos. Con el tiempo entendí que eran hallazgos en sí mismas, y que el instrumento había mejorado lo suficiente (hoy se reportan muchas más prestaciones de participación, con mayor detalle) como para justificar un análisis completo. Este repositorio, mi primera publicación en GitHub, es el resultado: un proyecto personal y la primera pieza de un portafolio en construcción.
+
 La Ley 20.500 y la Norma General de Participación Ciudadana obligan a los establecimientos de salud a abrir espacios de participación: oficinas de reclamos (OIRS), consejos de desarrollo local, cabildos, mediciones de satisfacción usuaria. Todo eso se reporta mes a mes en el REM, sección **A19b**.
 
 La pregunta de partida fue simple de enunciar y difícil de responder: **¿dónde "vive" la variación de la participación?** ¿Participa más una comuna que otra por ser más pobre, más rural, de cierta región? ¿O la diferencia está en el establecimiento mismo y en cómo se gestiona? Saber esto cambia la política pública: si el problema es territorial, se interviene por región; si es institucional, se interviene establecimiento por establecimiento.

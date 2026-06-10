@@ -1,5 +1,5 @@
 # ============================================================
-# .gitignore — Proyecto Participación en Salud (REM MINSAL)
+# .gitignore, Proyecto Participación en Salud (REM MINSAL)
 # Qué archivos NO debe rastrear ni subir Git a GitHub.
 # ============================================================
 
@@ -45,3 +45,6 @@ secrets*
 Beneficiarios*.csv
 *eneficiarios*.csv
 fonasa*.csv
+
+# --- Difusión (material personal: posts, gráficos, brief; no se publica) ---
+difusion/
