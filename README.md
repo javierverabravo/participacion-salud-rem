@@ -159,6 +159,27 @@ quarto render articulo.qmd # genera el informe técnico en PDF
 
 El archivo **FONASA** (`Beneficiarios 2025.csv`) debe estar en la raíz o en `datos/externos/` antes de correr (no tiene descarga automática estable). Todo lo demás (REM y CASEN) se descarga solo.
 
+### El flujo del proyecto, de un vistazo
+
+```mermaid
+flowchart TD
+    A["DEIS-MINSAL<br/>REM 2025 (Serie A)"] -- "00_descarga.R" --> B["Datos crudos<br/>+ base de establecimientos"]
+    B -- "01_procesamiento.R<br/>crosswalk A19b + panel" --> E["Panel completo<br/>establecimiento x mes"]
+    C["CASEN 2024<br/>pobreza comunal"] -- "02_datos_comunales.R" --> E
+    D["FONASA<br/>beneficiarios por comuna"] -- "03_fonasa_inscritos.R" --> E
+    E --> F{"04_engine.R<br/>motor analitico comun"}
+    F -- "06_analisis_A.R" --> GA["productos/A<br/>OIRS"]
+    F -- "07_analisis_B.R" --> GB["productos/B<br/>Participacion social"]
+    F -- "08_analisis_C.R" --> GC["productos/C<br/>Satisfaccion usuaria"]
+    GA --> H["09_sintesis.R + 05_indicadores.R<br/>productos/sintesis"]
+    GB --> H
+    GC --> H
+    H --> I["index.qmd<br/>dashboard web (docs/)"]
+    H --> J["articulo.qmd<br/>informe tecnico (PDF)"]
+```
+
+GitHub dibuja este diagrama automáticamente al abrir el README (es un bloque Mermaid, no una imagen). La regla de oro del flujo: las flechas solo avanzan hacia `productos/`, y el dashboard y el artículo **solo leen** de ahí; nunca tocan los datos crudos.
+
 ### El pipeline, paso a paso
 
 | Script | Qué hace |
