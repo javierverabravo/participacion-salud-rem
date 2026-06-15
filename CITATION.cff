@@ -1,0 +1,31 @@
+cff-version: 1.2.0
+message: "Si usas este proyecto o sus resultados, por favor citalo asi."
+title: "Participacion Ciudadana en Salud: analisis por secciones del REM-A19b (Chile)"
+abstract: >-
+  Analisis estadistico reproducible de la participacion ciudadana en la red
+  publica de salud de Chile a partir de los Resumenes Estadisticos Mensuales
+  (REM, seccion A19b) del DEIS-MINSAL. Caracteriza el subregistro, modela la
+  decision de registrar con un hurdle multinivel (barrera mas intensidad) y
+  reparte la varianza entre establecimiento, comuna y region, con indicadores de
+  auditoria social por poblacion inscrita.
+type: software
+authors:
+  - family-names: "Vera Bravo"
+    given-names: "Javier"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"  # agrega tu ORCID si lo tienes
+repository-code: "https://github.com/javierverabravo/participacion-salud-rem"
+url: "https://javierverabravo.github.io/participacion-salud-rem/"
+license: MIT
+version: "1.0.0"
+date-released: "2026-06-14"
+keywords:
+  - "participacion ciudadana en salud"
+  - "REM"
+  - "DEIS"
+  - "MINSAL"
+  - "Chile"
+  - "modelos multinivel"
+  - "modelo hurdle"
+  - "subregistro"
+  - "auditoria social"
+  - "salud publica"
