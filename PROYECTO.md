@@ -44,7 +44,7 @@ produce indicadores de auditoría social.
 07_analisis_B.R       Bloque B · Participación social B.1+B.2 (26 códigos)
 08_analisis_C.R       Bloque C · Satisfacción usuaria C.1+C.2 (22 códigos)
 09_sintesis.R         Comparativo A/B/C + tipologías cross-tema + auditoría social
-10_run_all.R          Maestro: ejecuta 00, 03, 10, 11, 20, 21, 22, 30 en orden
+10_run_all.R          Maestro: ejecuta 00 a 09 en orden (datos, motor, bloques, sintesis)
 exploratorio/         Scripts de la fase global previa (archivados, no en el pipeline)
 ```
 
@@ -85,7 +85,7 @@ por git localmente; el dashboard renderizado en `docs/` sí se versiona).
 | Indicador | A · OIRS | B · Part. social | C · Satisfacción |
 |---|---:|---:|---:|
 | Cobertura (% estab.) | 49,9 % | 51,1 % | 24,4 % |
-| 60,4 % | 71,7 % | 91,6 % |
+| Subregistro (% estab-mes) | 60,4 % | 71,7 % | 91,6 % |
 | Mediana de meses con registro | 12 | 7 | 3 |
 | ICC barrera (peso del establecimiento) | 93,9 % | 65,8 % | 74,3 % |
 | Varianza nivel comuna | 29,1 % | 17,5 % | 4,1 % |
@@ -101,10 +101,10 @@ por git localmente; el dashboard renderizado en `docs/` sí se versiona).
   predice** el registro (OR 0,58; p<0,001) y hay clústeres espaciales.
 - **El subregistro crece de A a C** (60, 72, 92 %) y está en **filas ausentes**,
   no en celdas vacías.
-- **Auditoría social (nacional):** fricción administrativa 11,0 reclamos/1.000;
+- **Auditoría social (nacional):** fricción administrativa 13,13 reclamos/1.000;
   46,5 % de reclamos por espera; 14,7 % fuera de plazo; razón felicitaciones/
-  reclamos 0,64; densidad democrática 9,1 participantes/100; cohesión intercultural
-  0,72/1.000. (Denominador: proxy CASEN 2024; reemplazar por FONASA.)
+  reclamos 1,03; densidad democrática 10,81 participantes/100; cohesión intercultural
+  0,858/1.000. (Denominador: FONASA, beneficiarios por comuna dic-2025.)
 
 ---
 
@@ -118,13 +118,13 @@ conclusiones:
    construye el crosswalk A19b, agrega CASEN/FONASA, corre el motor sobre A/B/C y
    genera la síntesis. Deja todo en `productos/{A,B,C,sintesis}/` (~70 min).
 3. (Opcional, per cápita real) Colocar `datos/externos/poblacion_inscrita_fonasa.csv`
-   y re-correr `03` + `30`.
+   y re-correr `03` + `09`.
 4. En la terminal: `quarto render`, genera el dashboard en `docs/`.
 5. `git add -A && git commit -m "..." && git push`, publica en GitHub Pages.
 
 El orden y las dependencias están en `R/10_run_all.R`. El esquema de numeración es
-por grupos: **0x** datos, **1x** motor e indicadores, **2x** análisis por bloque,
-**3x** síntesis, **99** maestro.
+por grupos: **00 a 03** datos, **04 a 05** motor e indicadores, **06 a 08** análisis por bloque,
+**09** síntesis, **10** maestro.
 
 ---
 
