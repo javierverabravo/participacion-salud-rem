@@ -1,0 +1,7 @@
+"fuente";"organizacion";"url";"licencia";"archivo";"estado";"bytes";"algo";"huella";"fecha_descarga";"anio_rem";"fecha_manifiesto";"fecha_corte_fuente"
+"REM (zip anual)";"DEIS, Ministerio de Salud";"https://repositoriodeis.minsal.cl/DatosAbiertos/REM/SERIE_REM_2025.zip";"Datos abiertos DEIS (ver LICENSES.md)";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
+"REM Serie A (csv)";"DEIS, Ministerio de Salud";"(extraido del zip)";"Datos abiertos DEIS";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
+"Base maestra establecimientos";"datos.gob.cl (Estado de Chile)";"https://datos.gob.cl/ (Establecimientos de Salud vigentes)";"Datos abiertos";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
+"CASEN SAE ingresos";"Observatorio Social, MDSF";"https://observatorio.ministeriodesarrollosocial.gob.cl/";"Datos abiertos CASEN";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
+"CASEN SAE multidimensional";"Observatorio Social, MDSF";"https://observatorio.ministeriodesarrollosocial.gob.cl/";"Datos abiertos CASEN";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
+"FONASA beneficiarios por comuna";"FONASA";"https://datosabiertos.fonasa.cl/dimensiones-beneficiarios/";"Datos abiertos FONASA";NA;"no encontrado";NA;NA;NA;NA;2025;"2026-06-14 22:36";""
