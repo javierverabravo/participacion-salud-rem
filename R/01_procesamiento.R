@@ -123,3 +123,55 @@ est <- merge(est, lookup, by = "cod", all.x = TRUE, sort = FALSE)
 saveRDS(est, here("datos", "establecimientos_lookup.rds"))
 message("Establecimientos cruzados: ",
         round(100 * mean(!is.na(est$TipoEstablecimientoGlosa)), 1), "% match.")
+
+# ---- 5. Validaciones del dato listo (aserciones que fallan ruidosamente) -----
+# El pipeline debe DETENERSE si una llave o un join se degrada, no seguir callado.
+stopifnot("Crosswalk A19b vacio o incompleto" = nrow(crosswalk) >= 50)
+stopifnot("Universo con llaves (estab x mes) duplicadas" =
+          !any(duplicated(universo[, .(IdEstablecimiento, Mes)])))
+stopifnot("Lookup de establecimientos con codigo duplicado" =
+          !any(duplicated(lookup$cod)))
+match_estab <- mean(!is.na(est$TipoEstablecimientoGlosa))
+if (match_estab < 0.70)
+  stop(sprintf("Cruce con base maestra demasiado bajo (%.1f%%): revisa la base de establecimientos.",
+               100 * match_estab))
+if (match_estab < 0.95)
+  warning(sprintf("Cruce con base maestra bajo lo esperado (%.1f%%).", 100 * match_estab))
+
+# Verificacion del supuesto valor_total = Col01: en cada seccion, la columna que
+# el crosswalk marca como total (ambos sexos) debe ser efectivamente Col01.
+col_total <- cw_col[dimension == "total" & grepl("ambos sexos", etiqueta, ignore.case = TRUE),
+                    .(seccion_key, col)]
+no_col01 <- col_total[col != "Col01"]
+if (nrow(no_col01) > 0)
+  warning("En estas secciones el total NO es Col01 (revisa valor_total): ",
+          paste(no_col01$seccion_key, collapse = ", "))
+
+# ---- 6. Diccionario del dato analitico listo (se versiona) -------------------
+diccionario <- data.table(
+  archivo = c(rep("participacion_A19b.rds", 9), rep("participacion_largo.rds", 6),
+              rep("universo_estab_mes.rds", 4)),
+  variable = c("IdEstablecimiento", "Mes", "IdRegion", "IdComuna", "CodigoPrestacion",
+               "valor_total", "bloque", "seccion_key", "reporto",
+               "IdEstablecimiento", "Mes", "seccion_key", "dimension", "etiqueta", "valor",
+               "IdEstablecimiento", "Mes", "IdRegion", "IdComuna"),
+  descripcion = c(
+    "Codigo del establecimiento (llave)",
+    "Mes del registro (1 a 12; en preliminar, solo los meses disponibles)",
+    "Region (codigo)", "Comuna (codigo)", "Codigo de prestacion REM (09xxxxxx)",
+    "Valor total de la prestacion (Col01); NA = no reportado, NO es 0",
+    "Bloque tematico: A (OIRS), B (participacion social), C (satisfaccion)",
+    "Seccion hoja del A19b: A, B.1, B.2, C.1, C.2",
+    "TRUE si la celda fue reportada (valor_total no NA)",
+    "Codigo del establecimiento", "Mes", "Seccion hoja",
+    "Dimension de la columna (sexo, identidad_genero, pueblos_originarios, migrantes, prais, instancia, total)",
+    "Etiqueta de la categoria dentro de la dimension", "Valor (conteo)",
+    "Codigo del establecimiento", "Mes", "Region (codigo)", "Comuna (codigo)"))
+fwrite(diccionario, here("crosswalk", "diccionario_dato_analitico.csv"), sep = ";", bom = TRUE)
+message("Validaciones OK. Diccionario del dato en crosswalk/diccionario_dato_analitico.csv")
+
+# NOTA DE ALCANCE (universo): el universo establecimiento x mes se define con los
+# establecimientos que reportan ALGO en la Serie A ese mes. Un establecimiento que
+# no reporta nada en toda la Serie A no entra en el denominador. Por eso "cobertura"
+# y "subregistro" se interpretan sobre los establecimientos ACTIVOS en REM, no sobre
+# el total de establecimientos del pais.
